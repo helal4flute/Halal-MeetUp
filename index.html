@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Halal-MeetUp</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#0d7377;--teal2:#14a085;--teal3:#0a5055;--teal4:#072e32;
+  --gold:#c9963a;--gold2:#e4b55a;--gold3:#8c6520;--gold4:#fdf6e6;
+  --cream:#faf7f2;--cream2:#f3ede4;--sand:#e6ddd2;--sand2:#c8bdb0;
+  --txt:#1a1208;--txt2:#4a3f32;--txt3:#8a7e70;--white:#fff;
+  --red:#b83030;--red2:#d94040;--green:#2a8a4a;--blue:#1e6090;
+  --r:18px;--rs:11px;--rx:7px;
+  --sh:0 4px 20px rgba(13,115,119,.12);--shl:0 12px 44px rgba(13,115,119,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#081818;color:var(--txt)}
+#app{
+  width:390px;height:844px;background:var(--cream);border-radius:46px;overflow:hidden;
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  box-shadow:0 40px 100px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.07);
+}
+/* screens */
+.scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.scr.on{display:flex;animation:fadeUp .25s cubic-bezier(.34,1.1,.64,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+/* scroll */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+/* topbar */
+.tbar{display:flex;align-items:center;padding:52px 16px 13px;background:var(--teal);color:#fff;gap:9px;flex-shrink:0;position:relative}
+.tbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,150,58,.5),transparent)}
+.tbar h2{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;flex:1;letter-spacing:.02em}
+.ibtn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.55);color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.ibtn:hover{background:rgba(255,255,255,.38);border-color:rgba(255,255,255,.8);transform:scale(1.08)}
+/* explicit back button style */
+.back-ibtn{background:rgba(255,255,255,.28)!important;border:2px solid rgba(255,255,255,.7)!important;font-size:1.2rem!important;font-weight:900!important;letter-spacing:-1px}
+.back-ibtn:hover{background:rgba(255,255,255,.45)!important}
+/* stepbar */
+.sbar{display:flex;gap:5px;padding:11px 18px 0;background:var(--teal);flex-shrink:0}
+.sd{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.22);transition:background .3s}
+.sd.done{background:rgba(201,150,58,.75)}.sd.act{background:var(--gold2)}
+/* bottom nav */
+.bnav{display:flex;background:var(--white);border-top:1px solid var(--sand);padding:7px 0 22px;flex-shrink:0;box-shadow:0 -3px 18px rgba(13,115,119,.08)}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.6rem;font-weight:700;color:var(--txt3);padding:4px 0;transition:color .18s;text-transform:uppercase;letter-spacing:.04em}
+.nb.on{color:var(--teal)}.nb svg{width:22px;height:22px}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 22px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:.93rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.bp{background:linear-gradient(135deg,var(--teal3),var(--teal2));color:#fff;box-shadow:var(--sh)}
+.bp:hover{transform:translateY(-1px);box-shadow:var(--shl)}
+.bg{background:linear-gradient(135deg,var(--gold3),var(--gold2));color:#fff;box-shadow:0 5px 18px rgba(201,150,58,.38)}
+.bo{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.bgh{background:none;color:var(--txt3);border:none;font-family:'Nunito',sans-serif;font-size:.87rem}
+.bfull{width:100%}.bsm{padding:8px 15px;font-size:.8rem}
+.bred{background:var(--red2);color:#fff}
+/* form */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;position:relative}
+.fg label{font-size:.71rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em}
+.fg input,.fg select,.fg textarea{background:var(--white);border:1.5px solid var(--sand);border-radius:var(--rs);padding:11px 13px;font-family:'Nunito',sans-serif;font-size:.88rem;color:var(--txt);outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,115,119,.1)}
+.fg textarea{resize:none;height:82px}
+.frow{display:flex;gap:9px}.frow .fg{flex:1}
+/* card */
+.card{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+/* badge */
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:50px;font-size:.67rem;font-weight:800;letter-spacing:.02em}
+.bt{background:#dff2f2;color:var(--teal)}.bgo{background:#fdf0dc;color:var(--gold3)}
+.br{background:#fce6e6;color:var(--red)}.bb{background:#e2eef8;color:var(--blue)}
+.bgn{background:#e2f5e8;color:var(--green)}.bgr{background:#f0ece6;color:var(--txt3)}
+/* modal */
+.mov{position:absolute;inset:0;background:rgba(0,0,0,.54);display:none;align-items:flex-end;justify-content:center;z-index:400;backdrop-filter:blur(2px)}
+.mov.on{display:flex;animation:fi .2s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.msh{background:var(--white);border-radius:24px 24px 0 0;padding:20px 18px 34px;width:100%;max-height:90%;overflow-y:auto;animation:su .3s cubic-bezier(.34,1.1,.64,1)}
+@keyframes su{from{transform:translateY(70px);opacity:0}to{transform:none;opacity:1}}
+.mh{width:36px;height:4px;background:var(--sand);border-radius:4px;margin:0 auto 16px}
+.mt{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--teal4);margin-bottom:5px}
+/* toast */
+#toast{position:absolute;top:64px;left:14px;right:14px;background:var(--teal4);color:#fff;padding:11px 15px;border-radius:var(--rs);font-size:.82rem;font-weight:600;z-index:999;display:none;box-shadow:var(--shl);border-left:3px solid var(--gold)}
+/* otp */
+.orow{display:flex;gap:9px;justify-content:center;margin:16px 0}
+.ocell{width:45px;height:52px;border:2px solid var(--sand);border-radius:var(--rs);font-size:1.4rem;font-weight:700;text-align:center;font-family:'Nunito',sans-serif;color:var(--teal4);outline:none;transition:border-color .2s;background:var(--white)}
+.ocell:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,115,119,.1)}
+/* photo grid */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.pslot{aspect-ratio:1;border-radius:var(--rs);background:var(--cream2);border:2px dashed var(--sand2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s}
+.pslot:hover{border-color:var(--teal)}.pslot.filled{border-style:solid;border-color:var(--teal)}
+.plbl{font-size:.62rem;font-weight:800;color:var(--txt3);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.rdot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--red);border-radius:50%}
+/* bubbles */
+.bwrap{display:flex;gap:7px;align-items:flex-end;margin-bottom:9px}
+.bwrap.sent{flex-direction:row-reverse}
+.avsm{width:27px;height:27px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.bub{max-width:235px;padding:9px 13px;border-radius:17px;font-size:.86rem;line-height:1.5}
+.bin{background:var(--white);border-radius:17px 17px 17px 4px;box-shadow:0 2px 8px rgba(0,0,0,.06);color:var(--txt)}
+.bout{background:linear-gradient(135deg,var(--teal3),var(--teal2));border-radius:17px 17px 4px 17px;color:#fff}
+.bblocked{background:#fff9e6;border:1.5px solid var(--gold);border-radius:13px;color:var(--txt)}
+.btm{font-size:.63rem;color:var(--txt3);margin-top:2px}
+.bwrap.sent .btm{text-align:right}
+/* swipe */
+.scard{background:var(--white);border-radius:22px;overflow:hidden;box-shadow:var(--shl);cursor:grab;user-select:none;touch-action:none;will-change:transform}
+.scard:active{cursor:grabbing}
+.sov{position:absolute;font-size:1.4rem;font-weight:900;padding:7px 16px;border-radius:11px;opacity:0;transition:opacity .1s;pointer-events:none}
+#ov-like{top:22px;left:16px;background:var(--teal);color:#fff;transform:rotate(-12deg)}
+#ov-nope{top:22px;right:16px;background:var(--red);color:#fff;transform:rotate(12deg)}
+#ov-super{top:22px;left:50%;transform:translateX(-50%);background:var(--gold3);color:#fff}
+/* call screen */
+.cbg{background:radial-gradient(ellipse at 50% 0%,#0d3a3a 0%,#042020 60%,#020f0f 100%)}
+.ccbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:13px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Nunito',sans-serif;font-size:.68rem;font-weight:700;color:#fff;transition:background .18s;backdrop-filter:blur(5px)}
+.ccbtn:hover{background:rgba(255,255,255,.24)}.ccbtn.act{background:rgba(201,150,58,.3);border-color:rgba(201,150,58,.5)}
+.ccbtn span{font-size:1.4rem}
+.endbtn{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--red),#ff5050);border:none;color:#fff;font-size:1.9rem;cursor:pointer;box-shadow:0 8px 30px rgba(184,48,48,.6);display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.endbtn:active{transform:scale(.9)}
+/* sound bars */
+.sbars{display:flex;align-items:center;gap:3px;height:22px}
+.sbar{width:3px;border-radius:2px;background:var(--gold2);animation:sbAni .7s ease-in-out infinite alternate}
+.sbar:nth-child(1){animation-duration:.8s}.sbar:nth-child(2){animation-duration:.6s;animation-delay:.1s}
+.sbar:nth-child(3){animation-duration:1s;animation-delay:.2s}.sbar:nth-child(4){animation-duration:.7s;animation-delay:.05s}
+.sbar:nth-child(5){animation-duration:.9s;animation-delay:.15s}
+@keyframes sbAni{from{height:4px}to{height:20px}}
+/* toggle switch */
+.tog{position:relative;width:42px;height:23px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.togsl{position:absolute;inset:0;background:var(--sand2);border-radius:12px;cursor:pointer;transition:background .2s}
+.togsl::before{content:'';position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:transform .2s}
+.tog input:checked+.togsl{background:var(--teal)}
+.tog input:checked+.togsl::before{transform:translateX(19px)}
+/* progress bar */
+.pb{height:7px;background:var(--sand);border-radius:4px;overflow:hidden}
+.pf{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:4px;transition:width .5s}
+/* list item */
+.li{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--cream2);cursor:pointer}
+.li:last-child{border-bottom:none}
+/* online dot */
+.odot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:#2ecc71;border-radius:50%;border:2px solid #fff}
+/* chat bar */
+.cbar{background:var(--white);padding:9px 13px 24px;border-top:1px solid var(--sand);display:flex;align-items:flex-end;gap:8px;flex-shrink:0}
+.cinp{flex:1;background:var(--cream2);border:1.5px solid var(--sand);border-radius:21px;padding:9px 13px;font-family:'Nunito',sans-serif;font-size:.87rem;outline:none;resize:none;max-height:90px;transition:border-color .2s}
+.cinp:focus{border-color:var(--teal)}
+.sbtn{width:38px;height:38px;border-radius:50%;background:var(--teal);border:none;color:#fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* admin */
+.atab{padding:10px 13px;border:none;border-bottom:2px solid transparent;background:none;font-family:'Nunito',sans-serif;font-size:.73rem;font-weight:700;white-space:nowrap;cursor:pointer;color:var(--txt3);transition:color .18s,border-color .18s;margin-bottom:-1px}
+.atab.on{color:var(--teal);border-bottom-color:var(--teal)}
+/* sub card */
+.subcrd{background:linear-gradient(135deg,#fdf9f0,#fff6e6);border:1.5px solid rgba(201,150,58,.28);border-radius:var(--r);padding:18px;text-align:center;position:relative;overflow:hidden}
+.subcrd::before{content:'✦';position:absolute;top:-8px;right:-8px;font-size:5rem;color:rgba(201,150,58,.07)}
+/* divider */
+.div{height:1px;background:linear-gradient(90deg,transparent,var(--sand),transparent);margin:13px 0}
+/* screenshot protection */
+.ssnotice{background:#1a1a1a;color:rgba(255,255,255,.28);font-size:.68rem;padding:3px 0;text-align:center;letter-spacing:.1em;user-select:none;pointer-events:none;flex-shrink:0}
+/* selfie ring */
+.sring{width:155px;height:155px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal2));display:flex;align-items:center;justify-content:center;font-size:3.8rem;margin:0 auto;box-shadow:var(--shl);position:relative}
+.sring::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2.5px dashed var(--gold);animation:spin 9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* email banner */
+.ebanner{background:linear-gradient(135deg,#dff2f2,#f0fff0);border:1px solid rgba(13,115,119,.2);border-radius:var(--rs);padding:11px 13px;display:flex;align-items:flex-start;gap:9px;font-size:.79rem;color:var(--teal4);margin-bottom:13px;line-height:1.6}
+
+/* ── FIELD VALIDATION ── */
+.req-star{color:var(--red2);font-size:.85rem;margin-left:2px}
+.field-err{border-color:var(--red2)!important;box-shadow:0 0 0 3px rgba(217,64,64,.13)!important;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+.ferr-msg{font-size:.72rem;color:var(--red2);font-weight:700;margin-top:3px;display:none;padding-left:2px}
+.ferr-msg.show{display:block}
+.field-ok{border-color:var(--green)!important;box-shadow:0 0 0 3px rgba(42,138,74,.1)!important}
+.field-ok-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--green);font-size:.9rem;pointer-events:none;display:none}
+/* popup modal */
+.popup-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:500;padding:24px;backdrop-filter:blur(3px)}
+.popup-overlay.on{display:flex;animation:fi .2s}
+.popup-box{background:#fff;border-radius:20px;padding:26px 22px;width:100%;max-width:330px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;animation:popIn .28s cubic-bezier(.34,1.1,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.popup-icon{font-size:2.8rem;margin-bottom:10px}
+.popup-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--teal4);margin-bottom:7px}
+.popup-msg{font-size:.84rem;color:var(--txt2);line-height:1.6;margin-bottom:18px}
+.popup-fields{background:var(--cream2);border-radius:var(--rs);padding:10px 13px;margin-bottom:16px;text-align:left}
+.popup-fields p{font-size:.79rem;color:var(--red2);font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+
+/* ── CHAT ENHANCEMENTS ── */
+.bwrap{position:relative}
+/* reaction bar */
+.react-bar{display:none;position:absolute;bottom:calc(100% + 4px);background:#fff;border-radius:50px;padding:4px 8px;box-shadow:0 4px 16px rgba(0,0,0,.15);gap:4px;z-index:50;white-space:nowrap;border:1px solid var(--sand)}
+.bwrap:hover .react-bar,.react-bar.show{display:flex}
+.bwrap.sent .react-bar{right:0}
+.bwrap:not(.sent) .react-bar{left:35px}
+.react-btn{font-size:1.1rem;cursor:pointer;padding:2px 3px;border-radius:50%;transition:transform .15s;line-height:1;background:none;border:none}
+.react-btn:hover{transform:scale(1.3)}
+/* reaction chips on bubbles */
+.react-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.rchip{background:var(--cream2);border:1px solid var(--sand);border-radius:50px;padding:2px 8px;font-size:.78rem;cursor:pointer;transition:background .15s}
+.rchip:hover{background:var(--sand)}
+/* msg context menu */
+.ctx-menu{position:absolute;z-index:100;background:#fff;border-radius:var(--rs);box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:160px;overflow:hidden;border:1px solid var(--sand)}
+.ctx-menu.sent{right:0}.ctx-menu:not(.sent){left:35px}
+.ctx-item{display:flex;align-items:center;gap:9px;padding:11px 15px;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--txt2);transition:background .15s;border:none;width:100%;background:none;font-family:'Nunito',sans-serif}
+.ctx-item:hover{background:var(--cream2)}
+.ctx-item.danger{color:var(--red2)}
+/* unread badge */
+.unread-badge{width:19px;height:19px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.63rem;font-weight:800;color:#fff;flex-shrink:0}
+/* blocked user notice */
+.blocked-notice{background:#fce8e8;border:1px solid var(--red);border-radius:var(--rs);padding:12px 14px;text-align:center;font-size:.82rem;color:var(--red2);margin:8px 14px;flex-shrink:0}
+/* call log item */
+.clog-item{background:#fff;border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:7px;box-shadow:var(--sh)}
+.clog-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+
+/* ── SWIPE-TO-DELETE on conversation rows ── */
+.conv-row-wrap{position:relative;overflow:hidden;border-radius:var(--rs);margin-bottom:4px}
+.conv-row-actions{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:0;transform:translateX(100%);transition:transform .22s ease}
+.conv-row-actions button{height:100%;padding:0 16px;border:none;cursor:pointer;font-size:.78rem;font-weight:800;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff;min-width:60px}
+.conv-del-btn{background:var(--red2)}
+.conv-more-btn{background:var(--txt3)}
+.conv-row{background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:transform .22s ease;position:relative;z-index:1;user-select:none;touch-action:pan-y}
+.conv-row.revealed{transform:translateX(-126px)}
+.conv-row.revealed+.conv-row-actions,.conv-row-wrap.revealed .conv-row-actions{transform:translateX(0)}
+/* ── "Delete All" action bar in matches ── */
+.matches-action-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
+.matches-action-bar button{background:none;border:none;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:800;cursor:pointer;padding:5px 10px;border-radius:50px;transition:background .15s}
+.mab-del{color:var(--red2)}.mab-del:hover{background:#fce8e8}
+.mab-sel{color:var(--teal)}.mab-sel:hover{background:#e0f2f2}
+/* ── Select mode checkboxes ── */
+.conv-check{width:20px;height:20px;accent-color:var(--teal);flex-shrink:0;display:none;cursor:pointer}
+.select-mode .conv-check{display:block}
+.select-mode .unread-badge{display:none}
+/* ── Confirm delete modal ── */
+#m-confirm-del .confirm-count{font-weight:800;color:var(--red2);font-size:1.1rem}
+/* ── Tap-friendly delete button inside bubble (mobile) ── */
+.bub-actions{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
+.bub-action-btn{background:var(--cream2);border:1px solid var(--sand);border-radius:50px;padding:3px 10px;font-size:.72rem;font-weight:700;cursor:pointer;color:var(--txt2);transition:background .15s;font-family:'Nunito',sans-serif}
+.bub-action-btn:hover{background:var(--sand)}
+.bub-action-btn.danger{color:var(--red2)}
+
+/* ══════════ LUDO GAME ══════════ */
+.ludo-screen{background:linear-gradient(160deg,#0a2e20 0%,#0d4a30 50%,#0a2e20 100%)}
+/* board */
+.ludo-board{display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);width:340px;height:340px;border:3px solid rgba(201,150,58,.6);border-radius:8px;overflow:hidden;flex-shrink:0;box-shadow:0 0 30px rgba(201,150,58,.25)}
+.lc{display:flex;align-items:center;justify-content:center;font-size:.55rem;position:relative;border:.5px solid rgba(255,255,255,.08)}
+.lc.safe{background:rgba(255,255,255,.12)}
+.lc.safe::after{content:'★';font-size:.6rem;color:rgba(255,255,255,.4);position:absolute}
+/* home zones */
+.lhome-r{background:#c0392b}.lhome-g{background:#27ae60}
+.lhome-b{background:#2471a3}.lhome-y{background:#f39c12}
+/* paths */
+.lpath-r{background:rgba(192,57,43,.35)}.lpath-g{background:rgba(39,174,96,.35)}
+.lpath-b{background:rgba(36,113,163,.35)}.lpath-y{background:rgba(243,156,18,.35)}
+.lpath-w{background:rgba(255,255,255,.15)}
+/* center finish */
+.lcenter{background:linear-gradient(135deg,#c0392b,#27ae60,#2471a3,#f39c12)}
+/* pieces */
+.lpiece{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.8);cursor:pointer;transition:all .2s;box-shadow:0 2px 6px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:.5rem;color:rgba(0,0,0,.6);font-weight:900;z-index:10;position:relative}
+.lpiece:hover{transform:scale(1.3);box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.lpiece.active-piece{animation:piecePulse .6s ease-in-out infinite alternate;transform:scale(1.2)}
+@keyframes piecePulse{from{box-shadow:0 0 0 0 rgba(255,255,255,.6)}to{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
+/* dice */
+.ludo-dice{width:52px;height:52px;background:#fff;border-radius:10px;border:none;cursor:pointer;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;padding:6px;gap:3px;box-shadow:0 4px 14px rgba(0,0,0,.3);transition:transform .12s;flex-shrink:0}
+.ludo-dice:active{transform:scale(.9)}
+.ludo-dice.rolling{animation:diceRoll .4s ease}
+@keyframes diceRoll{0%{transform:rotate(0deg) scale(1)}25%{transform:rotate(90deg) scale(.8)}50%{transform:rotate(180deg) scale(1)}75%{transform:rotate(270deg) scale(.8)}100%{transform:rotate(360deg) scale(1)}}
+.ldot{width:8px;height:8px;border-radius:50%;background:var(--txt);margin:auto}
+.ldot.empty{background:transparent}
+/* player info bar */
+.lplayer-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;transition:all .2s}
+.lplayer-bar.active-turn{background:rgba(255,255,255,.15);box-shadow:0 0 0 2px rgba(201,150,58,.6)}
+/* ludo invite */
+.ludo-invite-btn{background:linear-gradient(135deg,#0d7377,#14a085);border:none;color:#fff;border-radius:12px;padding:8px 14px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(13,115,119,.4);transition:all .18s}
+.ludo-invite-btn:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(13,115,119,.5)}
+/* AV controls in ludo */
+.ludo-av{display:flex;gap:8px}
+.ludo-av-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.ludo-av-btn.off{background:rgba(184,48,48,.5);border-color:rgba(184,48,48,.6)}
+/* Turn indicator */
+.turn-indicator{background:rgba(201,150,58,.2);border:1px solid rgba(201,150,58,.5);border-radius:50px;padding:4px 14px;font-size:.74rem;font-weight:800;color:#e4b55a;text-align:center}
+/* win banner */
+.ludo-win-banner{background:linear-gradient(135deg,rgba(201,150,58,.9),rgba(201,120,30,.9));border-radius:16px;padding:20px;text-align:center;margin:10px;animation:fadeUp .4s ease}
+</style>
+</head>
+<body>
+
+<!-- ═══ SVG SYMBOL: 3D COUPLE LOGO ═══ -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<symbol id="logo" viewBox="0 0 340 230">
+<defs>
+  <style>
+    .wb { fill: #0d7377; }
+    .mb { fill: #f4f0e8; }
+    .sf { fill: #f5c8a8; }
+    .sm { fill: #d4a574; }
+    .hj { fill: #1e2030; }
+    .tb { fill: #f8f4ec; }
+    .ga { fill: #c9963a; }
+  </style>
+</defs>
+<!-- ground shadow -->
+<ellipse cx="170" cy="198" rx="120" ry="12" fill="#0d7377" opacity=".08"/>
+<!-- arc decoration -->
+<path d="M 60 198 Q 60 70 170 54 Q 280 70 280 198" fill="none" stroke="#c9963a" stroke-width=".8" stroke-dasharray="4 5" opacity=".35"/>
+
+<!-- ── WOMAN LEFT ── -->
+<!-- abaya body -->
+<path d="M 46 198 Q 44 158 46 138 Q 55 120 74 118 Q 86 117 92 123 L 97 198 Z" class="wb"/>
+<!-- neck -->
+<rect x="69" y="106" width="10" height="13" rx="3.5" class="sf"/>
+<!-- face -->
+<ellipse cx="74" cy="99" rx="14" ry="16" class="sf"/>
+<!-- hijab -->
+<path d="M 58 96 Q 60 75 74 72 Q 88 75 90 96 Q 88 108 84 113 Q 79 118 74 119 Q 69 118 64 113 Q 59 108 58 96 Z" class="hj"/>
+<ellipse cx="74" cy="99" rx="12" ry="14" class="sf"/>
+<path d="M 62 93 Q 64 80 74 77 Q 84 80 86 93" class="hj"/>
+<path d="M 58 107 Q 52 116 51 128 Q 62 125 74 124 Q 85 125 96 128 Q 95 116 90 107 Q 84 113 74 115 Q 64 113 58 107 Z" class="hj" opacity=".88"/>
+<!-- hijab highlight -->
+<path d="M 67 82 Q 73 79 80 81" fill="none" stroke="white" stroke-width=".8" opacity=".2"/>
+<!-- eyes -->
+<ellipse cx="69" cy="97" rx="2.2" ry="2.5" fill="#1a1008"/>
+<ellipse cx="79" cy="97" rx="2.2" ry="2.5" fill="#1a1008"/>
+<ellipse cx="69.6" cy="96.3" rx=".7" ry=".8" fill="white" opacity=".7"/>
+<ellipse cx="79.6" cy="96.3" rx=".7" ry=".8" fill="white" opacity=".7"/>
+<!-- eyebrows -->
+<path d="M 66 93 Q 69 91 72 93" fill="none" stroke="#3a2010" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M 76 93 Q 79 91 82 93" fill="none" stroke="#3a2010" stroke-width="1.2" stroke-linecap="round"/>
+<!-- smile -->
+<path d="M 70 105 Q 74 109 78 105" fill="none" stroke="#c0785a" stroke-width="1.4" stroke-linecap="round"/>
+<!-- cheeks -->
+<ellipse cx="66" cy="102" rx="4" ry="2.5" fill="#f0a090" opacity=".28"/>
+<ellipse cx="82" cy="102" rx="4" ry="2.5" fill="#f0a090" opacity=".28"/>
+<!-- earring -->
+<circle cx="59" cy="106" r="2" class="ga" opacity=".85"/>
+<!-- arm extending right -->
+<path d="M 92 143 Q 110 141 124 147 Q 134 151 140 157" fill="none" stroke="#0a5055" stroke-width="10" stroke-linecap="round"/>
+<!-- female hand -->
+<ellipse cx="145" cy="161" rx="10" ry="8" class="sf"/>
+<path d="M 138 156 Q 137 149 139 147 Q 141 145 143 148 L 143 155" class="sf" stroke="#e8a87c" stroke-width=".4"/>
+<path d="M 143 154 Q 143 147 145 145 Q 147 143 148 146 L 148 154" class="sf" stroke="#e8a87c" stroke-width=".4"/>
+<path d="M 148 155 Q 149 148 151 146 Q 153 144 154 147 L 153 155" class="sf" stroke="#e8a87c" stroke-width=".4"/>
+<!-- ring -->
+<rect x="144" y="147" width="4" height="2.5" rx="1.2" class="ga"/>
+
+<!-- ── MAN RIGHT ── -->
+<!-- thawb body -->
+<path d="M 244 198 Q 242 158 244 138 Q 253 120 268 118 Q 280 117 286 123 L 291 198 Z" class="mb" style="stroke:#c8c0b0;stroke-width:.8"/>
+<!-- neck -->
+<rect x="262" y="106" width="10" height="13" rx="3.5" class="sm"/>
+<!-- face -->
+<ellipse cx="267" cy="99" rx="15" ry="17" class="sm"/>
+<!-- beard -->
+<path d="M 253 107 Q 255 120 267 122 Q 279 120 281 107 Q 275 113 267 115 Q 259 113 253 107 Z" fill="#2e1c0a"/>
+<path d="M 255 104 Q 258 113 267 115 Q 276 113 279 104" fill="#2e1c0a" opacity=".45"/>
+<path d="M 260 106 Q 267 110 274 106" fill="#2e1c0a"/>
+<!-- turban -->
+<ellipse cx="267" cy="88" rx="19" ry="14" class="tb"/>
+<path d="M 248 90 Q 249 74 267 71 Q 285 74 286 90 Q 282 82 267 80 Q 252 82 248 90 Z" class="tb"/>
+<path d="M 249 90 Q 267 84 285 90" fill="none" stroke="#ccc4b0" stroke-width=".8" opacity=".6"/>
+<path d="M 250 94 Q 267 88 284 94" fill="none" stroke="#ccc4b0" stroke-width=".7" opacity=".4"/>
+<!-- turban drape -->
+<path d="M 248 91 Q 244 99 245 108 Q 252 103 253 97 Z" class="tb" opacity=".82"/>
+<!-- turban highlight -->
+<path d="M 260 76 Q 267 73 274 76" fill="none" stroke="white" stroke-width=".8" opacity=".32"/>
+<!-- eyes -->
+<ellipse cx="261" cy="97" rx="2.3" ry="2.5" fill="#100800"/>
+<ellipse cx="273" cy="97" rx="2.3" ry="2.5" fill="#100800"/>
+<ellipse cx="261.7" cy="96.3" rx=".7" ry=".8" fill="white" opacity=".7"/>
+<ellipse cx="273.7" cy="96.3" rx=".7" ry=".8" fill="white" opacity=".7"/>
+<!-- eyebrows thick -->
+<path d="M 257 92 Q 261 89 265 92" fill="none" stroke="#1e0e04" stroke-width="1.7" stroke-linecap="round"/>
+<path d="M 269 92 Q 273 89 277 92" fill="none" stroke="#1e0e04" stroke-width="1.7" stroke-linecap="round"/>
+<!-- smile -->
+<path d="M 261 107 Q 267 111 273 107" fill="none" stroke="#a0684a" stroke-width="1.3" stroke-linecap="round"/>
+<!-- cheeks -->
+<ellipse cx="257" cy="102" rx="4" ry="2.5" fill="#d49060" opacity=".22"/>
+<ellipse cx="277" cy="102" rx="4" ry="2.5" fill="#d49060" opacity=".22"/>
+<!-- arm extending left -->
+<path d="M 248 143 Q 230 141 216 147 Q 206 151 200 157" fill="none" stroke="#c8c0b0" stroke-width="10" stroke-linecap="round"/>
+<!-- male hand -->
+<ellipse cx="195" cy="161" rx="10" ry="8" class="sm"/>
+<path d="M 201 156 Q 203 149 205 147 Q 207 145 208 148 L 207 155" class="sm" stroke="#b88858" stroke-width=".4"/>
+<path d="M 196 155 Q 197 148 199 146 Q 201 144 202 147 L 201 155" class="sm" stroke="#b88858" stroke-width=".4"/>
+<path d="M 191 156 Q 191 149 193 147 Q 195 145 197 148 L 195 156" class="sm" stroke="#b88858" stroke-width=".4"/>
+
+<!-- ── HANDSHAKE CENTER ── -->
+<circle cx="170" cy="161" r="22" fill="none" stroke="#c9963a" stroke-width="1.5" opacity=".3"/>
+<circle cx="170" cy="161" r="15" fill="none" stroke="#c9963a" stroke-width="1" opacity=".2"/>
+<!-- clasped hands area -->
+<ellipse cx="170" cy="163" rx="20" ry="13" fill="#f5c8a8" opacity=".5"/>
+<ellipse cx="170" cy="163" rx="15" ry="10" fill="#d4a574" opacity=".4"/>
+<!-- grip lines -->
+<path d="M 154 159 Q 170 154 186 159" fill="none" stroke="#b88858" stroke-width="1.2" stroke-linecap="round" opacity=".45"/>
+<path d="M 152 164 Q 170 160 188 164" fill="none" stroke="#c09070" stroke-width=".9" stroke-linecap="round" opacity=".35"/>
+<!-- gold cuff accent -->
+<path d="M 157 155 Q 170 151 183 155" fill="none" stroke="#c9963a" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+
+<!-- ── FLOATING HEARTS ── -->
+<path d="M 163 130 Q 163 125 168 125 Q 173 125 173 130 Q 173 136 168 140 Q 163 136 163 130 Z" class="ga" opacity=".9"/>
+<text x="168" y="137" text-anchor="middle" font-size="5" fill="white">♥</text>
+<path d="M 147 119 Q 147 115 151 115 Q 155 115 155 119 Q 155 124 151 127 Q 147 124 147 119 Z" class="ga" opacity=".55"/>
+<path d="M 183 118 Q 183 114 187 114 Q 191 114 191 118 Q 191 123 187 126 Q 183 123 183 118 Z" class="ga" opacity=".5"/>
+<!-- sparkle dots -->
+<circle cx="138" cy="133" r="2.2" class="ga" opacity=".6"/>
+<circle cx="200" cy="130" r="2.2" class="ga" opacity=".6"/>
+<circle cx="170" cy="110" r="1.8" class="ga" opacity=".45"/>
+<!-- star sparkles -->
+<path d="M 133 124 L 134.5 128 L 138.5 128 L 135.5 130.5 L 136.5 134.5 L 133 132 L 129.5 134.5 L 130.5 130.5 L 127.5 128 L 131.5 128 Z" class="ga" opacity=".55" transform="scale(.7) translate(60,36)"/>
+<path d="M 205 122 L 206.5 126 L 210.5 126 L 207.5 128.5 L 208.5 132.5 L 205 130 L 201.5 132.5 L 202.5 128.5 L 199.5 126 L 203.5 126 Z" class="ga" opacity=".55" transform="scale(.7) translate(148,34)"/>
+
+<!-- ── CRESCENT + STAR top center ── -->
+<path d="M 161 24 Q 156 14 163 8 Q 154 10 154 18 Q 154 26 163 28 Q 156 25 161 24 Z" class="ga" opacity=".75"/>
+<text x="176" y="22" text-anchor="middle" font-size="8" fill="#c9963a" opacity=".75">✦</text>
+<path d="M 179 24 Q 184 14 177 8 Q 186 10 186 18 Q 186 26 177 28 Q 184 25 179 24 Z" class="ga" opacity=".75"/>
+<!-- ground line -->
+<line x1="40" y1="199" x2="300" y2="199" stroke="#0d7377" stroke-width=".8" opacity=".2"/>
+</symbol>
+</defs>
+</svg>
+
+<div id="app">
+<div id="toast"></div>
+
+<!-- ══ VALIDATION POPUP MODAL ══ -->
+<div class="popup-overlay" id="val-popup">
+  <div class="popup-box">
+    <div class="popup-icon" id="popup-icon">⚠️</div>
+    <div class="popup-title" id="popup-title">Required Fields</div>
+    <div class="popup-msg" id="popup-msg">Please fill in the required fields to continue.</div>
+    <div class="popup-fields" id="popup-fields" style="display:none;"></div>
+    <button class="btn bp bfull" onclick="document.getElementById('val-popup').classList.remove('on')" style="margin-top:2px;">Got it, I'll fix it</button>
+  </div>
+</div>
+
+
+<!-- ══════════════ S1: SPLASH ══════════════ -->
+<div class="scr on" id="s-splash" style="background:radial-gradient(ellipse at 35% 20%,#1a9494 0%,#0d7377 40%,#042e2e 100%);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:28px 28px;display:flex;flex-direction:column;align-items:center;">
+    <svg width="210" height="142" style="margin-bottom:4px"><use href="#logo"/></svg>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:3rem;color:#e4b55a;line-height:1;margin-bottom:3px;letter-spacing:.04em;">حلال</h1>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:#fff;margin-bottom:8px;letter-spacing:.08em;">Halal-MeetUp</h2>
+    <p style="color:rgba(255,255,255,.52);font-size:.8rem;font-style:italic;margin-bottom:40px;line-height:1.6;">"And He created from you mates, that you may find tranquillity" — Ar-Rum 30:21</p>
+    <div style="display:flex;flex-direction:column;gap:11px;width:100%;">
+      <button class="btn bg bfull" onclick="G('s-welcome')">Begin Your Journey ✨</button>
+      <button class="btn bfull" style="background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.3);" onclick="G('s-login')">Sign In</button>
+    </div>
+    <div style="margin-top:24px;display:flex;gap:16px;">
+      <span style="color:rgba(255,255,255,.3);font-size:.68rem;">🔒 Secure</span>
+      <span style="color:rgba(255,255,255,.15);">·</span>
+      <span style="color:rgba(255,255,255,.3);font-size:.68rem;">✓ Verified</span>
+      <span style="color:rgba(255,255,255,.15);">·</span>
+      <span style="color:rgba(255,255,255,.3);font-size:.68rem;">☪️ Halal</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ S2: WELCOME ══════════════ -->
+<div class="scr" id="s-welcome" style="background:var(--cream);">
+  <div style="background:var(--teal);padding:52px 16px 13px;display:flex;align-items:center;gap:9px;flex-shrink:0;position:relative;">
+    <button class="ibtn back-ibtn" onclick="G('s-splash')" title="Back">&#8592;</button>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;flex:1;color:#fff;letter-spacing:.02em;">Welcome</h2>
+  </div>
+  <div class="scroll">
+  <div style="display:flex;flex-direction:column;align-items:center;padding:28px 20px 26px;gap:14px;">
+    <svg width="190" height="128"><use href="#logo"/></svg>
+    <div style="text-align:center;">
+      <h1 style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--teal);margin-bottom:5px;">Find Your Soulmate</h1>
+      <p style="color:var(--txt3);font-size:.86rem;line-height:1.6;">A safe, verified, Islamic matrimonial platform.</p>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:8px;">
+      <div class="card" style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
+        <div style="width:42px;height:42px;background:#dff2f2;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🛡️</div>
+        <div><p style="font-weight:800;font-size:.87rem;">ID-Verified Profiles</p><p style="font-size:.74rem;color:var(--txt3);">Gov ID + selfie + OTP verification</p></div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
+        <div style="width:42px;height:42px;background:#fdf0dc;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🚫</div>
+        <div><p style="font-weight:800;font-size:.87rem;">Privacy Protected</p><p style="font-size:.74rem;color:var(--txt3);">Phone numbers & live photos blocked in chat</p></div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
+        <div style="width:42px;height:42px;background:#e2eef8;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📞</div>
+        <div><p style="font-weight:800;font-size:.87rem;">Secure In-App Calls</p><p style="font-size:.74rem;color:var(--txt3);">Audio & video — Premium $10/week (card only)</p></div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
+        <div style="width:42px;height:42px;background:#e2f5e8;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📧</div>
+        <div><p style="font-weight:800;font-size:.87rem;">Email + SMS OTP</p><p style="font-size:.74rem;color:var(--txt3);">Phone & email verified at sign-up</p></div>
+      </div>
+    </div>
+    <button class="btn bp bfull" onclick="G('s-reg1')">Create Account →</button>
+    <p style="font-size:.83rem;color:var(--txt3);">Already registered? <a href="#" onclick="G('s-login');return false;" style="color:var(--teal);font-weight:800;">Sign In</a></p>
+  </div>
+  </div><!-- /scroll -->
+</div>
+
+<!-- ══════════════ S3: LOGIN ══════════════ -->
+<div class="scr" id="s-login" style="background:var(--cream);">
+  <div style="background:var(--teal);padding:52px 16px 13px;display:flex;align-items:center;gap:9px;flex-shrink:0;position:relative;">
+    <button class="ibtn back-ibtn" onclick="G('s-splash')" title="Back">&#8592;</button>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;flex:1;color:#fff;letter-spacing:.02em;">Sign In</h2>
+  </div>
+  <div class="scroll">
+  <div style="flex:1;display:flex;flex-direction:column;padding:28px 22px 28px;overflow-y:auto;">
+    <div style="text-align:center;margin-bottom:26px;">
+      <svg width="128" height="87"><use href="#logo"/></svg>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.85rem;color:var(--teal);">Welcome Back</h2>
+      <p style="color:var(--txt3);font-size:.82rem;">Sign in to continue your journey</p>
+    </div>
+    <div class="fg"><label>Email Address</label><input id="li-em" type="email" placeholder="you@example.com"/></div>
+    <div class="fg"><label>Password</label><input id="li-pw" type="password" placeholder="••••••••"/></div>
+    <div style="text-align:right;margin-bottom:18px;"><a href="#" style="font-size:.81rem;color:var(--teal);font-weight:700;">Forgot password?</a></div>
+    <button class="btn bp bfull" onclick="doLogin()" style="margin-bottom:10px;">Sign In</button>
+    <div style="background:var(--cream2);border-radius:var(--rs);padding:11px 13px;font-size:.74rem;color:var(--txt3);text-align:center;margin-bottom:16px;">
+      💡 <strong>Admin test:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="751411181c1b351d14191419581810100100055b161a18">[email&#160;protected]</a> → redirects to Admin Portal
+    </div>
+    <div style="border-top:1px solid var(--sand);padding-top:16px;text-align:center;">
+      <p style="font-size:.83rem;color:var(--txt3);">New here? <a href="#" onclick="G('s-welcome');return false;" style="color:var(--teal);font-weight:800;">Create Account</a></p>
+    </div>
+  </div>
+  </div><!-- /scroll -->
+</div>
+
+<!-- ══════════════ S4: REG STEP 1 ══════════════ -->
+<div class="scr" id="s-reg1" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-welcome')">&#8592;</button><h2>Create Account</h2></div>
+  <div class="sbar"><div class="sd act"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <p style="font-size:.74rem;color:var(--txt3);margin-bottom:4px;font-weight:700;">Step 1 of 6 — Your Identity</p>
+    <p style="font-size:.73rem;color:var(--red2);margin-bottom:13px;display:flex;align-items:center;gap:4px;"><span>*</span> Required fields</p>
+    <div class="frow">
+      <div class="fg" style="position:relative;">
+        <label>First Name <span class="req-star">*</span></label>
+        <input id="rg-fn" type="text" placeholder="First name" oninput="liveValidate(this,'rg-fn-err','Please enter your first name')" onblur="liveValidate(this,'rg-fn-err','Please enter your first name')"/>
+        <span class="field-ok-icon" id="rg-fn-ok">✓</span>
+        <span class="ferr-msg" id="rg-fn-err">⚠ First name is required</span>
+      </div>
+      <div class="fg" style="position:relative;">
+        <label>Last Name <span class="req-star">*</span></label>
+        <input id="rg-ln" type="text" placeholder="Last name" oninput="liveValidate(this,'rg-ln-err','Please enter your last name')" onblur="liveValidate(this,'rg-ln-err','Please enter your last name')"/>
+        <span class="field-ok-icon" id="rg-ln-ok">✓</span>
+        <span class="ferr-msg" id="rg-ln-err">⚠ Last name is required</span>
+      </div>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Cell Phone Number <span class="req-star">*</span></label>
+      <input id="rg-ph" type="tel" placeholder="+1 (555) 000-0000" oninput="liveValidatePhone(this)" onblur="liveValidatePhone(this)"/>
+      <span class="field-ok-icon" id="rg-ph-ok">✓</span>
+      <span class="ferr-msg" id="rg-ph-err">⚠ Please enter a valid phone number</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Email Address <span class="req-star">*</span></label>
+      <input id="rg-em" type="email" placeholder="you@example.com" oninput="liveValidateEmail(this)" onblur="liveValidateEmail(this)"/>
+      <span class="field-ok-icon" id="rg-em-ok">✓</span>
+      <span class="ferr-msg" id="rg-em-err">⚠ Please enter a valid email address</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Date of Birth <span class="req-star">*</span></label>
+      <input id="rg-dob" type="date" oninput="liveValidateDOB(this)" onblur="liveValidateDOB(this)"/>
+      <span class="field-ok-icon" id="rg-dob-ok">✓</span>
+      <span class="ferr-msg" id="rg-dob-err">⚠ Please enter your date of birth (must be 18+)</span>
+    </div>
+    <div class="ebanner" id="ebanner" style="display:none;"><span style="font-size:1.1rem;">📧</span><div></div></div>
+    <div style="background:#dff2f2;border-radius:var(--rs);padding:10px 12px;font-size:.77rem;color:var(--teal4);margin-bottom:14px;line-height:1.7;">
+      📱 OTP sent to your phone to verify number<br>📧 OTP then sent to verify email<br>🎉 Welcome email sent after verification
+    </div>
+    <button class="btn bp bfull" onclick="reg1Next()">Verify Phone →</button>
+  </div>
+</div>
+
+<!-- ══════════════ S5: OTP PHONE ══════════════ -->
+<div class="scr" id="s-otp-ph" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg1')">&#8592;</button><h2>Phone Verification</h2></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 24px;text-align:center;">
+    <div style="width:70px;height:70px;background:#dff2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.1rem;margin-bottom:14px;">📱</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--teal4);margin-bottom:7px;">Check Your Phone</h3>
+    <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:3px;">6-digit code sent to</p>
+    <p style="font-weight:800;color:var(--txt);margin-bottom:5px;" id="otp-ph-target">+1 555-0000</p>
+    <p style="font-size:.74rem;color:var(--teal);">(Demo: code pre-filled ↓)</p>
+    <div class="orow" id="otp-ph-cells">
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',0)" onkeydown="otpKey(event,this,'otp-ph-cells',0)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',1)" onkeydown="otpKey(event,this,'otp-ph-cells',1)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',2)" onkeydown="otpKey(event,this,'otp-ph-cells',2)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',3)" onkeydown="otpKey(event,this,'otp-ph-cells',3)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',4)" onkeydown="otpKey(event,this,'otp-ph-cells',4)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',5)" onkeydown="otpKey(event,this,'otp-ph-cells',5)"/>
+    </div>
+    <button class="btn bp bfull" onclick="verifyOTP('otp-ph-cells','phone')" style="margin-bottom:12px;">Verify & Continue →</button>
+    <p style="font-size:.79rem;color:var(--txt3);">Didn't get it? <a href="#" onclick="resendOTP('phone');return false;" style="color:var(--teal);font-weight:700;">Resend</a></p>
+  </div>
+</div>
+
+<!-- ══════════════ S6: OTP EMAIL ══════════════ -->
+<div class="scr" id="s-otp-em" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-otp-ph')">&#8592;</button><h2>Email Verification</h2></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 24px;text-align:center;">
+    <div style="width:70px;height:70px;background:#fdf0dc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.1rem;margin-bottom:14px;">📧</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--teal4);margin-bottom:7px;">Check Your Email</h3>
+    <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:3px;">6-digit code sent to</p>
+    <p style="font-weight:800;color:var(--txt);margin-bottom:5px;" id="otp-em-target"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="433a2c3603263b222e332f266d202c2e">[email&#160;protected]</a></p>
+    <p style="font-size:.74rem;color:var(--teal);">(Demo: code pre-filled ↓)</p>
+    <div class="orow" id="otp-em-cells">
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',0)" onkeydown="otpKey(event,this,'otp-em-cells',0)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',1)" onkeydown="otpKey(event,this,'otp-em-cells',1)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',2)" onkeydown="otpKey(event,this,'otp-em-cells',2)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',3)" onkeydown="otpKey(event,this,'otp-em-cells',3)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',4)" onkeydown="otpKey(event,this,'otp-em-cells',4)"/>
+      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',5)" onkeydown="otpKey(event,this,'otp-em-cells',5)"/>
+    </div>
+    <div class="ebanner" style="width:100%;margin-bottom:10px;">
+      <span style="font-size:1.1rem;">🎉</span><div>After verifying, a <strong>welcome email</strong> will be sent from Halal-MeetUp to your inbox!</div>
+    </div>
+    <button class="btn bp bfull" onclick="verifyOTP('otp-em-cells','email')" style="margin-bottom:12px;">Verify Email →</button>
+    <p style="font-size:.79rem;color:var(--txt3);">Didn't get it? <a href="#" onclick="resendOTP('email');return false;" style="color:var(--teal);font-weight:700;">Resend</a></p>
+  </div>
+</div>
+
+<!-- ══════════════ S7: REG STEP 2 ══════════════ -->
+<div class="scr" id="s-reg2" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg1')">&#8592;</button><h2>About You</h2></div>
+  <div class="sbar"><div class="sd done"></div><div class="sd act"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <p style="font-size:.74rem;color:var(--txt3);margin-bottom:4px;font-weight:700;">Step 2 of 6 — Demographics</p>
+    <p style="font-size:.73rem;color:var(--red2);margin-bottom:13px;display:flex;align-items:center;gap:4px;"><span>*</span> Required fields</p>
+    <div class="fg">
+      <label>Gender <span class="req-star">*</span></label>
+      <select id="rg-gender" onchange="liveValidateSelect(this,'rg-gender-err')">
+        <option value="">— Select gender —</option>
+        <option>Brother (Male)</option><option>Sister (Female)</option>
+      </select>
+      <span class="ferr-msg" id="rg-gender-err">⚠ Please select your gender</span>
+    </div>
+    <div class="fg">
+      <label>Islamic Sect <span class="req-star">*</span></label>
+      <select id="rg-sect" onchange="liveValidateSelect(this,'rg-sect-err')">
+        <option value="">— Select sect —</option>
+        <option>Sunni — Hanafi</option><option>Sunni — Maliki</option><option>Sunni — Shafi'i</option><option>Sunni — Hanbali</option><option>Shia — Twelver</option><option>Shia — Ismaili</option><option>Non-denominational</option>
+      </select>
+      <span class="ferr-msg" id="rg-sect-err">⚠ Please select your Islamic sect</span>
+    </div>
+    <div class="fg">
+      <label>Marital Status <span class="req-star">*</span></label>
+      <select id="rg-mstatus" onchange="liveValidateSelect(this,'rg-mstatus-err')">
+        <option value="">— Select status —</option>
+        <option>Never Married</option><option>Divorced</option><option>Widowed</option><option>Married — Seeking 2nd</option>
+      </select>
+      <span class="ferr-msg" id="rg-mstatus-err">⚠ Please select your marital status</span>
+    </div>
+    <div class="fg">
+      <label>Education <span class="req-star">*</span></label>
+      <select id="rg-edu" onchange="liveValidateSelect(this,'rg-edu-err')">
+        <option value="">— Select education —</option>
+        <option>High School</option><option>Bachelor's</option><option>Master's</option><option>PhD</option><option>Islamic Studies / Alim</option>
+      </select>
+      <span class="ferr-msg" id="rg-edu-err">⚠ Please select your education level</span>
+    </div>
+    <div class="fg"><label>Deen Practice</label><select><option>Practising — Very religious</option><option>Practising — Moderately</option><option>Cultural Muslim</option><option>Learning / Growing</option></select></div>
+    <div class="fg"><label>Height</label><select><option value="">Select (optional)</option><option>Under 5'0"</option><option>5'0"–5'3"</option><option>5'4"–5'6"</option><option>5'7"–5'10"</option><option>5'11"–6'1"</option><option>Over 6'1"</option></select></div>
+    <button class="btn bp bfull" onclick="reg2Next()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════ S8: REG STEP 3 ══════════════ -->
+<div class="scr" id="s-reg3" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg2')">&#8592;</button><h2>Location & Background</h2></div>
+  <div class="sbar"><div class="sd done"></div><div class="sd done"></div><div class="sd act"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <p style="font-size:.74rem;color:var(--txt3);margin-bottom:4px;font-weight:700;">Step 3 of 6 — Location & Heritage</p>
+    <p style="font-size:.73rem;color:var(--red2);margin-bottom:13px;display:flex;align-items:center;gap:4px;"><span>*</span> Required fields</p>
+    <div class="fg">
+      <label>Country of Residence <span class="req-star">*</span></label>
+      <select id="rg-country" onchange="liveValidateSelect(this,'rg-country-err')">
+        <option value="">— Select country —</option>
+        <option>United States</option><option>United Kingdom</option><option>Canada</option><option>Australia</option><option>UAE</option><option>Saudi Arabia</option><option>Pakistan</option><option>India</option><option>Bangladesh</option><option>Egypt</option><option>Turkey</option><option>Indonesia</option><option>Malaysia</option><option>Nigeria</option><option>Other</option>
+      </select>
+      <span class="ferr-msg" id="rg-country-err">⚠ Please select your country of residence</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>City / State <span class="req-star">*</span></label>
+      <input id="rg-city" type="text" placeholder="e.g. London, England" oninput="liveValidate(this,'rg-city-err','Please enter your city')" onblur="liveValidate(this,'rg-city-err','Please enter your city')"/>
+      <span class="field-ok-icon" id="rg-city-ok">✓</span>
+      <span class="ferr-msg" id="rg-city-err">⚠ Please enter your city or state</span>
+    </div>
+    <div class="fg"><label>Ethnic Background</label><select><option value="">Select (optional)</option><option>Arab</option><option>South Asian</option><option>Southeast Asian</option><option>African</option><option>African-American</option><option>Persian / Iranian</option><option>Turkish</option><option>White Muslim</option><option>Mixed / Other</option></select></div>
+    <div class="fg" style="position:relative;">
+      <label>Nationality <span class="req-star">*</span></label>
+      <input id="rg-nat" type="text" placeholder="e.g. British, American" oninput="liveValidate(this,'rg-nat-err','Please enter your nationality')" onblur="liveValidate(this,'rg-nat-err','Please enter your nationality')"/>
+      <span class="field-ok-icon" id="rg-nat-ok">✓</span>
+      <span class="ferr-msg" id="rg-nat-err">⚠ Please enter your nationality</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Languages Spoken <span class="req-star">*</span></label>
+      <input id="rg-lang" type="text" placeholder="e.g. English, Arabic, Urdu" oninput="liveValidate(this,'rg-lang-err','Please enter languages')" onblur="liveValidate(this,'rg-lang-err','Please enter languages')"/>
+      <span class="field-ok-icon" id="rg-lang-ok">✓</span>
+      <span class="ferr-msg" id="rg-lang-err">⚠ Please enter at least one language</span>
+    </div>
+    <div class="fg"><label>Willing to Relocate?</label><select><option>Yes, anywhere</option><option>Within same country</option><option>No</option><option>Open to discussion</option></select></div>
+    <button class="btn bp bfull" onclick="reg3Next()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════ S9: REG STEP 4 — PHOTOS ══════════════ -->
+<div class="scr" id="s-reg4" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg3')">&#8592;</button><h2>Profile Photos</h2></div>
+  <div class="sbar"><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd act"></div><div class="sd"></div><div class="sd"></div></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <p style="font-size:.74rem;color:var(--txt3);margin-bottom:6px;font-weight:700;">Step 4 of 6 — Upload 3 Photos (Required)</p>
+    <p style="font-size:.79rem;color:var(--txt2);margin-bottom:14px;line-height:1.6;">Your main photo must show your face clearly — <strong>crystal clear</strong>.</p>
+    <div class="pgrid">
+      <div class="pslot" id="ps0" onclick="photoTap(0)"><span style="font-size:1.8rem;">📷</span><span class="plbl">Main (req)</span><span class="rdot"></span></div>
+      <div class="pslot" id="ps1" onclick="photoTap(1)"><span style="font-size:1.8rem;">📷</span><span class="plbl">2nd (req)</span><span class="rdot"></span></div>
+      <div class="pslot" id="ps2" onclick="photoTap(2)"><span style="font-size:1.8rem;">📷</span><span class="plbl">3rd (req)</span><span class="rdot"></span></div>
+    </div>
+    <p style="font-size:.75rem;color:var(--txt3);text-align:center;margin-bottom:12px;" id="pctr">0/3 uploaded</p>
+    <div style="background:#dff2f2;border-radius:var(--rs);padding:10px 12px;font-size:.77rem;color:var(--teal4);margin-bottom:14px;line-height:1.7;">
+      ✅ Clear face photo required · ✅ Well-lit · 🚫 No screenshots of other apps
+    </div>
+    <button class="btn bp bfull" onclick="checkPhotos()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════ S10: REG STEP 5 — BIO ══════════════ -->
+<div class="scr" id="s-reg5" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg4')">&#8592;</button><h2>Bio & Interests</h2></div>
+  <div class="sbar"><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd act"></div><div class="sd"></div></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <p style="font-size:.74rem;color:var(--txt3);margin-bottom:4px;font-weight:700;">Step 5 of 6 — Your Story</p>
+    <p style="font-size:.73rem;color:var(--red2);margin-bottom:13px;display:flex;align-items:center;gap:4px;"><span>*</span> Required fields</p>
+    <div class="fg" style="position:relative;">
+      <label>About Me <span class="req-star">*</span></label>
+      <textarea id="rg-bio" placeholder="Share your personality, values, faith, and what you seek in a spouse..." oninput="liveValidateTA(this,'rg-bio-err')" onblur="liveValidateTA(this,'rg-bio-err')"></textarea>
+      <span class="ferr-msg" id="rg-bio-err">⚠ Please write at least 30 characters about yourself</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Occupation <span class="req-star">*</span></label>
+      <input id="rg-occ" type="text" placeholder="e.g. Doctor, Engineer, Teacher" oninput="liveValidate(this,'rg-occ-err','Please enter your occupation')" onblur="liveValidate(this,'rg-occ-err','Please enter your occupation')"/>
+      <span class="field-ok-icon" id="rg-occ-ok">✓</span>
+      <span class="ferr-msg" id="rg-occ-err">⚠ Please enter your occupation</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Interests & Hobbies <span class="req-star">*</span></label>
+      <input id="rg-hobbies" type="text" placeholder="e.g. Quran, travel, cooking" oninput="liveValidate(this,'rg-hobbies-err','Please enter your interests')" onblur="liveValidate(this,'rg-hobbies-err','Please enter your interests')"/>
+      <span class="field-ok-icon" id="rg-hobbies-ok">✓</span>
+      <span class="ferr-msg" id="rg-hobbies-err">⚠ Please enter at least one interest or hobby</span>
+    </div>
+    <div class="fg"><label>Looking For</label><select><option>A serious nikkah</option><option>Marriage with family involvement</option><option>Wali-chaperoned communication</option></select></div>
+    <div class="fg"><label>Wali / Guardian</label><select><option>Yes, father available</option><option>Yes, brother / uncle</option><option>Other guardian</option><option>Not applicable</option></select></div>
+    <button class="btn bp bfull" onclick="reg5Next()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════ S11: REG STEP 6 — PASSWORD ══════════════ -->
+<div class="scr" id="s-reg6" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg5')">&#8592;</button><h2>Secure Account</h2></div>
+  <div class="sbar"><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd act"></div></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <p style="font-size:.74rem;color:var(--txt3);margin-bottom:4px;font-weight:700;">Step 6 of 6 — Password & Terms</p>
+    <p style="font-size:.73rem;color:var(--red2);margin-bottom:13px;display:flex;align-items:center;gap:4px;"><span>*</span> Required fields</p>
+    <div class="fg" style="position:relative;">
+      <label>Create Password <span class="req-star">*</span></label>
+      <input id="rg-pw" type="password" placeholder="Min 8 characters" oninput="liveValidatePW()" onblur="liveValidatePW()"/>
+      <span class="field-ok-icon" id="rg-pw-ok">✓</span>
+      <span class="ferr-msg" id="rg-pw-err">⚠ Password must be at least 8 characters</span>
+    </div>
+    <div class="fg" style="position:relative;">
+      <label>Confirm Password <span class="req-star">*</span></label>
+      <input id="rg-pw2" type="password" placeholder="Re-enter password" oninput="liveValidatePW2()" onblur="liveValidatePW2()"/>
+      <span class="field-ok-icon" id="rg-pw2-ok">✓</span>
+      <span class="ferr-msg" id="rg-pw2-err">⚠ Passwords do not match</span>
+    </div>
+    <div style="background:var(--white);border:1.5px solid var(--sand);border-radius:var(--rs);padding:12px;margin-bottom:13px;">
+      <p style="font-weight:800;font-size:.83rem;margin-bottom:7px;">Community Guidelines</p>
+      <p style="font-size:.76rem;color:var(--txt3);line-height:1.7;">• All interactions must be halal & respectful<br>• No phone numbers or live photos in chat<br>• No screenshots of conversations<br>• Wali / guardian involvement encouraged<br>• Misrepresentation = permanent ban<br>• Calls require Premium ($10/wk, credit card only)</p>
+    </div>
+    <div id="terms-wrap" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;padding:11px 12px;border-radius:var(--rs);border:2px solid var(--sand);background:var(--white);transition:border-color .2s,background .2s;">
+      <input type="checkbox" id="rg-terms" style="width:20px;height:20px;margin-top:1px;accent-color:var(--teal);flex-shrink:0;" onchange="onTermsChange()"/>
+      <label for="rg-terms" style="font-size:.79rem;color:var(--txt2);line-height:1.5;cursor:pointer;">I agree to the <a href="#" style="color:var(--teal);">Terms of Service</a>, <a href="#" style="color:var(--teal);">Privacy Policy</a>, and Community Guidelines.</label>
+    </div>
+    <span class="ferr-msg" id="rg-terms-err" style="margin-bottom:12px;">⚠ You must accept the Terms & Conditions to create an account</span>
+    <div style="height:10px;"></div>
+    <button class="btn bp bfull" onclick="completeReg()">Create My Account 🎉</button>
+  </div>
+</div>
+
+<!-- ══════════════ S12: IDV STEP 1 ══════════════ -->
+<div class="scr" id="s-idv1" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg6')">&#8592;</button><h2>ID Verification</h2></div>
+  <div style="display:flex;gap:5px;padding:11px 18px 0;background:var(--teal);flex-shrink:0;">
+    <div class="sd act"></div><div class="sd"></div><div class="sd"></div>
+  </div>
+  <div class="scroll" style="padding:18px 18px 26px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:3rem;margin-bottom:7px;">🛡️</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--teal4);margin-bottom:5px;">Get Verified Badge</h3>
+      <p style="font-size:.81rem;color:var(--txt3);line-height:1.6;">Earn a ✓ badge. Choose your ID type:</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px;">
+      <div onclick="selectID(this)" class="idopt" style="background:var(--white);border:2px solid var(--sand);border-radius:var(--rs);padding:13px 14px;cursor:pointer;display:flex;align-items:center;gap:11px;transition:border-color .18s;">
+        <span style="font-size:1.4rem;">🪪</span><div><p style="font-weight:800;font-size:.87rem;">National / Government ID</p><p style="font-size:.73rem;color:var(--txt3);">National identity card</p></div>
+      </div>
+      <div onclick="selectID(this)" class="idopt" style="background:var(--white);border:2px solid var(--sand);border-radius:var(--rs);padding:13px 14px;cursor:pointer;display:flex;align-items:center;gap:11px;transition:border-color .18s;">
+        <span style="font-size:1.4rem;">🛂</span><div><p style="font-weight:800;font-size:.87rem;">Passport</p><p style="font-size:.73rem;color:var(--txt3);">Any valid international passport</p></div>
+      </div>
+      <div onclick="selectID(this)" class="idopt" style="background:var(--white);border:2px solid var(--sand);border-radius:var(--rs);padding:13px 14px;cursor:pointer;display:flex;align-items:center;gap:11px;transition:border-color .18s;">
+        <span style="font-size:1.4rem;">🚗</span><div><p style="font-weight:800;font-size:.87rem;">Driver's License</p><p style="font-size:.73rem;color:var(--txt3);">Valid driver's license with photo</p></div>
+      </div>
+    </div>
+    <button class="btn bp bfull" onclick="G('s-idv2')" style="margin-bottom:9px;">Continue →</button>
+    <button class="btn bgh bfull" onclick="G('s-discover')">Skip for now</button>
+  </div>
+</div>
+
+<!-- ══════════════ S13: IDV STEP 2 — UPLOAD ══════════════ -->
+<div class="scr" id="s-idv2" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-idv1')">&#8592;</button><h2>Upload Document</h2></div>
+  <div style="display:flex;gap:5px;padding:11px 18px 0;background:var(--teal);flex-shrink:0;">
+    <div class="sd done"></div><div class="sd act"></div><div class="sd"></div>
+  </div>
+  <div class="scroll" style="padding:18px 18px 26px;">
+    <p style="font-size:.82rem;color:var(--txt3);text-align:center;margin-bottom:18px;line-height:1.6;">Clear, well-lit photo of your ID — all text must be readable.</p>
+    <div id="idFront" onclick="tapUpload(this,'Front Uploaded ✅')" style="border:2px dashed var(--teal2);border-radius:var(--r);padding:34px 18px;text-align:center;background:var(--white);cursor:pointer;margin-bottom:11px;transition:all .2s;">
+      <div style="font-size:2.8rem;margin-bottom:7px;">📄</div>
+      <p style="font-weight:800;color:var(--teal);margin-bottom:3px;">Tap to Upload Front of ID</p>
+      <p style="font-size:.74rem;color:var(--txt3);">JPG, PNG or PDF · Max 10MB</p>
+    </div>
+    <div id="idBack" onclick="tapUpload(this,'Back Uploaded ✅')" style="border:2px dashed var(--sand2);border-radius:var(--r);padding:34px 18px;text-align:center;background:var(--white);cursor:pointer;margin-bottom:15px;transition:all .2s;">
+      <div style="font-size:2.8rem;margin-bottom:7px;">📋</div>
+      <p style="font-weight:600;color:var(--txt2);margin-bottom:3px;">Tap to Upload Back (optional)</p>
+      <p style="font-size:.74rem;color:var(--txt3);">Required for national ID cards</p>
+    </div>
+    <div style="background:#fdf9f0;border:1px solid rgba(201,150,58,.25);border-radius:var(--rs);padding:10px 12px;margin-bottom:16px;font-size:.76rem;color:var(--gold3);line-height:1.6;">
+      🔐 Encrypted · Never shown to other users · Deleted after verification
+    </div>
+    <button class="btn bp bfull" onclick="G('s-idv3')">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════ S14: IDV STEP 3 — SELFIE ══════════════ -->
+<div class="scr" id="s-idv3" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-idv2')">&#8592;</button><h2>Selfie Verification</h2></div>
+  <div style="display:flex;gap:5px;padding:11px 18px 0;background:var(--teal);flex-shrink:0;">
+    <div class="sd done"></div><div class="sd done"></div><div class="sd act"></div>
+  </div>
+  <div class="scroll" style="padding:18px 18px 26px;">
+    <p style="font-size:.81rem;color:var(--txt3);text-align:center;margin-bottom:18px;line-height:1.6;">Take a clear selfie to match your face to your ID.</p>
+    <div class="sring" style="margin-bottom:16px;"><span>🤳</span></div>
+    <div style="text-align:center;margin-bottom:18px;">
+      <button class="btn bg" id="selfiebtn" onclick="takeSelfie()">📸 Take Selfie</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+      <div style="font-size:.79rem;color:var(--txt2);display:flex;align-items:center;gap:8px;"><span style="color:var(--teal);">✓</span>Face clearly visible, well-lit</div>
+      <div style="font-size:.79rem;color:var(--txt2);display:flex;align-items:center;gap:8px;"><span style="color:var(--teal);">✓</span>Look directly at the camera</div>
+      <div style="font-size:.79rem;color:var(--txt2);display:flex;align-items:center;gap:8px;"><span style="color:var(--teal);">✓</span>Sisters may use their own judgment</div>
+    </div>
+    <button class="btn bp bfull" onclick="M('s-idv3','m-idv-done')">Submit for Review →</button>
+  </div>
+  <div class="mov" id="m-idv-done">
+    <div class="msh" style="text-align:center;">
+      <div class="mh"></div>
+      <div style="font-size:3.5rem;margin-bottom:9px;">✅</div>
+      <p class="mt">Submitted for Review</p>
+      <p style="font-size:.83rem;color:var(--txt3);margin-bottom:15px;line-height:1.6;">Your ID & selfie submitted. Review within 24–48 hours. You'll be notified by email once approved.</p>
+      <span class="bdg bb" style="margin-bottom:16px;display:inline-block;">⏳ Pending Verification</span><br>
+      <button class="btn bp bfull" onclick="MC('m-idv-done');G('s-discover')">Start Exploring →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ S15: DISCOVER ══════════════ -->
+<div class="scr" id="s-discover" style="background:var(--cream2);">
+  <div style="background:var(--teal);padding:50px 16px 13px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
+    <svg width="40" height="27"><use href="#logo"/></svg>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:#fff;flex:1;letter-spacing:.03em;">Halal-MeetUp</h2>
+    <button class="ibtn" onclick="G('s-search')">🔍</button>
+    <button class="ibtn">🔔</button>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px 14px;position:relative;">
+    <div class="scard" id="swipeCard" style="width:100%;max-height:490px;">
+      <div style="height:318px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;position:relative;">
+        <svg width="170" height="115"><use href="#logo"/></svg>
+        <div class="sov" id="ov-like">LIKE 💚</div>
+        <div class="sov" id="ov-nope">NOPE ✕</div>
+        <div class="sov" id="ov-super">SUPER ⭐</div>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.72));padding:13px 15px;">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+            <div>
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
+                <p id="cName" style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#fff;font-weight:700;">Fatima Al-Rashidi</p>
+                <span style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
+              </div>
+              <p id="cSub" style="color:rgba(255,255,255,.82);font-size:.79rem;">26 · London, UK · Sunni Hanafi</p>
+            </div>
+            <div style="width:9px;height:9px;background:#2ecc71;border-radius:50%;border:2px solid rgba(255,255,255,.5);margin-bottom:3px;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:12px 14px 13px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;">
+          <span class="bdg bt">Practising</span><span class="bdg bgo">Never Married</span><span class="bdg bb">Master's</span>
+        </div>
+        <p id="cBio" style="font-size:.81rem;color:var(--txt2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Alhamdulillah — a school teacher who loves Quran recitation, Moroccan cuisine, and long walks with family.</p>
+      </div>
+    </div>
+    <p id="swipehint" style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-size:.69rem;color:var(--txt3);white-space:nowrap;pointer-events:none;">← pass  ·  like →  ·  ⭐ super</p>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:13px;padding:6px 18px 8px;flex-shrink:0;">
+    <button onclick="doSwipe('left')" style="width:54px;height:54px;border-radius:50%;background:#fff;border:2px solid #f0d0ce;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 14px rgba(184,48,48,.16);display:flex;align-items:center;justify-content:center;">✕</button>
+    <button onclick="doSwipe('super')" style="width:43px;height:43px;border-radius:50%;background:#fff;border:2px solid #d0e8f4;font-size:1.15rem;cursor:pointer;box-shadow:0 3px 12px rgba(30,96,144,.14);display:flex;align-items:center;justify-content:center;">⭐</button>
+    <button onclick="doSwipe('right')" style="width:54px;height:54px;border-radius:50%;background:#fff;border:2px solid #c0e8d0;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 14px rgba(13,115,119,.16);display:flex;align-items:center;justify-content:center;">💚</button>
+    <button onclick="G('s-viewprofile')" style="width:43px;height:43px;border-radius:50%;background:#fff;border:2px solid var(--sand);font-size:1.05rem;cursor:pointer;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;">👤</button>
+  </div>
+  <nav class="bnav">
+    <button class="nb on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Discover</button>
+    <button class="nb" onclick="G('s-search')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
+    <button class="nb" onclick="G('s-matches')" style="position:relative;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Matches<span style="position:absolute;top:1px;right:12px;width:7px;height:7px;background:var(--red);border-radius:50%;"></span></button>
+    <button class="nb" onclick="G('s-myprofile')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</button>
+  </nav>
+</div>
+
+<!-- ══════════════ S16: SEARCH ══════════════ -->
+<div class="scr" id="s-search" style="background:var(--cream2);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-discover')">&#8592;</button><h2>Search & Filter</h2></div>
+  <div class="scroll" style="padding:13px 15px 18px;">
+    <div style="background:#fff;border-radius:50px;padding:9px 15px;display:flex;align-items:center;gap:9px;margin-bottom:13px;box-shadow:var(--sh);">
+      <span style="color:var(--txt3);">🔍</span>
+      <input type="text" id="srq" placeholder="Search by name..." style="flex:1;border:none;outline:none;font-family:'Nunito',sans-serif;font-size:.87rem;background:none;"/>
+    </div>
+    <div class="card" style="margin-bottom:11px;">
+      <p style="font-size:.71rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:11px;">Filters</p>
+      <div class="fg"><label>Looking For</label><select id="sf-g"><option value="">Any</option><option value="Sister">Sisters</option><option value="Brother">Brothers</option></select></div>
+      <div class="fg"><label>Country</label><select id="sf-c"><option value="">Any</option><option value="UK">UK</option><option value="US">US</option><option value="CA">Canada</option><option value="PK">Pakistan</option><option value="UAE">UAE</option></select></div>
+      <div class="fg"><label>Islamic Sect</label><select id="sf-s"><option value="">Any</option><option value="Sunni Hanafi">Sunni — Hanafi</option><option value="Sunni Maliki">Sunni — Maliki</option><option value="Sunni Shafi'i">Sunni — Shafi'i</option><option value="Shia Twelver">Shia — Twelver</option></select></div>
+      <div class="fg"><label>Marital Status</label><select id="sf-ms"><option value="">Any</option><option value="Never Married">Never Married</option><option value="Divorced">Divorced</option><option value="Widowed">Widowed</option></select></div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:.71rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px;">Age Range: <span id="agelbl">22–38</span></label>
+        <input type="range" min="18" max="60" value="22" style="width:48%;accent-color:var(--teal);" oninput="document.getElementById('agelbl').textContent=this.value+'–'+document.getElementById('agemax').value"/>
+        <input type="range" min="18" max="60" value="38" id="agemax" style="width:48%;accent-color:var(--teal);float:right;" oninput="document.getElementById('agelbl').textContent=document.querySelector('#sf-g').closest('.scroll').querySelectorAll('[type=range]')[0].value+'–'+this.value"/>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;">
+        <label style="font-size:.84rem;font-weight:700;color:var(--txt2);">Verified only</label>
+        <label class="tog"><input type="checkbox" id="sf-v"/><span class="togsl"></span></label>
+      </div>
+    </div>
+    <button class="btn bp bfull" onclick="runSearch()" style="margin-bottom:11px;">Search Profiles</button>
+    <div id="srResults" style="display:none;">
+      <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;" id="srCount">0 profiles</p>
+      <div id="srList"></div>
+    </div>
+  </div>
+  <nav class="bnav">
+    <button class="nb" onclick="G('s-discover')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Discover</button>
+    <button class="nb on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
+    <button class="nb" onclick="G('s-matches')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Matches</button>
+    <button class="nb" onclick="G('s-myprofile')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</button>
+  </nav>
+</div>
+
+<!-- ══════════════ S17: MATCHES ══════════════ -->
+<div class="scr" id="s-matches" style="background:var(--cream2);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-discover')" title="Back to Discover">&#8592;</button><h2>Matches &amp; Messages</h2><button class="ibtn" onclick="openCallLogs()" title="Call history">📋</button><button class="ibtn" onclick="toggleSelectMode()" id="btn-select" title="Select messages">☑️</button></div>
+  <div class="scroll" style="padding:11px 13px 16px;">
+    <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;">New Matches</p>
+    <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:11px;margin-bottom:16px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(0)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));border:2.5px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Fatima</p></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(1)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#a084ca,#c0a0e0);border:2.5px solid var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Aisha</p></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(2)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#d4a574,#b08050);border:2.5px solid var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Zainab</p></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(3)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#5a9ad0,#2e6aaa);border:2.5px solid var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Mariam</p></div>
+    </div>
+    <div class="matches-action-bar" id="matchesActionBar">
+      <button class="mab-del" onclick="promptDeleteAll()">🗑️ Delete All Chats</button>
+      <button class="mab-sel" onclick="toggleSelectMode()" id="selModeBtn">☑️ Select</button>
+    </div>
+    <div id="selectActionsBar" style="display:none;background:var(--cream2);border-radius:var(--rs);padding:8px 12px;margin-bottom:8px;display:none;flex-direction:row;align-items:center;justify-content:space-between;">
+      <span id="selCount" style="font-size:.82rem;font-weight:700;color:var(--txt2);">0 selected</span>
+      <button onclick="deleteSelected()" style="background:var(--red2);color:#fff;border:none;padding:6px 14px;border-radius:50px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">Delete Selected</button>
+    </div>
+    <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Messages</p>
+    <div id="convList"></div>
+  </div>
+    <!-- Confirm delete modal -->
+  <div class="mov" id="m-confirm-del">
+    <div class="msh" style="text-align:center;">
+      <div class="mh"></div>
+      <div style="font-size:2.8rem;margin-bottom:9px;">🗑️</div>
+      <p class="mt">Delete Chats?</p>
+      <p style="font-size:.83rem;color:var(--txt3);margin-bottom:16px;line-height:1.6;" id="confirmDelMsg">This will permanently delete the selected messages. This cannot be undone.</p>
+      <button class="btn bred bfull" onclick="confirmDeleteChats()" style="margin-bottom:9px;">Yes, Delete</button>
+      <button class="btn bgh bfull" onclick="MC('m-confirm-del')">Cancel</button>
+    </div>
+  </div>
+<nav class="bnav">
+    <button class="nb" onclick="G('s-discover')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Discover</button>
+    <button class="nb" onclick="G('s-search')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
+    <button class="nb on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Matches</button>
+    <button class="nb" onclick="G('s-myprofile')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</button>
+  </nav>
+</div>
+
+<!-- ══════════════ S18: CHAT ══════════════ -->
+<div class="scr" id="s-chat" style="background:var(--cream2);">
+  <div style="background:var(--teal);padding:48px 14px 11px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
+    <button class="ibtn back-ibtn" onclick="G('s-matches')">&#8592;</button>
+    <div onclick="G('s-viewprofile')" style="cursor:pointer;display:flex;align-items:center;gap:9px;flex:1;">
+      <div style="position:relative;width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;">👤<div class="odot"></div></div>
+      <div><p style="color:#fff;font-weight:800;font-size:.9rem;" id="chat-name">Fatima Al-Rashidi <span id="chat-v" style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span></p><p style="color:rgba(255,255,255,.62);font-size:.69rem;" id="chat-status">Online now</p></div>
+    </div>
+    <button class="ibtn" onclick="startCall('audio')" title="Voice call">📞</button>
+    <button class="ibtn" onclick="startCall('video')" title="Video call">🎥</button>
+    <button class="ibtn" onclick="openLudoInvite()" title="Play Ludo 🎲" style="font-size:.85rem;">🎲</button>
+    <button class="ibtn" onclick="M('s-chat','m-block')" title="Block user">🚫</button>
+    <button class="ibtn" onclick="M('s-chat','m-report')" title="Report">🚩</button>
+  </div>
+  <div id="blocked-notice" class="blocked-notice" style="display:none;">
+    🚫 You have blocked this user. They can no longer send you messages.
+    <button onclick="unblockUser()" style="background:none;border:none;color:var(--red2);font-weight:800;cursor:pointer;font-size:.82rem;text-decoration:underline;margin-left:6px;">Unblock</button>
+  </div>
+  <div class="ssnotice">🔒 Screenshots disabled in this conversation</div>
+  <div style="display:flex;justify-content:flex-end;padding:4px 13px 0;flex-shrink:0;">
+    <button onclick="deleteChatMessages()" style="background:none;border:none;font-size:.72rem;font-weight:800;color:var(--red2);cursor:pointer;font-family:'Nunito',sans-serif;padding:3px 6px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='#fce8e8'" onmouseout="this.style.background='none'">🗑️ Delete all messages</button>
+  </div>
+  <div class="scroll" id="chatMsgs" style="padding:11px 13px 7px;display:flex;flex-direction:column;gap:0;"></div>
+  <div class="cbar">
+    <textarea id="chatInp" class="cinp" placeholder="Type a message..." rows="1"></textarea>
+    <button class="sbtn" onclick="sendMsg()">➤</button>
+  </div>
+  <!-- Report modal -->
+  <div class="mov" id="m-report">
+    <div class="msh">
+      <div class="mh"></div>
+      <p class="mt">🚩 Report User</p>
+      <p style="font-size:.81rem;color:var(--txt3);margin-bottom:13px;">Help keep our community safe. All reports reviewed within 24 hours.</p>
+      <div class="fg"><label>Reason *</label>
+        <select id="rep-reason">
+          <option value="">Select a reason</option>
+          <option>Inappropriate / offensive messages</option>
+          <option>Sharing phone numbers</option>
+          <option>Fake or misleading profile</option>
+          <option>Harassment or threatening behaviour</option>
+          <option>Explicit or inappropriate photos</option>
+          <option>Spam or scam</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Details *</label><textarea id="rep-details" placeholder="Describe what happened (min 10 characters)..."></textarea></div>
+      <button class="btn bred bfull" onclick="submitReport()" style="margin-bottom:9px;">Submit Report</button>
+      <button class="btn bgh bfull" onclick="MC('m-report')">Cancel</button>
+    </div>
+  </div>
+  <!-- Block user modal -->
+  <div class="mov" id="m-block">
+    <div class="msh" style="text-align:center;">
+      <div class="mh"></div>
+      <div style="font-size:2.8rem;margin-bottom:9px;">🚫</div>
+      <p class="mt">Block User</p>
+      <p style="font-size:.83rem;color:var(--txt3);margin-bottom:18px;line-height:1.6;">Blocking will prevent this person from messaging you or seeing your profile. They won't be notified.</p>
+      <div style="background:var(--cream2);border-radius:var(--rs);padding:12px;margin-bottom:16px;text-align:left;">
+        <p style="font-size:.8rem;color:var(--txt2);margin-bottom:5px;">✓ They can no longer message you</p>
+        <p style="font-size:.8rem;color:var(--txt2);margin-bottom:5px;">✓ They cannot see your profile</p>
+        <p style="font-size:.8rem;color:var(--txt2);">✓ Your match will be removed</p>
+      </div>
+      <button class="btn bred bfull" onclick="blockUser()" style="margin-bottom:9px;">Block This Person</button>
+      <button class="btn bgh bfull" onclick="MC('m-block')">Cancel</button>
+    </div>
+  </div>
+  <!-- Subscription modal -->
+  <div class="mov" id="m-sub">
+    <div class="msh">
+      <div class="mh"></div>
+      <div style="text-align:center;margin-bottom:15px;">
+        <div style="font-size:2.8rem;margin-bottom:7px;">👑</div>
+        <p class="mt">Premium Required</p>
+        <p style="font-size:.81rem;color:var(--txt3);line-height:1.5;">Audio & video calls + live photos require Premium.</p>
+      </div>
+      <div class="subcrd" style="margin-bottom:15px;">
+        <p style="font-size:1.8rem;font-weight:800;color:var(--teal);">$10<span style="font-size:.95rem;font-weight:600;color:var(--txt3);">/week</span></p>
+        <p style="font-size:.77rem;color:var(--txt3);margin-bottom:11px;">Credit card only · Cancel anytime</p>
+        <div style="text-align:left;display:flex;flex-direction:column;gap:4px;">
+          <p style="font-size:.79rem;color:var(--txt2);">✅ Unlimited audio & video calls</p>
+          <p style="font-size:.79rem;color:var(--txt2);">✅ Share live photos securely</p>
+          <p style="font-size:.79rem;color:var(--txt2);">✅ See who liked you</p>
+          <p style="font-size:.79rem;color:var(--txt2);">✅ Priority in search</p>
+          <p style="font-size:.79rem;color:var(--txt2);">✅ Read receipts</p>
+        </div>
+      </div>
+      <div class="fg"><label>Card Number</label><input id="cc-num" type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)"/></div>
+      <div class="frow">
+        <div class="fg"><label>Expiry</label><input id="cc-exp" type="text" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)"/></div>
+        <div class="fg"><label>CVV</label><input id="cc-cvv" type="text" placeholder="123" maxlength="4"/></div>
+      </div>
+      <div class="fg"><label>Name on Card</label><input id="cc-name" type="text" placeholder="As it appears on card"/></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:13px;font-size:.73rem;color:var(--txt3);">🔒 256-bit SSL encrypted</div>
+      <button class="btn bg bfull" onclick="processPayment()" style="margin-bottom:9px;">Subscribe · $10/week</button>
+      <button class="btn bgh bfull" onclick="MC('m-sub')">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Ludo Invite Modal -->
+  <div class="mov" id="m-ludo-invite">
+    <div class="msh">
+      <div class="mh"></div>
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:3rem;margin-bottom:8px;">🎲</div>
+        <p class="mt">Invite to Play Ludo!</p>
+        <p style="font-size:.82rem;color:var(--txt3);line-height:1.6;margin-bottom:0;">Challenge your match to a game of Ludo with live audio &amp; video!</p>
+      </div>
+      <div style="background:var(--cream2);border-radius:var(--rs);padding:13px;margin-bottom:14px;">
+        <p style="font-size:.8rem;font-weight:800;color:var(--txt2);margin-bottom:7px;">📋 How it works</p>
+        <p style="font-size:.78rem;color:var(--txt3);line-height:1.7;">🎲 Play a classic Ludo board game together<br>🎙️ Audio &amp; video stay on during the game<br>👑 Host must have an active Premium subscription<br>📲 Your match can join for free as a guest</p>
+      </div>
+      <div id="ludoSubCheck" style="background:#fdf0dc;border-radius:var(--rs);padding:11px 13px;margin-bottom:14px;display:none;">
+        <p style="font-size:.8rem;color:var(--gold3);font-weight:700;">⚠️ Premium Required to host Ludo</p>
+        <p style="font-size:.76rem;color:var(--txt3);margin-top:3px;">Only the person who sends the invite needs a subscription. Subscribe for $10/week.</p>
+      </div>
+      <button class="btn bp bfull" id="ludoStartBtn" onclick="startLudo()" style="margin-bottom:9px;">🎲 Send Ludo Invite</button>
+      <button class="btn bgh bfull" onclick="MC('m-ludo-invite')">Maybe Later</button>
+    </div>
+  </div>
+  <!-- Chat delete-all confirm modal (stays on chat screen) -->
+  <div class="mov" id="m-chat-confirm-del">
+    <div class="msh" style="text-align:center;">
+      <div class="mh"></div>
+      <div style="font-size:2.5rem;margin-bottom:9px;">🗑️</div>
+      <p class="mt">Delete All Messages?</p>
+      <p style="font-size:.83rem;color:var(--txt3);margin-bottom:16px;line-height:1.6;">
+        All messages in this conversation will be permanently deleted. You can still send new messages after.
+      </p>
+      <button class="btn bred bfull" onclick="confirmDeleteChatMessages()" style="margin-bottom:9px;">Yes, Delete All</button>
+      <button class="btn bgh bfull" onclick="MC('m-chat-confirm-del')">Cancel</button>
+    </div>
+  </div>
+
+<!-- ══════════════ S19: VIEW PROFILE ══════════════ -->
+<div class="scr" id="s-viewprofile" style="background:var(--cream);">
+  <div style="position:relative;">
+    <div style="height:285px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;">
+      <svg width="180" height="122"><use href="#logo"/></svg>
+      <button onclick="G('s-discover')" style="position:absolute;top:52px;left:14px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.7);color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;">&#8592;</button>
+      <button onclick="G('s-chat')" style="position:absolute;top:52px;right:14px;background:var(--teal);border:none;color:#fff;border-radius:50px;padding:7px 13px;font-size:.79rem;font-weight:800;cursor:pointer;">💬 Message</button>
+    </div>
+    <div style="background:#fff;margin:-20px 13px 0;border-radius:var(--r);padding:15px;box-shadow:var(--sh);position:relative;z-index:10;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;" id="vp-name">Fatima Al-Rashidi</h2>
+            <span class="bdg bb">✓ Verified</span>
+          </div>
+          <p style="color:var(--txt3);font-size:.8rem;" id="vp-sub">26 · London, UK · Sunni Hanafi</p>
+        </div>
+        <div><div style="width:9px;height:9px;background:#2ecc71;border-radius:50%;border:2px solid var(--sand);margin-left:auto;"></div><p style="font-size:.67rem;color:var(--txt3);margin-top:2px;">Online</p></div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <span class="bdg bt">Practising</span><span class="bdg bgo">Never Married</span><span class="bdg bgn">Master's</span>
+      </div>
+    </div>
+  </div>
+  <div class="scroll" style="padding:11px 13px 26px;">
+    <div class="card" style="margin-bottom:9px;">
+      <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;">About Me</p>
+      <p id="vp-bio" style="font-size:.83rem;color:var(--txt2);line-height:1.7;">Alhamdulillah, I'm a secondary school teacher with a passion for Islamic history. I love spending time with family, cooking traditional Moroccan food, and making dhikr. Looking for a kind, God-fearing brother serious about building a halal home.</p>
+    </div>
+    <div class="card" style="margin-bottom:9px;">
+      <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Details</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+        <div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">Height</p><p style="font-size:.83rem;font-weight:700;">5'5"</p></div>
+        <div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">Ethnicity</p><p style="font-size:.83rem;font-weight:700;">Moroccan / Arab</p></div>
+        <div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">Occupation</p><p style="font-size:.83rem;font-weight:700;">Teacher</p></div>
+        <div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">Relocate?</p><p style="font-size:.83rem;font-weight:700;">Open to discuss</p></div>
+        <div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">Languages</p><p style="font-size:.83rem;font-weight:700;">English, Arabic</p></div>
+        <div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">Wali</p><p style="font-size:.83rem;font-weight:700;color:var(--teal);">Yes ✓</p></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:11px;">
+      <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;">Interests</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">📖 Quran</span>
+        <span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">✈️ Travel</span>
+        <span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">🍳 Cooking</span>
+        <span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">📚 Reading</span>
+        <span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">🕌 History</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn bp" style="flex:1;" onclick="openChat(0)">💬 Message</button>
+      <button class="btn bo" onclick="startCall('audio')">📞</button>
+      <button class="btn bo" onclick="startCall('video')">🎥</button>
+      <button class="btn" style="background:#fff;border:1.5px solid var(--sand);color:var(--red);padding:12px;" onclick="M('s-chat','m-report')">🚩</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ S20: MY PROFILE ══════════════ -->
+<div class="scr" id="s-myprofile" style="background:var(--cream2);">
+  <div style="background:var(--teal);padding:50px 16px 13px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
+    <button class="ibtn back-ibtn" onclick="G('s-discover')" title="Back">&#8592;</button>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:#fff;flex:1;">My Profile</h2>
+    <button class="ibtn" onclick="loadEdit();G('s-editprofile')" title="Edit">✏️</button>
+    <button class="ibtn" onclick="M('s-myprofile','m-settings')" title="Settings">⚙️</button>
+  </div>
+  <div class="scroll" style="padding-bottom:18px;">
+    <div style="background:var(--teal);padding:0 16px 22px;text-align:center;">
+      <div style="width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin:0 auto 9px;border:3px solid rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:2.4rem;cursor:pointer;" onclick="loadEdit();G('s-editprofile')">👤</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px;">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:#fff;" id="mp-name">Ahmed Abdullah</h3>
+        <span style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
+      </div>
+      <p style="color:rgba(255,255,255,.65);font-size:.79rem;margin-bottom:13px;" id="mp-sub">28 · Manchester, UK · Sunni Hanafi</p>
+      <div style="display:flex;justify-content:center;gap:22px;">
+        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">12</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Matches</p></div>
+        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">47</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Likes</p></div>
+        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">94%</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Profile</p></div>
+      </div>
+    </div>
+    <div style="padding:13px 15px;">
+      <div class="card" style="margin-bottom:11px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><p style="font-weight:800;font-size:.83rem;">Profile Completion</p><p style="font-weight:800;color:var(--teal);">94%</p></div>
+        <div class="pb"><div class="pf" style="width:94%;"></div></div>
+        <p style="font-size:.72rem;color:var(--txt3);margin-top:4px;">Add a 3rd photo to reach 100%</p>
+      </div>
+      <div class="card" style="margin-bottom:11px;">
+        <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Account</p>
+        <div class="li" onclick="loadEdit();G('s-editprofile')"><div style="display:flex;align-items:center;gap:10px;"><span>✏️</span><p style="font-size:.86rem;font-weight:700;">Edit My Profile</p></div><span style="color:var(--txt3);">›</span></div>
+        <div class="li"><div style="display:flex;align-items:center;gap:10px;"><span>🔔</span><p style="font-size:.86rem;font-weight:700;">Notifications</p></div><span style="color:var(--txt3);">›</span></div>
+        <div class="li"><div style="display:flex;align-items:center;gap:10px;"><span>🔒</span><p style="font-size:.86rem;font-weight:700;">Privacy & Safety</p></div><span style="color:var(--txt3);">›</span></div>
+        <div class="li" onclick="M('s-chat','m-sub')"><div style="display:flex;align-items:center;gap:10px;"><span>👑</span><p style="font-size:.86rem;font-weight:700;">Upgrade to Premium</p></div><span class="bdg bgo">$10/wk</span></div>
+        <div class="li" onclick="G('s-idv1')" style="border-bottom:none;"><div style="display:flex;align-items:center;gap:10px;"><span>🛡️</span><p style="font-size:.86rem;font-weight:700;">ID Verification</p></div><span class="bdg bb">Verified ✓</span></div>
+      </div>
+      <button class="btn bfull" onclick="G('s-splash')" style="background:#fff;color:var(--red);border:1.5px solid var(--red);">Sign Out</button>
+    </div>
+  </div>
+  <nav class="bnav">
+    <button class="nb" onclick="G('s-discover')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Discover</button>
+    <button class="nb" onclick="G('s-search')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
+    <button class="nb" onclick="G('s-matches')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Matches</button>
+    <button class="nb on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</button>
+  </nav>
+  <!-- Settings modal -->
+  <div class="mov" id="m-settings">
+    <div class="msh">
+      <div class="mh"></div>
+      <p class="mt">Settings</p>
+      <div class="li"><p style="font-size:.86rem;font-weight:700;">🌙 Dark Mode</p><label class="tog"><input type="checkbox"/><span class="togsl"></span></label></div>
+      <div class="li"><p style="font-size:.86rem;font-weight:700;">👁️ Visible to everyone</p><label class="tog"><input type="checkbox" checked/><span class="togsl"></span></label></div>
+      <div class="li"><p style="font-size:.86rem;font-weight:700;">📍 Show distance</p><label class="tog"><input type="checkbox" checked/><span class="togsl"></span></label></div>
+      <div class="li"><p style="font-size:.86rem;font-weight:700;">🔕 Quiet hours</p><label class="tog"><input type="checkbox"/><span class="togsl"></span></label></div>
+      <div class="li" style="border-bottom:none;"><p style="font-size:.86rem;font-weight:700;color:var(--red);">🗑️ Delete Account</p><span style="color:var(--txt3);">›</span></div>
+      <button class="btn bp bfull" style="margin-top:14px;" onclick="MC('m-settings')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ S21: EDIT PROFILE ══════════════ -->
+<div class="scr" id="s-editprofile" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn" onclick="G('s-myprofile')">&#8592;</button><h2>Edit Profile</h2><button class="ibtn" onclick="saveProfile()" style="background:var(--gold);border-color:var(--gold);">✓</button></div>
+  <div class="scroll" style="padding:14px 18px 26px;">
+    <div style="margin-bottom:16px;">
+      <p style="font-size:.71rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Profile Photos (tap to change)</p>
+      <div class="pgrid">
+        <div class="pslot filled" id="eps0" onclick="toast('Tap to replace photo',2000)"><span style="font-size:2rem;">🤳</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">Main ✓</span></div>
+        <div class="pslot filled" id="eps1" onclick="toast('Tap to replace photo',2000)"><span style="font-size:2rem;">🖼️</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">2nd ✓</span></div>
+        <div class="pslot" id="eps2" onclick="editPhotoTap()"><span style="font-size:1.8rem;">📷</span><span class="plbl">3rd (req)</span><span class="rdot"></span></div>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>First Name</label><input id="ep-fn" type="text"/></div>
+      <div class="fg"><label>Last Name</label><input id="ep-ln" type="text"/></div>
+    </div>
+    <div class="fg"><label>Occupation</label><input id="ep-occ" type="text"/></div>
+    <div class="fg"><label>City / Location</label><input id="ep-city" type="text"/></div>
+    <div class="fg"><label>About Me</label><textarea id="ep-bio" style="height:95px;"></textarea></div>
+    <div class="fg"><label>Interests</label><input type="text" placeholder="e.g. Quran, Travel, Cooking"/></div>
+    <div class="fg"><label>Islamic Sect</label><select><option>Sunni — Hanafi</option><option>Sunni — Maliki</option><option>Sunni — Shafi'i</option><option>Sunni — Hanbali</option><option>Shia — Twelver</option></select></div>
+    <div class="fg"><label>Deen Practice</label><select><option>Practising — Very religious</option><option>Practising — Moderately</option><option>Cultural Muslim</option><option>Learning / Growing</option></select></div>
+    <button class="btn bp bfull" onclick="saveProfile()">Save Changes ✓</button>
+  </div>
+</div>
+
+<!-- ══════════════ S22: CALL SCREEN ══════════════ -->
+<div class="scr cbg" id="s-call">
+  <!-- Top row: View Profile | Title | Chat — accessible any time during call -->
+  <div style="padding:54px 20px 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+    <button onclick="G('s-viewprofile')" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:11px;padding:7px 12px;font-size:.77rem;font-weight:800;cursor:pointer;backdrop-filter:blur(5px);">👤 Profile</button>
+    <p style="color:rgba(255,255,255,.35);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;">Halal-MeetUp</p>
+    <button onclick="G('s-chat')" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:11px;padding:7px 12px;font-size:.77rem;font-weight:800;cursor:pointer;backdrop-filter:blur(5px);">💬 Chat</button>
+  </div>
+  <!-- Secondary controls (iPhone style: top area) -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;padding:16px 22px 0;flex-shrink:0;">
+    <button class="ccbtn" id="btn-mute" onclick="toggleCB('btn-mute','🔇','🎙️','Muted','Mute')"><span>🎙️</span><span id="bt-mute-lbl">Mute</span></button>
+    <button class="ccbtn" id="btn-spk" onclick="toggleCB('btn-spk','📱','🔊','Earpiece','Speaker')"><span>🔊</span><span id="bt-spk-lbl">Speaker</span></button>
+    <button class="ccbtn" id="btn-vid" onclick="toggleCB('btn-vid','📷','🎥','Video Off','Video')"><span>🎥</span><span id="bt-vid-lbl">Video</span></button>
+    <button class="ccbtn"><span>⌨️</span>Keypad</button>
+    <button class="ccbtn" onclick="G('s-myprofile')"><span>👤</span>My Profile</button>
+    <button class="ccbtn" onclick="G('s-discover')"><span>🧭</span>Discover</button>
+  </div>
+  <!-- Caller info -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;">
+    <div style="width:94px;height:94px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin-bottom:13px;border:3px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2.7rem;box-shadow:0 0 40px rgba(201,150,58,.26);">👤</div>
+    <h2 id="call-name" style="font-family:'Cormorant Garamond',serif;font-size:1.85rem;color:#fff;margin-bottom:3px;">Fatima Al-Rashidi</h2>
+    <p id="call-type" style="color:rgba(255,255,255,.48);font-size:.83rem;margin-bottom:5px;">🎥 Video Call</p>
+    <p id="call-timer" style="color:rgba(255,255,255,.76);font-size:.97rem;font-weight:700;font-variant-numeric:tabular-nums;">00:00:00</p>
+    <div class="sbars" style="margin-top:9px;"><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div></div>
+  </div>
+  <!-- Big red END button (bottom center, iPhone style) -->
+  <div style="padding:0 40px 50px;flex-shrink:0;display:flex;justify-content:center;">
+    <button class="endbtn" onclick="endCall()" title="End call">📵</button>
+  </div>
+</div>
+
+<!-- ══════════════ S23: ADMIN DASHBOARD ══════════════ -->
+<div class="scr" id="s-admin" style="background:#eff3f6;">
+  <div style="background:var(--teal4);padding:50px 16px 11px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
+    <button class="ibtn back-ibtn" onclick="G('s-login')">&#8592;</button>
+    <div style="flex:1;"><h2 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#fff;">Admin Portal</h2><p style="font-size:.67rem;color:rgba(255,255,255,.45);">Halal-MeetUp · Staff Access</p></div>
+    <span class="bdg br">🔐 Admin</span>
+  </div>
+  <div style="background:#fff;display:flex;overflow-x:auto;border-bottom:1px solid #dde4ea;flex-shrink:0;">
+    <button class="atab on" id="at0" onclick="adminTab(0)">📊 Stats</button>
+    <button class="atab" id="at1" onclick="adminTab(1)">👥 Users</button>
+    <button class="atab" id="at2" onclick="adminTab(2)">💳 Subs</button>
+    <button class="atab" id="at3" onclick="adminTab(3)">🚩 Reports</button>
+    <button class="atab" id="at4" onclick="adminTab(4)">📞 Calls</button>
+    <button class="atab" id="at5" onclick="adminTab(5)">🛡️ ID Verif.</button>
+  </div>
+  <div class="scroll" style="padding:12px 12px 18px;">
+    <!-- TAB 0 -->
+    <div id="ap0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;">
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Total Users</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">4,821</p><p style="font-size:.69rem;color:var(--green);">↑ 12% this week</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Premium</p><p style="font-size:1.65rem;font-weight:800;color:var(--gold3);">342</p><p style="font-size:.69rem;color:var(--green);">↑ 8% this week</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Matches</p><p style="font-size:1.65rem;font-weight:800;color:var(--blue);">1,204</p><p style="font-size:.69rem;color:var(--green);">↑ 5% this week</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Revenue (wk)</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">$3,420</p><p style="font-size:.69rem;color:var(--green);">↑ 15% vs last</p></div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);margin-bottom:8px;">
+        <p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">⚠️ Pending Actions</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f4f4f4;"><p style="font-size:.81rem;color:var(--txt2);">ID Verifications pending</p><span class="bdg bgo">18</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f4f4f4;"><p style="font-size:.81rem;color:var(--txt2);">Active reports</p><span class="bdg br">7</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;"><p style="font-size:.81rem;color:var(--txt2);">Blocked msgs (24h)</p><span class="bdg bb">143</span></div>
+      </div>
+    </div>
+    <!-- TAB 1 -->
+    <div id="ap1" style="display:none;">
+      <div style="background:#fff;border-radius:11px;padding:9px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);"><input type="text" placeholder="🔍 Search users..." style="width:100%;padding:8px 12px;border:1.5px solid var(--sand);border-radius:50px;font-family:'Nunito',sans-serif;font-size:.83rem;outline:none;"/></div>
+      <div id="adminUserList"></div>
+    </div>
+    <!-- TAB 2 -->
+    <div id="ap2" style="display:none;">
+      <div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+        <p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">Revenue</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:#dff2f2;border-radius:9px;padding:10px;text-align:center;"><p style="font-size:1.35rem;font-weight:800;color:var(--teal);">$3,420</p><p style="font-size:.69rem;color:var(--txt3);">This Week</p></div>
+          <div style="background:#fdf0dc;border-radius:9px;padding:10px;text-align:center;"><p style="font-size:1.35rem;font-weight:800;color:var(--gold3);">342</p><p style="font-size:.69rem;color:var(--txt3);">Active Subs</p></div>
+        </div>
+      </div>
+      <div id="adminSubList"></div>
+    </div>
+    <!-- TAB 3 -->
+    <div id="ap3" style="display:none;"><div id="adminReportList"></div></div>
+    <!-- TAB 4 -->
+    <div id="ap4" style="display:none;"><div id="adminCallList"></div></div>
+    <!-- TAB 5 -->
+    <div id="ap5" style="display:none;"><div id="adminIDList"></div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════ S-CALLLOGS: CALL LOG LIST ══════════════ -->
+<div class="scr" id="s-calllogs" style="background:var(--cream2);">
+  <div class="tbar">
+    <button class="ibtn back-ibtn" onclick="G('s-matches')" title="Back">&#8592;</button>
+    <h2>Call History</h2>
+  </div>
+  <div class="scroll" style="padding:13px 14px 20px;">
+    <div id="callLogList"></div>
+  </div>
+</div>
+
+<!-- ══════════════ S-LUDO: LUDO GAME ══════════════ -->
+<div class="scr ludo-screen" id="s-ludo">
+
+  <!-- TOP BAR -->
+  <div style="padding:50px 14px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;">
+    <button onclick="exitLudo()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:7px 12px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">← Exit</button>
+    <p style="color:rgba(255,255,255,.4);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;">Halal-MeetUp · Ludo</p>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <!-- CAMERA TOGGLE (pilot feature) -->
+      <button class="ludo-av-btn" id="ludo-cam-btn" onclick="toggleCamera()" title="Turn on camera">📵</button>
+      <button class="ludo-av-btn" id="ludo-mic" onclick="toggleLudoAV('mic')" title="Mute/Unmute">🎙️</button>
+      <button class="ludo-av-btn" id="ludo-vid" onclick="toggleLudoAV('vid')" title="Video on/off">🎥</button>
+    </div>
+  </div>
+
+  <!-- CAMERA PREVIEW (hidden until turned on) -->
+  <div id="camPreviewWrap" style="display:none;flex-shrink:0;padding:0 14px 6px;position:relative;">
+    <div style="position:relative;width:100%;height:120px;background:#000;border-radius:10px;overflow:hidden;border:2px solid rgba(201,150,58,.5);">
+      <video id="camVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+      <div style="position:absolute;top:5px;left:8px;background:rgba(184,48,48,.85);color:#fff;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:50px;">🔴 LIVE</div>
+      <div style="position:absolute;top:5px;right:8px;" id="camPipBtn">
+        <button onclick="togglePiP()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:3px 8px;font-size:.65rem;cursor:pointer;font-family:'Nunito',sans-serif;">PiP</button>
+      </div>
+      <div style="position:absolute;bottom:5px;left:8px;font-size:.65rem;color:rgba(255,255,255,.7);" id="camResLabel">📹 Camera live</div>
+    </div>
+  </div>
+
+  <!-- PLAYER BARS -->
+  <div style="display:flex;justify-content:space-between;padding:0 12px 6px;flex-shrink:0;gap:8px;">
+    <div class="lplayer-bar active-turn" id="lp-you" style="flex:1;min-width:0;">
+      <div style="width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0;box-shadow:0 0 6px #e74c3c;"></div>
+      <div style="min-width:0;flex:1;">
+        <p style="color:#fff;font-weight:800;font-size:.73rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="lp-you-name">You (Red)</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.6rem;" id="lp-you-score">🏠×4 · ✓×0</p>
+      </div>
+    </div>
+    <div class="turn-indicator" id="turnIndicator" style="flex:1.2;font-size:.65rem;padding:4px 8px;">Your turn!</div>
+    <div class="lplayer-bar" id="lp-them" style="flex:1;min-width:0;justify-content:flex-end;">
+      <div style="min-width:0;flex:1;text-align:right;">
+        <p style="color:#fff;font-weight:800;font-size:.73rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="lp-them-name">Match (Green)</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.6rem;" id="lp-them-score">🏠×4 · ✓×0</p>
+      </div>
+      <div style="width:10px;height:10px;border-radius:50%;background:#27ae60;flex-shrink:0;box-shadow:0 0 6px #27ae60;"></div>
+    </div>
+  </div>
+
+  <!-- BOARD + CONTROLS -->
+  <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px 0;flex:1;overflow:hidden;">
+    <!-- SVG Board — rendered by JS into this container -->
+    <canvas id="ludoCanvas" width="320" height="320" style="border-radius:8px;box-shadow:0 0 24px rgba(201,150,58,.3);flex-shrink:0;touch-action:none;cursor:pointer;"></canvas>
+
+    <!-- Dice + status row -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 14px 6px;flex-shrink:0;width:100%;">
+      <!-- Dice -->
+      <button id="ludoDice" onclick="rollDice()" style="width:56px;height:56px;background:#fff;border-radius:12px;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35);transition:transform .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <canvas id="diceCanvas" width="44" height="44"></canvas>
+      </button>
+      <div style="flex:1;">
+        <p style="color:#e4b55a;font-size:.8rem;font-weight:800;" id="diceResult">Tap dice to roll</p>
+        <p style="color:rgba(255,255,255,.5);font-size:.68rem;margin-top:2px;" id="diceHint">Roll a 6 to enter play</p>
+      </div>
+      <!-- Roll again / Skip -->
+      <button id="skipTurnBtn" onclick="endTurn()" style="display:none;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">Skip ›</button>
+    </div>
+  </div>
+
+  <!-- WIN OVERLAY -->
+  <div id="ludoWinBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);align-items:center;justify-content:center;z-index:200;">
+    <div class="ludo-win-banner">
+      <div style="font-size:3rem;margin-bottom:8px;">🏆</div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:#fff;margin-bottom:4px;" id="winnerText">You Won!</p>
+      <p style="font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:16px;">MashaAllah — what a great game!</p>
+      <button onclick="exitLudo()" style="background:#fff;border:none;border-radius:50px;padding:10px 28px;font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--teal4);">Back to Chat</button>
+    </div>
+  </div>
+</div>
+</div><!-- /#app -->
+
+<script>
+/* ══ STATE ══ */
+const S={
+  user:null,photos:[0,0,0],chatId:0,pIdx:0,callTimer:null,callSecs:0,premium:false,
+  otpPhone:'',otpEmail:'',
+  unread:{0:3,1:0,2:0,3:1},
+  blocked:[],
+  deletedConvs:[],
+  selectedConvs:[],
+  _pendingDelMode:'',
+  _pendingDelId:-1,
+  _delChatCallback:null,
+  callLogs:[
+    {type:'video',p1:'Fatima Al-Rashidi',p2:'Ahmed Abdullah',dur:'18m 32s',date:'Today 2:14 PM',status:'completed',id:0},
+    {type:'audio',p1:'Aisha Khalid',p2:'Ahmed Abdullah',dur:'0s',date:'Today 11:03 AM',status:'missed',id:1},
+    {type:'video',p1:'Zainab Malik',p2:'Ahmed Abdullah',dur:'4m 10s',date:'Yesterday 8:40 PM',status:'completed',id:2},
+    {type:'audio',p1:'Mariam Sultan',p2:'Ahmed Abdullah',dur:'12m 55s',date:'Mar 25 3:00 PM',status:'completed',id:3},
+    {type:'audio',p1:'Sara Osman',p2:'Ahmed Abdullah',dur:'0s',date:'Mar 24 9:10 AM',status:'declined',id:4},
+  ],
+  admins:['admin@halal-meetup.com','admin@test.com'],
+  profiles:[
+    {id:0,name:'Fatima Al-Rashidi',age:26,city:'London, UK',sect:'Sunni Hanafi',verified:true,online:true,status:'Never Married',edu:"Master's",bio:'Alhamdulillah — a school teacher who loves Quran recitation, Moroccan cuisine, and long walks.'},
+    {id:1,name:'Aisha Khalid',age:24,city:'Toronto, CA',sect:'Sunni Maliki',verified:true,online:false,status:'Never Married',edu:"Bachelor's",bio:'Software engineer by day, avid reader by night. Seeking a kind-hearted brother for nikkah.'},
+    {id:2,name:'Zainab Malik',age:29,city:'Houston, TX',sect:"Sunni Shafi'i",verified:true,online:true,status:'Divorced',edu:'PhD',bio:'Academic researcher, mother of one. Ready to build a new chapter with a sincere partner.'},
+    {id:3,name:'Mariam Sultan',age:27,city:'Dubai, UAE',sect:'Sunni Hanbali',verified:false,online:true,status:'Never Married',edu:"Bachelor's",bio:'Marketing professional. Love traveling, cooking and learning new languages.'},
+    {id:4,name:'Sara Osman',age:25,city:'Manchester, UK',sect:'Sunni Hanafi',verified:true,online:false,status:'Never Married',edu:"Master's",bio:'Nurse practitioner, passionate about community service and Islamic history.'},
+  ],
+  msgs:{
+    0:[
+      {id:'m0-1',f:'them',t:'Assalamu Alaikum wa Rahmatullahi wa Barakatuh 🌙',ts:'2:10 PM'},
+      {id:'m0-2',f:'me',t:'Wa Alaikum Assalam! JazakAllah khayr for your message 😊',ts:'2:12 PM'},
+      {id:'m0-3',f:'them',t:'I read your profile — we seem to have a lot in common, especially the love for Islamic history!',ts:'2:14 PM'},
+      {id:'m0-4',f:'me',t:"Absolutely! I've been reading about the Andalusian scholars lately. Any recommendations?",ts:'2:16 PM'},
+      {id:'m0-5',f:'them',t:"SubhanAllah, I just finished a book on Ibn Rushd! I'm going to share the title in sha Allah.",ts:'2:18 PM'},
+    ],
+    1:[
+      {id:'m1-1',f:'them',t:'Salaam! I noticed we both love software — are you in tech too?',ts:'11:00 AM'},
+      {id:'m1-2',f:'me',t:'Yes! Front-end development. What about you?',ts:'11:05 AM'},
+    ],
+    2:[{id:'m2-1',f:'them',t:'Assalam, I hope you are well!',ts:'Yesterday'}],
+    3:[{id:'m3-1',f:'them',t:'JazakAllah khayr for your kind message 🌙',ts:'2d ago'}],
+  }
+};
+
+/* ══ NAVIGATION ══ */
+function G(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  const t=document.getElementById(id);
+  if(t){t.classList.add('on');if(id==='s-matches')renderConvList();if(id==='s-chat')renderChat();}
+}
+
+/* ══ TOAST ══ */
+function toast(msg,a,b){
+  var dur=3000,type='';
+  if(typeof a==='number'){dur=a;if(b)type=b;}
+  else if(typeof a==='string'&&a!==''){type=a;if(typeof b==='number')dur=b;}
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='err'?'var(--red2)':'var(--teal4)';
+  t.style.display='block';
+  clearTimeout(t._t);
+  t._t=setTimeout(function(){t.style.display='none';},dur);
+}
+
+/* ══ MODAL ══ */
+function M(screen,mid){document.getElementById(mid).classList.add('on');}
+function MC(mid){document.getElementById(mid).classList.remove('on');}
+
+/* ══ LOGIN ══ */
+function doLogin(){
+  const em=document.getElementById('li-em').value.trim();
+  const pw=document.getElementById('li-pw').value;
+  if(!em||!pw){toast('Please enter email and password.',2500,'err');return;}
+  if(S.admins.includes(em.toLowerCase())){
+    S.user={email:em,role:'admin'};
+    toast('🔐 Admin access granted.',2000);
+    initAdmin();G('s-admin');return;
+  }
+  S.user={email:em,name:'Ahmed Abdullah',premium:false};
+  toast('Welcome back! 🌙',2000);G('s-discover');
+}
+
+/* ══ REGISTRATION ══ */
+function reg1Next(){
+  const fn=document.getElementById('rg-fn').value.trim();
+  const ln=document.getElementById('rg-ln').value.trim();
+  const ph=document.getElementById('rg-ph').value.trim();
+  const em=document.getElementById('rg-em').value.trim();
+  const dob=document.getElementById('rg-dob').value;
+  if(!fn||!ln||!ph||!em||!dob){toast('Please fill in all required fields.','err',3000);return;}
+  if(!em.includes('@')){toast('Please enter a valid email.','err',2500);return;}
+  S.regData={fn,ln,ph,em,dob};
+  S.otpPhone=String(Math.floor(100000+Math.random()*900000));
+  console.log('[SMS] To:',ph,'OTP:',S.otpPhone);
+  document.getElementById('otp-ph-target').textContent=ph;
+  prefillOTP('otp-ph-cells',S.otpPhone);
+  toast('📱 Demo OTP pre-filled: '+S.otpPhone,5000);
+  G('s-otp-ph');
+}
+function prefillOTP(cellsId,code){
+  setTimeout(()=>{
+    const cells=document.querySelectorAll('#'+cellsId+' .ocell');
+    cells.forEach((c,i)=>{c.value=code[i]||'';});
+  },400);
+}
+function resendOTP(type){
+  if(type==='phone'){S.otpPhone=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-ph-cells',S.otpPhone);toast('📱 New OTP: '+S.otpPhone,5000);}
+  else{S.otpEmail=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-em-cells',S.otpEmail);toast('📧 New OTP: '+S.otpEmail,5000);}
+}
+function otpInput(el,grpId,idx){
+  const cells=document.querySelectorAll('#'+grpId+' .ocell');
+  if(el.value&&idx<cells.length-1)cells[idx+1].focus();
+}
+function otpKey(e,el,grpId,idx){
+  if(e.key==='Backspace'&&!el.value&&idx>0){
+    const cells=document.querySelectorAll('#'+grpId+' .ocell');
+    cells[idx-1].focus();
+  }
+}
+function verifyOTP(cellsId,type){
+  const cells=document.querySelectorAll('#'+cellsId+' .ocell');
+  const entered=Array.from(cells).map(c=>c.value).join('');
+  const expected=type==='phone'?S.otpPhone:S.otpEmail;
+  if(entered===expected){
+    toast('✅ Verified!',2000);
+    if(type==='phone'){
+      S.otpEmail=String(Math.floor(100000+Math.random()*900000));
+      console.log('[EMAIL] To:',S.regData?.em,'OTP:',S.otpEmail);
+      document.getElementById('otp-em-target').textContent=S.regData?.em||'your email';
+      prefillOTP('otp-em-cells',S.otpEmail);
+      toast('📧 Email OTP pre-filled: '+S.otpEmail,5000);
+      setTimeout(()=>G('s-otp-em'),600);
+    } else {
+      console.log('[WELCOME EMAIL] To:',S.regData?.em,'Subject: Welcome to Halal-MeetUp,',S.regData?.fn+'!');
+      const b=document.getElementById('ebanner');
+      if(b){b.innerHTML='<span style="font-size:1.1rem;">📧</span><div>Welcome email sent to <strong>'+S.regData?.em+'</strong>! Check your inbox.</div>';b.style.display='flex';}
+      setTimeout(()=>G('s-reg2'),600);
+    }
+  } else {
+    toast('❌ Incorrect code. Try again.','err',2500);
+    cells.forEach(c=>{c.value='';c.style.borderColor='var(--red2)';});
+    setTimeout(()=>cells.forEach(c=>c.style.borderColor=''),2000);
+    cells[0]?.focus();
+  }
+}
+
+/* ══ VALIDATION POPUP ══ */
+function showPopup(icon,title,msg,fields){
+  document.getElementById('popup-icon').textContent=icon;
+  document.getElementById('popup-title').textContent=title;
+  document.getElementById('popup-msg').textContent=msg;
+  var pf=document.getElementById('popup-fields');
+  if(fields&&fields.length){pf.style.display='block';pf.innerHTML=fields.map(f=>'<p>⚠ '+f+'</p>').join('');}
+  else{pf.style.display='none';pf.innerHTML='';}
+  document.getElementById('val-popup').classList.add('on');
+}
+function markErr(el,errId){if(!el)return;el.classList.add('field-err');el.classList.remove('field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='none';var em=document.getElementById(errId);if(em)em.classList.add('show');}
+function markOK(el,errId){if(!el)return;el.classList.remove('field-err');el.classList.add('field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='block';var em=document.getElementById(errId);if(em)em.classList.remove('show');}
+function clearMark(el,errId){if(!el)return;el.classList.remove('field-err','field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='none';var em=document.getElementById(errId);if(em)em.classList.remove('show');}
+function liveValidate(el,errId,msg){if(!el.value.trim())markErr(el,errId);else markOK(el,errId);}
+function liveValidateSelect(el,errId){if(!el.value)markErr(el,errId);else markOK(el,errId);}
+function liveValidateTA(el,errId){if(!el.value.trim()||el.value.trim().length<30)markErr(el,errId);else markOK(el,errId);}
+function liveValidatePhone(el){var v=el.value.replace(/\s/g,'');if(v.length<7)markErr(el,'rg-ph-err');else markOK(el,'rg-ph-err');}
+function liveValidateEmail(el){if(!el.value.trim()||!el.value.includes('@')||!el.value.includes('.'))markErr(el,'rg-em-err');else markOK(el,'rg-em-err');}
+function liveValidateDOB(el){if(!el.value){markErr(el,'rg-dob-err');return;}var dob=new Date(el.value);var age=new Date().getFullYear()-dob.getFullYear();if(age<18){markErr(el,'rg-dob-err');document.getElementById('rg-dob-err').textContent='⚠ You must be at least 18 years old';}else markOK(el,'rg-dob-err');}
+function liveValidatePW(){var el=document.getElementById('rg-pw');if(!el)return;if(el.value.length<8)markErr(el,'rg-pw-err');else markOK(el,'rg-pw-err');var el2=document.getElementById('rg-pw2');if(el2&&el2.value)liveValidatePW2();}
+function liveValidatePW2(){var el=document.getElementById('rg-pw2');var pw=document.getElementById('rg-pw');if(!el||!pw)return;if(!el.value||el.value!==pw.value)markErr(el,'rg-pw2-err');else markOK(el,'rg-pw2-err');}
+function onTermsChange(){var cb=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var err=document.getElementById('rg-terms-err');if(cb.checked){wrap.style.borderColor='var(--teal)';wrap.style.background='#f0fff8';if(err)err.classList.remove('show');}else{wrap.style.borderColor='var(--sand)';wrap.style.background='var(--white)';}}
+function reg2Next(){var errors=[];var gender=document.getElementById('rg-gender');var sect=document.getElementById('rg-sect');var mstatus=document.getElementById('rg-mstatus');var edu=document.getElementById('rg-edu');if(!gender||!gender.value){markErr(gender,'rg-gender-err');errors.push('Gender is required');}else markOK(gender,'rg-gender-err');if(!sect||!sect.value){markErr(sect,'rg-sect-err');errors.push('Islamic Sect is required');}else markOK(sect,'rg-sect-err');if(!mstatus||!mstatus.value){markErr(mstatus,'rg-mstatus-err');errors.push('Marital Status is required');}else markOK(mstatus,'rg-mstatus-err');if(!edu||!edu.value){markErr(edu,'rg-edu-err');errors.push('Education is required');}else markOK(edu,'rg-edu-err');if(errors.length){showPopup('📋','Step 2 — Required Fields','Please fill in all required fields.',errors);return;}G('s-reg3');}
+function reg3Next(){var errors=[];var country=document.getElementById('rg-country');var city=document.getElementById('rg-city');var nat=document.getElementById('rg-nat');var lang=document.getElementById('rg-lang');if(!country||!country.value){markErr(country,'rg-country-err');errors.push('Country is required');}else markOK(country,'rg-country-err');if(!city||!city.value.trim()){markErr(city,'rg-city-err');errors.push('City is required');}else markOK(city,'rg-city-err');if(!nat||!nat.value.trim()){markErr(nat,'rg-nat-err');errors.push('Nationality is required');}else markOK(nat,'rg-nat-err');if(!lang||!lang.value.trim()){markErr(lang,'rg-lang-err');errors.push('Languages required');}else markOK(lang,'rg-lang-err');if(errors.length){showPopup('📍','Step 3 — Required Fields','Please fill in all required fields.',errors);return;}G('s-reg4');}
+function reg5Next(){var errors=[];var bio=document.getElementById('rg-bio');var occ=document.getElementById('rg-occ');var hobbies=document.getElementById('rg-hobbies');if(!bio||!bio.value.trim()||bio.value.trim().length<30){markErr(bio,'rg-bio-err');errors.push('About Me: min 30 characters');}else markOK(bio,'rg-bio-err');if(!occ||!occ.value.trim()){markErr(occ,'rg-occ-err');errors.push('Occupation required');}else markOK(occ,'rg-occ-err');if(!hobbies||!hobbies.value.trim()){markErr(hobbies,'rg-hobbies-err');errors.push('Interests required');}else markOK(hobbies,'rg-hobbies-err');if(errors.length){showPopup('✍️','Step 5 — Required Fields','Please fill in all required fields.',errors);return;}G('s-reg6');}
+function completeReg(){
+  var errors=[];var pwEl=document.getElementById('rg-pw');var pw2El=document.getElementById('rg-pw2');var terms=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var termsErr=document.getElementById('rg-terms-err');
+  if(!pwEl.value||pwEl.value.length<8){markErr(pwEl,'rg-pw-err');errors.push('Password must be at least 8 characters');}else markOK(pwEl,'rg-pw-err');
+  if(!pw2El.value||pw2El.value!==pwEl.value){markErr(pw2El,'rg-pw2-err');errors.push('Passwords do not match');}else if(pwEl.value.length>=8)markOK(pw2El,'rg-pw2-err');
+  if(!terms.checked){if(wrap){wrap.style.borderColor='var(--red2)';wrap.style.background='#fff5f5';wrap.style.animation='shake .3s ease';setTimeout(function(){wrap.style.animation='';},350);}if(termsErr)termsErr.classList.add('show');errors.push('You must accept the Terms & Conditions');}
+  if(errors.length){if(errors.length===1&&!terms.checked&&pwEl.value.length>=8&&pw2El.value===pwEl.value){showPopup('☑️','Please Accept Terms & Conditions','You must read and accept the Terms of Service, Privacy Policy, and Community Guidelines.',['Check the box: "I agree to the Terms of Service, Privacy Policy, and Community Guidelines"']);}else{showPopup('⚠️','Almost There!','Please fix the following issues.',errors);}return;}
+  var name=(S.regData&&S.regData.fn)?S.regData.fn:'User';
+  var email=(S.regData&&S.regData.em)?S.regData.em:'';
+  S.user={name:name,firstName:name,lastName:(S.regData&&S.regData.ln)||'',email:email,premium:false};
+  console.log('[WELCOME EMAIL] To:',email,'Subject: Welcome to Halal-MeetUp, '+name+'!');
+  toast('🎉 Account created! Welcome to Halal-MeetUp!',3500);
+  setTimeout(function(){G('s-idv1');},400);
+}
+
+/* ══ PHOTOS ══ */
+function photoTap(i){
+  const slot=document.getElementById('ps'+i);
+  if(S.photos[i]){S.photos[i]=0;slot.innerHTML='<span style="font-size:1.8rem;">📷</span><span class="plbl">'+(i===0?'Main':i===1?'2nd':'3rd')+' (req)</span><span class="rdot"></span>';slot.classList.remove('filled');}
+  else{S.photos[i]=1;const e=['🤳','🖼️','🏞️'][i];slot.innerHTML='<span style="font-size:2rem;">'+e+'</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">Uploaded ✓</span>';slot.classList.add('filled');}
+  document.getElementById('pctr').textContent=S.photos.filter(Boolean).length+'/3 uploaded';
+}
+function checkPhotos(){if(S.photos.filter(Boolean).length<3){toast('Please upload all 3 required photos.','err',2500);return;}G('s-reg5');}
+function selectID(el){document.querySelectorAll('.idopt').forEach(x=>x.style.borderColor='var(--sand)');el.style.borderColor='var(--teal)';}
+function tapUpload(el,msg){el.style.borderColor='var(--teal)';el.style.background='#dff2f2';el.innerHTML='<div style="font-size:2.5rem;margin-bottom:6px;">✅</div><p style="color:var(--teal);font-weight:800;font-size:.9rem;">'+msg+'</p>';}
+function takeSelfie(){const b=document.getElementById('selfiebtn');b.textContent='✅ Selfie Captured!';b.style.background='var(--green)';}
+
+/* ══ PHONE/LIVE PHOTO BLOCK ══ */
+const PH_RX=/(\+?\d[\d\s\-().]{6,}\d)|(\b(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)\b)/i;
+const LP_RX=/\b(live photo|live pic|snapchat|snap|instagram|ig\b|facetime|whatsapp|telegram)\b/i;
+function checkBlock(msg){if(PH_RX.test(msg))return'phone';if(!S.premium&&LP_RX.test(msg))return'livephoto';return null;}
+
+/* ══ CHAT ══ */
+function openChat(id){
+  S.chatId=id;S.unread[id]=0;renderConvList();
+  const p=S.profiles[id];
+  var notice=document.getElementById('blocked-notice');
+  var cbar=document.querySelector('.cbar');
+  if(S.blocked.includes(id)){if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';}
+  else{if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';}
+  document.getElementById('chat-name').innerHTML=p.name+(p.verified?' <span style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span>':'');
+  document.getElementById('chat-status').textContent=p.online?'Online now':'Last seen recently';
+  renderChat();G('s-chat');
+}
+function renderChat(){
+  var cont=document.getElementById('chatMsgs');
+  if(!cont)return;
+  if(!Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId]=[];
+  var msgs=S.msgs[S.chatId];
+  cont.innerHTML='';
+  if(msgs.length===0){
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
+    empty.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">No messages yet</p><p style="font-size:.78rem;">Say Assalamu Alaikum to start!</p>';
+    cont.appendChild(empty);
+  } else {msgs.forEach(function(m){cont.appendChild(mkBubble(m));});}
+  cont.scrollTop=cont.scrollHeight;
+}
+function mkBubble(m){
+  var wrap=document.createElement('div');
+  wrap.className='bwrap'+(m.f==='me'?' sent':'');
+  wrap.dataset.msgId=m.id||'';
+  if(m.f!=='me'){var av=document.createElement('div');av.className='avsm';av.style.background='linear-gradient(135deg,var(--teal),var(--gold))';av.textContent='👤';wrap.appendChild(av);}
+  var col=document.createElement('div');col.style.flex='1';col.style.minWidth='0';
+  var rbar=document.createElement('div');rbar.className='react-bar';
+  ['❤️','😊','🤲','😂','👍','✨'].forEach(function(e){var rb=document.createElement('button');rb.className='react-btn';rb.textContent=e;rb.onclick=function(ev){ev.stopPropagation();addReaction(m.id,e,wrap);rbar.classList.remove('show');};rbar.appendChild(rb);});
+  var ctxTrigger=document.createElement('button');ctxTrigger.className='react-btn';ctxTrigger.textContent='⋯';ctxTrigger.onclick=function(ev){ev.stopPropagation();showCtxMenu(m,wrap);};rbar.appendChild(ctxTrigger);
+  col.appendChild(rbar);
+  var bub=document.createElement('div');
+  if(m.blocked==='phone'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Message Blocked</strong><br><span style="font-size:.79rem;">This message contained a phone number. Phone numbers cannot be shared in chat.</span>';}
+  else if(m.blocked==='livephoto'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Premium Required</strong><br><span style="font-size:.79rem;">Live photos require a Premium subscription.</span>';}
+  else if(m.deleted){bub.className='bub '+(m.f==='me'?'bout':'bin');bub.style.opacity='.5';bub.style.fontStyle='italic';bub.textContent='🗑 Message deleted';}
+  else{bub.className='bub '+(m.f==='me'?'bout':'bin');bub.textContent=m.t;}
+  var lpTimer;
+  bub.addEventListener('touchstart',function(){lpTimer=setTimeout(function(){rbar.classList.add('show');},500);},{passive:true});
+  bub.addEventListener('touchend',function(){clearTimeout(lpTimer);});
+  bub.addEventListener('touchmove',function(){clearTimeout(lpTimer);},{passive:true});
+  bub.addEventListener('contextmenu',function(ev){ev.preventDefault();showCtxMenu(m,wrap);});
+  col.appendChild(bub);
+  if(m.reactions&&m.reactions.length){var chips=document.createElement('div');chips.className='react-chips';var counts={};m.reactions.forEach(function(r){counts[r]=(counts[r]||0)+1;});Object.keys(counts).forEach(function(emoji){var chip=document.createElement('span');chip.className='rchip';chip.textContent=emoji+' '+counts[emoji];chip.onclick=function(){addReaction(m.id,emoji,wrap);};chips.appendChild(chip);});col.appendChild(chips);}
+  if(!m.blocked&&!m.deleted&&m.f==='me'){var actRow=document.createElement('div');actRow.className='bub-actions';var replyBtn=document.createElement('button');replyBtn.className='bub-action-btn';replyBtn.textContent='↩ Reply';replyBtn.onclick=function(){var inp=document.getElementById('chatInp');if(inp){inp.value='↩ "'+m.t.substring(0,30)+(m.t.length>30?'…':'')+'" ';inp.focus();}};var copyBtn=document.createElement('button');copyBtn.className='bub-action-btn';copyBtn.textContent='📋 Copy';copyBtn.onclick=function(){if(navigator.clipboard&&m.t)navigator.clipboard.writeText(m.t);toast('Copied!',1500);};var delBtn=document.createElement('button');delBtn.className='bub-action-btn danger';delBtn.textContent='🗑️ Delete';delBtn.onclick=function(){deleteMsg(m.id);};actRow.appendChild(replyBtn);actRow.appendChild(copyBtn);actRow.appendChild(delBtn);col.appendChild(actRow);}
+  if(!m.blocked&&!m.deleted&&m.f==='them'){var actRow2=document.createElement('div');actRow2.className='bub-actions';var replyBtn2=document.createElement('button');replyBtn2.className='bub-action-btn';replyBtn2.textContent='↩ Reply';replyBtn2.onclick=function(){var inp=document.getElementById('chatInp');if(inp){inp.value='↩ "'+m.t.substring(0,30)+(m.t.length>30?'…':'')+'" ';inp.focus();}};actRow2.appendChild(replyBtn2);col.appendChild(actRow2);}
+  var tm=document.createElement('div');tm.className='btm';tm.textContent=m.ts+(m.f==='me'?' ✓✓':'');col.appendChild(tm);
+  wrap.appendChild(col);return wrap;
+}
+function showCtxMenu(m,wrap){
+  document.querySelectorAll('.ctx-menu').forEach(function(el){el.remove();});
+  var menu=document.createElement('div');menu.className='ctx-menu'+(m.f==='me'?' sent':'');
+  var actions=[{icon:'📋',label:'Copy message',fn:function(){if(navigator.clipboard&&m.t)navigator.clipboard.writeText(m.t);toast('Copied!',1500);}}];
+  if(m.f==='me'&&!m.deleted)actions.push({icon:'🗑️',label:'Delete message',fn:function(){deleteMsg(m.id);},danger:true});
+  actions.push({icon:'↩️',label:'Reply',fn:function(){var inp=document.getElementById('chatInp');if(inp){inp.value='↩ "'+m.t.substring(0,30)+(m.t.length>30?'…':'')+'" ';inp.focus();}}});
+  actions.forEach(function(a){var btn=document.createElement('button');btn.className='ctx-item'+(a.danger?' danger':'');btn.innerHTML=a.icon+' '+a.label;btn.onclick=function(ev){ev.stopPropagation();a.fn();menu.remove();};menu.appendChild(btn);});
+  wrap.appendChild(menu);
+  setTimeout(function(){document.addEventListener('click',function close(){menu.remove();document.removeEventListener('click',close);});},50);
+}
+function addReaction(msgId,emoji,wrap){if(!msgId)return;var msgs=S.msgs[S.chatId]||[];var msg=msgs.find(function(m){return m.id===msgId;});if(!msg)return;if(!msg.reactions)msg.reactions=[];var idx=msg.reactions.indexOf(emoji);if(idx>=0)msg.reactions.splice(idx,1);else msg.reactions.push(emoji);renderChat();}
+function deleteMsg(msgId){if(!msgId)return;var msgs=S.msgs[S.chatId]||[];var msg=msgs.find(function(m){return m.id===msgId;});if(msg)msg.deleted=true;renderChat();toast('Message deleted',1800);}
+function blockUser(){MC('m-block');if(!S.blocked.includes(S.chatId))S.blocked.push(S.chatId);S.unread[S.chatId]=0;renderConvList();var notice=document.getElementById('blocked-notice');var cbar=document.querySelector('.cbar');if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';toast('🚫 User blocked.',3500);}
+function unblockUser(){var idx=S.blocked.indexOf(S.chatId);if(idx>=0)S.blocked.splice(idx,1);var notice=document.getElementById('blocked-notice');var cbar=document.querySelector('.cbar');if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';toast('✅ User unblocked.',2000);}
+function openCallLogs(){var list=document.getElementById('callLogList');if(!list)return;var statusColors={completed:'var(--green)',missed:'var(--red2)',declined:'var(--txt3)'};var statusLabels={completed:'Completed',missed:'Missed',declined:'Declined'};list.innerHTML=S.callLogs.map(function(cl){var color=statusColors[cl.status]||'var(--txt3)';var lbl=statusLabels[cl.status]||cl.status;var icon=cl.type==='video'?'🎥':'📞';var iconBg=cl.status==='missed'?'#fce8e8':cl.status==='completed'?'#e0f2f2':'#f0ece6';return'<div class="clog-item"><div class="clog-icon" style="background:'+iconBg+'">'+icon+'</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">'+cl.p1+'</p><p style="font-size:.74rem;color:var(--txt3);">'+cl.date+' · '+cl.dur+'</p></div><span style="font-size:.72rem;font-weight:800;color:'+color+';">'+lbl+'</span></div>';}).join('');G('s-calllogs');}
+
+/* ══ SEND MESSAGE ══ */
+function sendMsg(){
+  var inp=document.getElementById('chatInp');
+  if(!inp)return;
+  var txt=inp.value.trim();if(!txt)return;
+  if(S.blocked.includes(S.chatId)){toast('You have blocked this user.',2000,'err');return;}
+  var now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  var msgId='m'+S.chatId+'-'+Date.now();
+  var blk=checkBlock(txt);
+  var msg={id:msgId,f:'me',t:txt,ts:now};
+  if(blk)msg.blocked=blk;
+  if(!Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId]=[];
+  S.msgs[S.chatId].push(msg);
+  renderChat();
+  var cont=document.getElementById('chatMsgs');
+  if(cont)setTimeout(function(){cont.scrollTop=cont.scrollHeight;},60);
+  inp.value='';
+  if(!blk){
+    var replies=['JazakAllah khayr! 😊','In sha Allah!','SubhanAllah, that\'s so interesting!','Alhamdulillah! Tell me more.','MashaAllah 🌙'];
+    setTimeout(function(){S.msgs[S.chatId].push({id:'r'+Date.now(),f:'them',t:replies[Math.floor(Math.random()*replies.length)],ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});renderChat();},1500);
+  }
+}
+
+/* ══ DELETE CHATS ══ */
+function renderConvList(){
+  const list=document.getElementById('convList');if(!list)return;
+  const convs=[
+    {id:0,col:'var(--teal),var(--gold)',online:true,v:true,preview:'SubhanAllah, I just finished a book on Ibn Rushd!',time:'2m ago'},
+    {id:1,col:'#a084ca,#c0a0e0',online:false,v:true,preview:"Yes, I'm a software engineer too!",time:'1h ago'},
+    {id:2,col:'#d4a574,#b08050',online:true,v:true,preview:'SubhanAllah, that sounds wonderful.',time:'Yesterday'},
+    {id:3,col:'#5a9ad0,#2e6aaa',online:false,v:false,preview:'JazakAllah khayr for your message 🌙',time:'2d ago'},
+  ];
+  const visible=convs.filter(cv=>!S.deletedConvs||!S.deletedConvs.includes(cv.id));
+  list.innerHTML=visible.map(cv=>{
+    const p=S.profiles[cv.id];
+    const unread=(S.unread[cv.id]||0);
+    return`<div class="conv-row-wrap" id="conv-wrap-${cv.id}">
+      <div class="conv-row" id="conv-row-${cv.id}"
+        onclick="convRowClick(event,${cv.id})"
+        ontouchstart="convTouchStart(event,${cv.id})"
+        ontouchmove="convTouchMove(event,${cv.id})"
+        ontouchend="convTouchEnd(event,${cv.id})">
+        <input type="checkbox" class="conv-check" id="chk-${cv.id}" onclick="event.stopPropagation();updateSelCount()" ${S.selectedConvs&&S.selectedConvs.includes(cv.id)?'checked':''}/>
+        <div style="position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,${cv.col});display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤${cv.online?'<div class="odot"></div>':''}</div>
+        <div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><div style="display:flex;align-items:center;gap:5px;"><p style="font-weight:800;font-size:.87rem;">${p.name}</p>${cv.v?'<span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;">✓</span>':''}</div><p style="font-size:.69rem;color:var(--txt3);">${cv.time}</p></div><p style="font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cv.preview}</p></div>
+        ${unread>0?'<div class="unread-badge">'+unread+'</div>':''}
+      </div>
+      <div class="conv-row-actions">
+        <button class="conv-more-btn" onclick="convMoreMenu(event,${cv.id})">⋯<br><span style="font-size:.62rem">More</span></button>
+        <button class="conv-del-btn" onclick="deleteConv(${cv.id})">🗑️<br><span style="font-size:.62rem">Delete</span></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+var convTouchData={id:-1,startX:0,startY:0,dx:0,revealed:-1};
+function convTouchStart(e,id){convTouchData.id=id;convTouchData.startX=e.touches[0].clientX;convTouchData.startY=e.touches[0].clientY;convTouchData.dx=0;}
+function convTouchMove(e,id){var dx=e.touches[0].clientX-convTouchData.startX;var dy=e.touches[0].clientY-convTouchData.startY;if(Math.abs(dy)>Math.abs(dx))return;convTouchData.dx=dx;var row=document.getElementById('conv-row-'+id);if(!row)return;if(dx<-20){row.style.transform='translateX('+Math.max(dx,-126)+'px)';var acts=row.parentElement.querySelector('.conv-row-actions');if(acts)acts.style.transform='translateX('+Math.min(126+dx,0)+'px) translateX(100%)';}else if(dx>10&&convTouchData.revealed===id){row.style.transform='translateX('+Math.min(dx-126,0)+'px)';}}
+function convTouchEnd(e,id){var row=document.getElementById('conv-row-'+id);if(!row)return;if(convTouchData.dx<-60){row.style.transition='transform .22s ease';row.style.transform='translateX(-126px)';var acts=row.parentElement.querySelector('.conv-row-actions');if(acts){acts.style.transition='transform .22s ease';acts.style.transform='translateX(0)';}convTouchData.revealed=id;}else{row.style.transition='transform .22s ease';row.style.transform='';var acts=row.parentElement.querySelector('.conv-row-actions');if(acts){acts.style.transition='transform .22s ease';acts.style.transform='translateX(100)';}if(convTouchData.revealed===id)convTouchData.revealed=-1;}setTimeout(function(){if(row)row.style.transition='';},250);}
+function convRowClick(e,id){var scr=document.getElementById('s-matches');if(scr&&scr.classList.contains('select-mode')){var chk=document.getElementById('chk-'+id);if(chk){chk.checked=!chk.checked;updateSelCount();}return;}if(convTouchData.revealed>=0&&convTouchData.revealed!==id){var old=document.getElementById('conv-row-'+convTouchData.revealed);if(old){old.style.transition='transform .22s ease';old.style.transform='';}convTouchData.revealed=-1;return;}if(convTouchData.revealed===id){var row=document.getElementById('conv-row-'+id);if(row){row.style.transition='transform .22s ease';row.style.transform='';}convTouchData.revealed=-1;return;}openChat(id);}
+function convMoreMenu(e,id){e.stopPropagation();S._pendingDelId=id;S._pendingDelMode='single';document.getElementById('confirmDelMsg').textContent='Delete conversation with '+S.profiles[id].name+'? Cannot be undone.';M('s-matches','m-confirm-del');}
+function deleteConv(id){if(!S.deletedConvs)S.deletedConvs=[];S.deletedConvs.push(id);S.msgs[id]=[];S.unread[id]=0;renderConvList();toast('Conversation deleted.',2000);}
+var _selectMode=false;
+function toggleSelectMode(){_selectMode=!_selectMode;var scr=document.getElementById('s-matches');var bar=document.getElementById('selectActionsBar');var btn=document.getElementById('btn-select');if(!scr)return;if(_selectMode){scr.classList.add('select-mode');if(bar)bar.style.display='flex';if(btn)btn.style.background='rgba(255,255,255,.38)';if(!S.selectedConvs)S.selectedConvs=[];updateSelCount();renderConvList();}else{scr.classList.remove('select-mode');if(bar)bar.style.display='none';if(btn)btn.style.background='';S.selectedConvs=[];renderConvList();}}
+function updateSelCount(){var checked=document.querySelectorAll('#convList .conv-check:checked');var n=checked.length;S.selectedConvs=Array.from(checked).map(el=>parseInt(el.id.replace('chk-','')));var el=document.getElementById('selCount');if(el)el.textContent=n+' selected';}
+function deleteSelected(){if(!S.selectedConvs||!S.selectedConvs.length){toast('No conversations selected.','err',2000);return;}S._pendingDelMode='selected';document.getElementById('confirmDelMsg').textContent='Delete '+S.selectedConvs.length+' selected conversation(s)?';M('s-matches','m-confirm-del');}
+function promptDeleteAll(){S._pendingDelMode='all';document.getElementById('confirmDelMsg').textContent='Delete ALL conversations permanently?';M('s-matches','m-confirm-del');}
+function confirmDeleteChats(){
+  MC('m-confirm-del');
+  if(S._pendingDelMode==='all'){S.deletedConvs=[0,1,2,3];[0,1,2,3].forEach(id=>{S.msgs[id]=[];S.unread[id]=0;});toast('All conversations deleted.',2500);if(_selectMode)toggleSelectMode();}
+  else if(S._pendingDelMode==='selected'){(S.selectedConvs||[]).forEach(id=>deleteConv(id));toast((S.selectedConvs||[]).length+' conversation(s) deleted.',2500);toggleSelectMode();}
+  else if(S._pendingDelMode==='single'){deleteConv(S._pendingDelId);}
+  S.selectedConvs=[];renderConvList();
+}
+function deleteChatMessages(){M('s-chat','m-chat-confirm-del');}
+function confirmDeleteChatMessages(){MC('m-chat-confirm-del');S.msgs[S.chatId]=[];S.unread[S.chatId]=0;renderChat();renderConvList();toast('All messages deleted.',2000);}
+
+/* ══ SWIPE ══ */
+const DS={on:false,sx:0,cx:0};
+function initSwipe(){
+  const c=document.getElementById('swipeCard');if(!c)return;
+  c.addEventListener('mousedown',e=>{DS.on=true;DS.sx=e.clientX;document.addEventListener('mousemove',onDM);document.addEventListener('mouseup',onDU);});
+  c.addEventListener('touchstart',e=>{DS.on=true;DS.sx=e.touches[0].clientX;document.addEventListener('touchmove',onDT,{passive:false});document.addEventListener('touchend',onDE);},{passive:true});
+}
+function onDM(e){if(!DS.on)return;applyDrag(e.clientX-DS.sx);}
+function onDT(e){if(!DS.on)return;e.preventDefault();applyDrag(e.touches[0].clientX-DS.sx);}
+function onDU(){document.removeEventListener('mousemove',onDM);document.removeEventListener('mouseup',onDU);finishDrag();}
+function onDE(){document.removeEventListener('touchmove',onDT);document.removeEventListener('touchend',onDE);finishDrag();}
+function applyDrag(dx){DS.cx=dx;const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='none';c.style.transform=`translateX(${dx}px) rotate(${dx*.07}deg)`;const lo=document.getElementById('ov-like'),no=document.getElementById('ov-nope');if(lo)lo.style.opacity=dx>40?Math.min((dx-40)/80,1):0;if(no)no.style.opacity=dx<-40?Math.min((-dx-40)/80,1):0;}
+function finishDrag(){DS.on=false;if(Math.abs(DS.cx)>85)doSwipe(DS.cx>0?'right':'left');else resetCard();DS.cx=0;}
+function resetCard(){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .4s cubic-bezier(.34,1.1,.64,1)';c.style.transform='';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});}
+function doSwipe(dir){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .38s ease,opacity .38s';if(dir==='right')c.style.transform='translateX(600px) rotate(28deg)';else if(dir==='left')c.style.transform='translateX(-600px) rotate(-28deg)';else c.style.transform='translateY(-600px)';c.style.opacity='0';document.getElementById('swipehint').style.display='none';setTimeout(()=>{S.pIdx=(S.pIdx+1)%S.profiles.length;const p=S.profiles[S.pIdx];const n=document.getElementById('cName'),sb=document.getElementById('cSub'),bi=document.getElementById('cBio');if(n)n.textContent=p.name;if(sb)sb.textContent=p.age+' · '+p.city+' · '+p.sect;if(bi)bi.textContent=p.bio;c.style.transition='none';c.style.opacity='0';c.style.transform='scale(.92)';setTimeout(()=>{c.style.transition='transform .35s cubic-bezier(.34,1.1,.64,1),opacity .3s';c.style.transform='';c.style.opacity='1';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});},50);},360);}
+
+/* ══ CALL ══ */
+function startCall(type){
+  if(!S.premium){M('s-chat','m-sub');return;}
+  const p=S.profiles[S.chatId];
+  document.getElementById('call-name').textContent=p.name;
+  document.getElementById('call-type').textContent=(type==='video'?'🎥 Video':'📞 Voice')+' Call';
+  S.callSecs=0;clearInterval(S.callTimer);
+  S.callTimer=setInterval(()=>{S.callSecs++;const m=String(Math.floor(S.callSecs/60)).padStart(2,'0');const s=String(S.callSecs%60).padStart(2,'0');const el=document.getElementById('call-timer');if(el)el.textContent='00:'+m+':'+s;},1000);
+  G('s-call');
+}
+function endCall(){clearInterval(S.callTimer);G('s-chat');toast('Call ended.',2000);}
+function toggleCB(id,i1,i2,l1,l2){const btn=document.getElementById(id);if(!btn)return;btn.classList.toggle('act');const sp=btn.querySelector('span');const lbl=btn.querySelector('span:last-child');if(btn.classList.contains('act')){if(sp)sp.textContent=i1;if(lbl)lbl.textContent=l1;}else{if(sp)sp.textContent=i2;if(lbl)lbl.textContent=l2;}}
+
+/* ══ PROFILE ══ */
+function loadEdit(){const u=S.user||{};const fv={fn:u.firstName||'Ahmed',ln:u.lastName||'Abdullah',occ:u.occupation||'Software Engineer',city:u.city||'Manchester, UK',bio:u.bio||'Alhamdulillah, a software engineer who values family, deen, and community.'};document.getElementById('ep-fn').value=fv.fn;document.getElementById('ep-ln').value=fv.ln;document.getElementById('ep-occ').value=fv.occ;document.getElementById('ep-city').value=fv.city;document.getElementById('ep-bio').value=fv.bio;}
+function saveProfile(){S.user={...S.user,firstName:document.getElementById('ep-fn').value,lastName:document.getElementById('ep-ln').value,occupation:document.getElementById('ep-occ').value,city:document.getElementById('ep-city').value,bio:document.getElementById('ep-bio').value};const nm=document.getElementById('mp-name');if(nm)nm.textContent=(S.user.firstName||'Ahmed')+' '+(S.user.lastName||'Abdullah');toast('✅ Profile updated!',2500);G('s-myprofile');}
+function editPhotoTap(){const sl=document.getElementById('eps2');sl.innerHTML='<span style="font-size:2rem;">🏞️</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">3rd ✓</span>';sl.classList.add('filled');toast('✅ Photo uploaded!',2000);}
+
+/* ══ REPORT ══ */
+function submitReport(){const r=document.getElementById('rep-reason').value;const d=document.getElementById('rep-details').value.trim();if(!r){toast('Please select a reason.','err',2000);return;}if(!d||d.length<10){toast('Please provide more detail.','err',2500);return;}MC('m-report');toast('🚩 Report submitted. Team reviews within 24h.',4000);}
+
+/* ══ PAYMENT ══ */
+function fmtCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
+function fmtExp(el){let v=el.value.replace(/\D/g,'').substring(0,4);if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2);el.value=v;}
+function processPayment(){const num=document.getElementById('cc-num').value.replace(/\s/g,'');const exp=document.getElementById('cc-exp').value;const cvv=document.getElementById('cc-cvv').value;const nm=document.getElementById('cc-name').value.trim();if(num.length<16){toast('Please enter a valid 16-digit card number.','err',2500);return;}if(!exp.includes('/')){toast('Please enter a valid expiry.','err',2500);return;}if(cvv.length<3){toast('Please enter a valid CVV.','err',2500);return;}if(!nm){toast('Please enter the name on your card.','err',2500);return;}MC('m-sub');S.premium=true;S.user={...S.user,premium:true};toast('👑 Premium activated!',3500);}
+
+/* ══ SEARCH ══ */
+function runSearch(){const country=document.getElementById('sf-c').value;const sect=document.getElementById('sf-s').value;const status=document.getElementById('sf-ms').value;const verOnly=document.getElementById('sf-v').checked;let res=[...S.profiles];if(country)res=res.filter(p=>p.city.includes(country));if(sect)res=res.filter(p=>p.sect.includes(sect.replace('Sunni ','').replace('Shia ','')));if(status)res=res.filter(p=>p.status===status);if(verOnly)res=res.filter(p=>p.verified);document.getElementById('srResults').style.display='block';document.getElementById('srCount').textContent=res.length+' profile'+(res.length!==1?'s':'')+' found';document.getElementById('srList').innerHTML=res.map(p=>`<div onclick="openChat(${p.id})" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤${p.online?'<div class="odot"></div>':''}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;"><p style="font-weight:800;font-size:.88rem;">${p.name}</p>${p.verified?'<span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;">✓</span>':''}</div><p style="font-size:.75rem;color:var(--txt3);">${p.age} · ${p.city} · ${p.sect}</p></div><button class="btn bp bsm" onclick="event.stopPropagation();openChat(${p.id})">💬</button></div>`).join('');}
+
+/* ══ ADMIN ══ */
+function adminTab(i){for(let j=0;j<6;j++){const t=document.getElementById('at'+j),p=document.getElementById('ap'+j);if(t)t.classList.toggle('on',j===i);if(p)p.style.display=j===i?'block':'none';}}
+function initAdmin(){
+  const users=[{n:'Fatima Al-Rashidi',e:'fatima@gmail.com',c:'London, UK',badge:'Verified',bc:'bb'},{n:'Aisha Khalid',e:'aisha@mail.com',c:'Toronto, CA',badge:'Pending',bc:'bgo'},{n:'Omar Hussain',e:'omar@mail.com',c:'Karachi, PK',badge:'Banned',bc:'br',banned:true},{n:'Zainab Malik',e:'zainab@email.com',c:'Houston, TX',badge:'Verified',bc:'bb'}];
+  document.getElementById('adminUserList').innerHTML=users.map((u,i)=>`<div style="background:#fff;border-radius:11px;padding:11px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;${u.banned?'opacity:.7':''}"><div style="width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">👤</div><div style="flex:1;"><p style="font-weight:800;font-size:.85rem;">${u.n}</p><p style="font-size:.7rem;color:var(--txt3);">${u.e} · ${u.c}</p></div><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;"><span class="bdg ${u.bc}" style="font-size:.59rem;">${u.badge}</span>${u.banned?'<button style="font-size:.67rem;background:#e2f5e8;color:var(--green);border:none;padding:2px 7px;border-radius:4px;cursor:pointer;font-weight:800;">Unban</button>':'<button style="font-size:.67rem;background:#fce6e6;color:var(--red);border:none;padding:2px 7px;border-radius:4px;cursor:pointer;font-weight:800;" onclick="toast(\'User banned.\',2000)">Ban</button>'}</div></div>`).join('');
+  const subs=[{n:'Fatima Al-Rashidi',d:'Renews Mar 28',s:'Active',sc:'bgn'},{n:'Yusuf Ibrahim',d:'Cancelled Apr 1',s:'Cancelled',sc:'br'},{n:'Hassan Al-Rashid',d:'Renews Apr 3',s:'Active',sc:'bgn'}];
+  document.getElementById('adminSubList').innerHTML=subs.map(s=>`<div style="background:#fff;border-radius:11px;padding:11px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;"><div><p style="font-weight:800;font-size:.85rem;">${s.n}</p><p style="font-size:.7rem;color:var(--txt3);">${s.d}</p></div><div style="text-align:right;"><p style="font-weight:800;font-size:.88rem;color:var(--teal);">$10/wk</p><span class="bdg ${s.sc}" style="font-size:.58rem;">${s.s}</span></div></div>`).join('');
+  const rpts=[{t:'Inappropriate Message',rep:'Zainab M.',against:'Omar H.',r:'Explicit content',s:'Open',sc:'br'},{t:'Fake Profile',rep:'Ahmed A.',against:'anon_user',r:'Photos appear stolen',s:'Investigating',sc:'bgo'},{t:'Phone Number Shared',rep:'Sara K.',against:'User_482',r:'Attempted to share phone',s:'Resolved',sc:'bgn'}];
+  document.getElementById('adminReportList').innerHTML=rpts.map(r=>`<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><p style="font-weight:800;font-size:.85rem;">${r.t}</p><span class="bdg ${r.sc}" style="font-size:.58rem;">${r.s}</span></div><p style="font-size:.75rem;color:var(--txt3);margin-bottom:7px;">${r.rep} → ${r.against}: ${r.r}</p><div style="display:flex;gap:6px;"><button style="flex:1;padding:6px;background:#fce6e6;color:var(--red);border:none;border-radius:6px;font-size:.72rem;font-weight:800;cursor:pointer;" onclick="toast('User banned.',2000)">Ban</button><button style="flex:1;padding:6px;background:#e2f5e8;color:var(--green);border:none;border-radius:6px;font-size:.72rem;font-weight:800;cursor:pointer;" onclick="toast('Dismissed.',2000)">Dismiss</button><button style="flex:1;padding:6px;background:#e2eef8;color:var(--blue);border:none;border-radius:6px;font-size:.72rem;font-weight:800;cursor:pointer;">Chat</button></div></div>`).join('');
+  const calls=[{ty:'🎥',p1:'Fatima A.',p2:'Ahmed B.',dur:'18m 32s',dt:'Mar 27 2:14 PM',s:'Completed',sc:'bgn'},{ty:'📞',p1:'Yusuf I.',p2:'Mariam S.',dur:'0s',dt:'Mar 27 11:03 AM',s:'Missed',sc:'br'},{ty:'🎥',p1:'Omar K.',p2:'Aisha T.',dur:'2m 04s',dt:'Mar 26 8:40 PM',s:'Flagged',sc:'bb'},{ty:'📞',p1:'Hassan R.',p2:'Sara O.',dur:'44m 10s',dt:'Mar 26 3:00 PM',s:'Completed',sc:'bgn'}];
+  document.getElementById('adminCallList').innerHTML=calls.map(c=>`<div style="background:#fff;border-radius:11px;padding:11px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><div style="display:flex;align-items:center;gap:5px;"><span>${c.ty}</span><p style="font-weight:800;font-size:.83rem;">${c.p1} ↔ ${c.p2}</p></div><span class="bdg ${c.sc}" style="font-size:.58rem;">${c.s}</span></div><p style="font-size:.72rem;color:var(--txt3);">Duration: ${c.dur} · ${c.dt}</p></div>`).join('');
+  const idvs=[{n:'Aisha Khalid',ty:'Passport',ag:'2h ago',s:'Pending',done:false,i:0},{n:'Hassan Al-Rashid',ty:"Driver's License",ag:'5h ago',s:'Pending',done:false,i:1},{n:'Zainab Malik',ty:'National ID',ag:'Mar 26',s:'Approved',done:true,i:2}];
+  document.getElementById('adminIDList').innerHTML=idvs.map(v=>`<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;${v.done?'opacity:.7':''}"><div style="display:flex;justify-content:space-between;margin-bottom:${v.done?'0':'7px'};"><div><p style="font-weight:800;font-size:.85rem;">${v.n}</p><p style="font-size:.7rem;color:var(--txt3);">${v.ty} · ${v.ag}</p></div><span class="bdg ${v.done?'bb':'bgo'}" id="idbdg${v.i}" style="font-size:.58rem;">${v.s}</span></div>${!v.done?`<div style="display:flex;gap:7px;margin-bottom:7px;"><div style="flex:1;background:#f0f4f6;border-radius:7px;height:52px;display:flex;align-items:center;justify-content:center;font-size:.71rem;color:var(--txt3);">📄 ID</div><div style="flex:1;background:#f0f4f6;border-radius:7px;height:52px;display:flex;align-items:center;justify-content:center;font-size:.71rem;color:var(--txt3);">🤳 Selfie</div></div><div style="display:flex;gap:6px;"><button onclick="document.getElementById('idbdg${v.i}').textContent='Approved';document.getElementById('idbdg${v.i}').className='bdg bb';this.closest('[style]').style.opacity='.7';toast('Approved!',2000);" style="flex:1;padding:7px;background:#e2f5e8;color:var(--green);border:none;border-radius:7px;font-size:.77rem;font-weight:800;cursor:pointer;">✓ Approve</button><button onclick="toast('Rejected.',2000);" style="flex:1;padding:7px;background:#fce6e6;color:var(--red);border:none;border-radius:7px;font-size:.77rem;font-weight:800;cursor:pointer;">✗ Reject</button></div>`:''}</div>`).join('');
+}
+
+/* ══ SCREENSHOT PROTECTION ══ */
+document.addEventListener('keydown',function(e){
+  if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','s'].includes(e.key))){
+    e.preventDefault();
+    toast('🚫 Screenshots disabled in Halal-MeetUp for your security.','err',3500);
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   LUDO GAME ENGINE — Canvas-based accurate board
+══════════════════════════════════════════════════════════════ */
+var CELL=320/15;
+var LC={red:'#e74c3c',red_l:'#fadbd8',green:'#27ae60',green_l:'#d5f5e3',blue:'#2980b9',blue_l:'#d6eaf8',yellow:'#f1c40f',yellow_l:'#fef9e7',white:'#f8f9fa',gold:'#c9963a',dark:'#2c3e50'};
+function getCellType(r,c){
+  if(r<6&&c<6)return{type:'home',color:LC.red,light:LC.red_l};
+  if(r<6&&c>=9)return{type:'home',color:LC.green,light:LC.green_l};
+  if(r>=9&&c<6)return{type:'home',color:LC.yellow,light:LC.yellow_l};
+  if(r>=9&&c>=9)return{type:'home',color:LC.blue,light:LC.blue_l};
+  if(r>=6&&r<=8&&c>=6&&c<=8)return{type:'center',color:LC.green};
+  if(r>=1&&r<=5&&c===7)return{type:'path',color:LC.red_l,border:LC.red};
+  if(r===7&&c>=9&&c<=13)return{type:'path',color:LC.green_l,border:LC.green};
+  if(r>=9&&r<=13&&c===7)return{type:'path',color:LC.blue_l,border:LC.blue};
+  if(r===7&&c>=1&&c<=5)return{type:'path',color:LC.yellow_l,border:LC.yellow};
+  var safes=[[2,6],[6,12],[12,8],[8,2],[6,1],[1,8],[8,13],[13,6]];
+  for(var i=0;i<safes.length;i++){if(safes[i][0]===r&&safes[i][1]===c)return{type:'safe',color:'#fff',star:true};}
+  return{type:'path',color:LC.white};
+}
+function makeRedPath(){
+  var p=[];
+  for(var c=1;c<=5;c++)p.push([6,c]);
+  for(var r=5;r>=0;r--)p.push([r,6]);
+  p.push([0,7]);p.push([0,8]);
+  for(var r2=1;r2<=5;r2++)p.push([r2,8]);
+  for(var c2=9;c2<=13;c2++)p.push([6,c2]);
+  p.push([7,14]);p.push([8,14]);
+  for(var c3=13;c3>=9;c3--)p.push([8,c3]);
+  for(var r3=9;r3<=13;r3++)p.push([r3,8]);
+  p.push([14,7]);p.push([14,6]);
+  for(var r4=13;r4>=9;r4--)p.push([r4,6]);
+  for(var c4=5;c4>=1;c4--)p.push([8,c4]);
+  p.push([7,0]);
+  for(var c5=1;c5<=5;c5++)p.push([7,c5]);
+  p.push([7,6]);
+  return p;
+}
+var RED_PATH=makeRedPath();
+var GREEN_OFFSETS=[[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[7,8],[7,9],[7,10],[7,11],[7,12],[7,13]];
+var GREEN_PATH=GREEN_OFFSETS;
+var HOME_YARDS={red:[[1,1],[1,4],[4,1],[4,4]],green:[[1,10],[1,13],[4,10],[4,13]],yellow:[[10,1],[10,4],[13,1],[13,4]],blue:[[10,10],[10,13],[13,10],[13,13]]};
+var LG={active:false,currentTurn:'red',diceValue:0,diceRolled:false,micOn:true,vidOn:true,camOn:false,camStream:null,winner:null,aiTimer:null,pieces:{red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]},playerNames:{red:'You',green:'Fatima'},playerColors:{red:'#e74c3c',green:'#27ae60'}};
+var _boardCanvas=null,_boardCtx=null;
+function initCanvas(){_boardCanvas=document.getElementById('ludoCanvas');if(!_boardCanvas)return false;_boardCtx=_boardCanvas.getContext('2d');return true;}
+function drawBoard(){
+  var ctx=_boardCtx,cv=_boardCanvas;if(!ctx)return;
+  var sz=cv.width,cs=sz/15;
+  ctx.clearRect(0,0,sz,sz);
+  for(var r=0;r<15;r++){
+    for(var cl=0;cl<15;cl++){
+      var ct=getCellType(r,cl);var x=cl*cs,y=r*cs;
+      if(ct.type==='home'){
+        if((r>=1&&r<=4&&cl>=1&&cl<=4)||(r>=1&&r<=4&&cl>=10&&cl<=13)||(r>=10&&r<=13&&cl>=1&&cl<=4)||(r>=10&&r<=13&&cl>=10&&cl<=13)){ctx.fillStyle=ct.light;}
+        else{ctx.fillStyle=ct.color;}
+        ctx.fillRect(x,y,cs,cs);
+        if(r===1&&cl===1)drawHomeBox(ctx,cs,cl,r,'red');
+        if(r===1&&cl===10)drawHomeBox(ctx,cs,cl,r,'green');
+        if(r===10&&cl===1)drawHomeBox(ctx,cs,cl,r,'yellow');
+        if(r===10&&cl===10)drawHomeBox(ctx,cs,cl,r,'blue');
+      } else if(ct.type==='center'){ctx.fillStyle='#fff';ctx.fillRect(x,y,cs,cs);}
+      else{ctx.fillStyle=ct.color||LC.white;ctx.fillRect(x,y,cs,cs);if(ct.border){ctx.strokeStyle=ct.border;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,cs-1,cs-1);}if(ct.star){drawStar(ctx,x+cs/2,y+cs/2,cs*.28,LC.gold);}}
+      ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=.4;ctx.strokeRect(x,y,cs,cs);
+    }
+  }
+  drawCenter(ctx,cs);
+  drawAllPieces(ctx,cs);
+}
+function drawHomeBox(ctx,cs,startCol,startRow,color){var x=startCol*cs,y=startRow*cs,w=4*cs,h=4*cs;var clr={red:LC.red,green:LC.green,yellow:LC.yellow,blue:LC.blue}[color];ctx.strokeStyle=clr;ctx.lineWidth=2;ctx.strokeRect(x+2,y+2,w-4,h-4);var ix=x+cs*.5,iy=y+cs*.5,iw=3*cs,ih=3*cs;ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(ix+2,iy+2,iw-4,ih-4);ctx.strokeStyle=clr;ctx.lineWidth=1.5;ctx.strokeRect(ix+2,iy+2,iw-4,ih-4);}
+function drawCenter(ctx,cs){var cx=7.5*cs,cy=7.5*cs,r=1.5*cs;var colors=[LC.red,LC.green,LC.blue,LC.yellow];var angles=[Math.PI,Math.PI/2,0,-Math.PI/2];for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angles[i],angles[i]+Math.PI/2);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();}ctx.fillStyle='#fff';ctx.font='bold '+(cs*.9)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx,cy);}
+function drawStar(ctx,x,y,r,color){ctx.fillStyle=color||LC.gold;ctx.font=r*2.2+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x,y);}
+function getPieceCanvasPos(color,pieceIdx,cs){var piece=LG.pieces[color][pieceIdx];var path=color==='red'?RED_PATH:GREEN_PATH;if(piece.pos===0){var hy=HOME_YARDS[color];if(!hy)return null;var hp=hy[pieceIdx];return{x:(hp[1]+.5)*cs,y:(hp[0]+.5)*cs};}if(piece.pos>=57){var offsets=[[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]];var ofs=offsets[pieceIdx];return{x:(7.5+ofs[0])*cs,y:(7.5+ofs[1])*cs};}var pathIdx=Math.min(piece.pos-1,path.length-1);var cell=path[pathIdx];if(!cell)return null;var offset=[[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]];var op=offset[pieceIdx%4];return{x:(cell[1]+.5+op[0])*cs,y:(cell[0]+.5+op[1])*cs};}
+function drawAllPieces(ctx,cs){var r2=cs*.32;['red','green'].forEach(function(color){var clr=LG.playerColors[color];LG.pieces[color].forEach(function(piece,idx){var pos=getPieceCanvasPos(color,idx,cs);if(!pos)return;var isActive=(LG.currentTurn===color&&LG.diceRolled&&canMovePiece(color,idx,LG.diceValue));if(isActive){ctx.beginPath();ctx.arc(pos.x,pos.y,r2*1.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,100,0.35)';ctx.fill();}ctx.beginPath();ctx.arc(pos.x,pos.y,r2,0,Math.PI*2);ctx.fillStyle=piece.pos>=57?'rgba(180,180,180,0.5)':clr;ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.85)';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold '+(r2*.85)+'px Nunito,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(piece.pos>=57?'✓':(idx+1),pos.x,pos.y+1);});});}
+function ludoCanvasClick(e){if(!LG.active||LG.currentTurn!=='red'||!LG.diceRolled)return;var rect=_boardCanvas.getBoundingClientRect();var scaleX=_boardCanvas.width/rect.width;var scaleY=_boardCanvas.height/rect.height;var mx=(e.clientX-rect.left)*scaleX;var my=(e.clientY-rect.top)*scaleY;var cs=_boardCanvas.width/15;var bestDist=999,bestIdx=-1;LG.pieces.red.forEach(function(piece,idx){var pos=getPieceCanvasPos('red',idx,cs);if(!pos)return;var d=Math.hypot(mx-pos.x,my-pos.y);if(d<cs*.6&&d<bestDist&&canMovePiece('red',idx,LG.diceValue)){bestDist=d;bestIdx=idx;}});if(bestIdx>=0)movePiece('red',bestIdx);}
+var DICE_DOTS_MAP={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[1,0],[2,0],[0,2],[1,2],[2,2]]};
+function drawDice(val){var cv=document.getElementById('diceCanvas');if(!cv)return;var ctx=cv.getContext('2d');var s=cv.width;ctx.clearRect(0,0,s,s);if(!val||val<1)return;var dots=DICE_DOTS_MAP[val]||[];var ds=s/5;dots.forEach(function(d){var x=(d[1]+0.75)*ds+d[1]*ds*.5;var y=(d[0]+0.75)*ds+d[0]*ds*.5;ctx.beginPath();ctx.arc(x+2,y+2,ds*.38,0,Math.PI*2);ctx.fillStyle='#2c3e50';ctx.fill();});}
+function canMovePiece(color,idx,dv){var piece=LG.pieces[color][idx];if(piece.pos>=57)return false;if(piece.pos===0&&dv!==6)return false;return true;}
+function hasAnyMove(color,dv){return LG.pieces[color].some(function(p,i){return canMovePiece(color,i,dv);});}
+function rollDice(){
+  if(LG.diceRolled){toast('Move a piece first!',1800,'err');return;}
+  if(LG.currentTurn!=='red'){toast('Not your turn!',1800,'err');return;}
+  var diceBtnEl=document.getElementById('ludoDice');
+  if(diceBtnEl)diceBtnEl.style.transform='scale(0.88) rotate(180deg)';
+  setTimeout(function(){
+    if(diceBtnEl)diceBtnEl.style.transform='';
+    LG.diceValue=Math.floor(Math.random()*6)+1;LG.diceRolled=true;
+    drawDice(LG.diceValue);
+    var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');
+    if(res)res.textContent='Rolled: '+LG.diceValue+(LG.diceValue===6?' 🎉 Roll again!':'');
+    updateTurnIndicator('Rolled '+LG.diceValue+' — tap a piece!');
+    if(!hasAnyMove('red',LG.diceValue)){if(hint)hint.textContent='No moves. Passing...';setTimeout(endTurn,1100);}
+    else{if(hint)hint.textContent='Tap glowing piece to move';document.getElementById('skipTurnBtn').style.display='inline-block';}
+    drawBoard();
+  },320);
+}
+function movePiece(color,idx){
+  if(color==='red'){if(!LG.diceRolled){toast('Roll first!',1500,'err');return;}if(LG.currentTurn!=='red'){toast('Not your turn!',1500,'err');return;}}
+  var piece=LG.pieces[color][idx];var dv=LG.diceValue;
+  if(!canMovePiece(color,idx,dv)){if(color==='red')toast('Cannot move this piece.',1500,'err');return;}
+  if(piece.pos===0){piece.pos=1;if(color==='red')toast('Piece '+(idx+1)+' entered the board!',1400);}
+  else{var path=color==='red'?RED_PATH:GREEN_PATH;var newPos=piece.pos+dv;if(newPos>=path.length){piece.pos=57;}else{piece.pos=newPos;}if(piece.pos>=57){var done=LG.pieces[color].filter(function(p){return p.pos>=57;}).length;if(color==='red')toast('Piece home! '+done+'/4 done.',1800);if(done>=4){showWinner(color);return;}}}
+  document.getElementById('skipTurnBtn').style.display='none';
+  drawBoard();updateScoreDisplay();
+  if(dv===6){LG.diceRolled=false;drawDice(0);updateTurnIndicator('Rolled 6 — roll again!');document.getElementById('diceResult').textContent='Tap to roll again!';}
+  else endTurn();
+}
+function endTurn(){
+  LG.diceRolled=false;LG.diceValue=0;drawDice(0);
+  document.getElementById('skipTurnBtn').style.display='none';
+  var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');
+  if(LG.currentTurn==='red'){
+    LG.currentTurn='green';
+    document.getElementById('lp-you').classList.remove('active-turn');
+    document.getElementById('lp-them').classList.add('active-turn');
+    updateTurnIndicator(LG.playerNames.green+"'s turn...");
+    if(res)res.textContent='Waiting for '+LG.playerNames.green+'...';
+    if(hint)hint.textContent='AI is thinking...';
+    LG.aiTimer=setTimeout(aiTakeTurn,1400);
+  } else {
+    LG.currentTurn='red';
+    document.getElementById('lp-them').classList.remove('active-turn');
+    document.getElementById('lp-you').classList.add('active-turn');
+    updateTurnIndicator('Your turn — Roll!');
+    if(res)res.textContent='Tap dice to roll';
+    if(hint)hint.textContent='Roll a 6 to enter play';
+  }
+}
+function aiTakeTurn(){
+  if(LG.currentTurn!=='green'||!LG.active)return;
+  var dv=Math.floor(Math.random()*6)+1;LG.diceValue=dv;LG.diceRolled=true;drawDice(dv);
+  document.getElementById('diceResult').textContent=LG.playerNames.green+' rolled: '+dv;
+  updateTurnIndicator(LG.playerNames.green+' rolled '+dv+'...');
+  setTimeout(function(){
+    if(LG.currentTurn!=='green'||!LG.active)return;
+    var best=-1,bestPos=-1;
+    LG.pieces.green.forEach(function(p,i){if(canMovePiece('green',i,dv)&&p.pos>bestPos){bestPos=p.pos;best=i;}});
+    if(best>=0)movePiece('green',best);
+    else{if(dv===6){LG.diceRolled=false;drawDice(0);setTimeout(aiTakeTurn,800);}else endTurn();}
+  },700);
+}
+function updateTurnIndicator(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
+function updateScoreDisplay(){var rDone=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gDone=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rHome=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gHome=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rHome+' · ✓×'+rDone;if(ts)ts.textContent='🏠×'+gHome+' · ✓×'+gDone;}
+function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var banner=document.getElementById('ludoWinBanner');var wt=document.getElementById('winnerText');if(banner)banner.style.display='flex';if(wt)wt.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
+function toggleCamera(){if(LG.camOn)stopCamera();else startCamera();}
+async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera is live!',2000);}catch(err){toast('Camera access denied or not available.',3000,'err');if(btn){btn.textContent='📵';btn.style.background='';}LG.camOn=false;}}
+function stopCamera(){if(LG.camStream){LG.camStream.getTracks().forEach(function(t){t.stop();});LG.camStream=null;}LG.camOn=false;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=null;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='none';var btn=document.getElementById('ludo-cam-btn');if(btn){btn.textContent='📵';btn.style.background='';}toast('Camera off.',1500);}
+async function togglePiP(){var vid=document.getElementById('camVideo');if(!vid||!document.pictureInPictureEnabled)return;try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else await vid.requestPictureInPicture();}catch(e){toast('PiP not supported in this browser.',2000,'err');}}
+function toggleLudoAV(type){if(type==='mic'){LG.micOn=!LG.micOn;var btn=document.getElementById('ludo-mic');if(btn){btn.textContent=LG.micOn?'🎙️':'🔇';btn.classList.toggle('off',!LG.micOn);}toast(LG.micOn?'Mic on':'Mic muted',1200);}else{LG.vidOn=!LG.vidOn;var btn=document.getElementById('ludo-vid');if(btn){btn.textContent=LG.vidOn?'🎥':'📷';btn.classList.toggle('off',!LG.vidOn);}toast(LG.vidOn?'Video on':'Video off',1200);}}
+function openLudoInvite(){var subCheck=document.getElementById('ludoSubCheck');var startBtn=document.getElementById('ludoStartBtn');if(!S.premium){if(subCheck)subCheck.style.display='block';if(startBtn){startBtn.textContent='👑 Get Premium to Host ($10/week)';startBtn.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(subCheck)subCheck.style.display='none';if(startBtn){startBtn.textContent='🎲 Send Ludo Invite';startBtn.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
+function startLudo(){
+  if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}
+  MC('m-ludo-invite');
+  LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;
+  clearTimeout(LG.aiTimer);
+  LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};
+  var matchName=S.profiles[S.chatId]?S.profiles[S.chatId].name.split(' ')[0]:'Friend';
+  LG.playerNames={red:'You',green:matchName};
+  document.getElementById('lp-you-name').textContent='You (Red)';
+  document.getElementById('lp-them-name').textContent=matchName+' (Green)';
+  document.getElementById('lp-you').classList.add('active-turn');
+  document.getElementById('lp-them').classList.remove('active-turn');
+  LG.micOn=true;LG.vidOn=true;
+  var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');
+  if(mic){mic.textContent='🎙️';mic.classList.remove('off');}
+  if(vid){vid.textContent='🎥';vid.classList.remove('off');}
+  var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';
+  if(S.msgs[S.chatId])S.msgs[S.chatId].push({id:'ludo-'+Date.now(),f:'me',t:'🎲 Ludo invite sent! Join me - audio and video are on. In sha Allah 😊',ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  G('s-ludo');
+  setTimeout(function(){
+    if(!initCanvas())return;
+    _boardCanvas.onclick=ludoCanvasClick;
+    drawBoard();drawDice(0);updateScoreDisplay();updateTurnIndicator('Your turn — Roll the dice!');
+  },60);
+  toast('🎲 Ludo started! Audio & Video live.',2200);
+}
+function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);stopCamera();G('s-chat');toast('Game ended. Back to chat.',1800);}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',function(){
+  initSwipe();
+  renderConvList();
+  var ci=document.getElementById('chatInp');
+  if(ci)ci.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+});
+</script>
+</body>
+</html>
