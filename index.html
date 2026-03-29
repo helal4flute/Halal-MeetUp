@@ -534,11 +534,9 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     </div>
     <div class="fg"><label>Email Address</label><input id="li-em" type="email" placeholder="you@example.com"/></div>
     <div class="fg"><label>Password</label><input id="li-pw" type="password" placeholder="••••••••"/></div>
-    <div style="text-align:right;margin-bottom:18px;"><a href="#" style="font-size:.81rem;color:var(--teal);font-weight:700;">Forgot password?</a></div>
+    <div style="text-align:right;margin-bottom:18px;"><a href="#" onclick="G('s-forgot-pw');return false;" style="font-size:.81rem;color:var(--teal);font-weight:700;">Forgot password?</a></div>
     <button class="btn bp bfull" onclick="doLogin()" style="margin-bottom:10px;">Sign In</button>
-    <div style="background:var(--cream2);border-radius:var(--rs);padding:11px 13px;font-size:.74rem;color:var(--txt3);text-align:center;margin-bottom:16px;">
-      💡 <strong>Admin test:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="751411181c1b351d14191419581810100100055b161a18">[email&#160;protected]</a> → redirects to Admin Portal
-    </div>
+
     <div style="border-top:1px solid var(--sand);padding-top:16px;text-align:center;">
       <p style="font-size:.83rem;color:var(--txt3);">New here? <a href="#" onclick="G('s-welcome');return false;" style="color:var(--teal);font-weight:800;">Create Account</a></p>
     </div>
@@ -1541,9 +1539,55 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     </button>
   </div>
 </div>
+
+<!-- ══════════════ FORGOT PASSWORD ══════════════ -->
+<div class="scr" id="s-forgot-pw" style="background:var(--cream);">
+  <div class="tbar">
+    <button class="ibtn back-ibtn" onclick="G('s-login')">&#8592;</button>
+    <h2>Reset Password</h2>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:36px 24px 28px;text-align:center;">
+    <div style="width:76px;height:76px;background:#dff2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.3rem;margin-bottom:18px;">🔑</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--teal4);margin-bottom:8px;">Forgot Password?</h3>
+    <p style="font-size:.84rem;color:var(--txt3);line-height:1.7;margin-bottom:24px;">Enter your registered email address and we will send you a reset code.</p>
+    <div class="fg" style="width:100%;margin-bottom:14px;text-align:left;">
+      <label>Email Address</label>
+      <input id="fp-email" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div id="fp-code-section" style="display:none;width:100%;">
+      <p style="font-size:.82rem;color:var(--teal);font-weight:700;margin-bottom:12px;">Enter the 6-digit code sent to your email:</p>
+      <div class="orow" id="fp-otp-cells" style="margin-bottom:10px;">
+        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" oninput="otpInput(this,'fp-otp-cells',0)" onkeydown="otpKey(event,this,'fp-otp-cells',0)" onpaste="otpPaste(event,'fp-otp-cells')"/>
+        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',1)" onkeydown="otpKey(event,this,'fp-otp-cells',1)"/>
+        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',2)" onkeydown="otpKey(event,this,'fp-otp-cells',2)"/>
+        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',3)" onkeydown="otpKey(event,this,'fp-otp-cells',3)"/>
+        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',4)" onkeydown="otpKey(event,this,'fp-otp-cells',4)"/>
+        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',5)" onkeydown="otpKey(event,this,'fp-otp-cells',5)"/>
+      </div>
+      <div class="fg" style="text-align:left;">
+        <label>New Password</label>
+        <input id="fp-new-pw" type="password" placeholder="Minimum 8 characters" autocomplete="new-password"/>
+      </div>
+      <div class="fg" style="text-align:left;">
+        <label>Confirm New Password</label>
+        <input id="fp-new-pw2" type="password" placeholder="Repeat new password" autocomplete="new-password"/>
+      </div>
+    </div>
+    <p id="fp-status" style="font-size:.79rem;color:var(--txt3);min-height:18px;margin-bottom:10px;"></p>
+    <button id="fp-btn" class="btn bp bfull" onclick="forgotPasswordStep()" style="margin-bottom:12px;font-size:.93rem;padding:14px;">
+      Send Reset Code
+    </button>
+    <p style="font-size:.79rem;color:var(--txt3);">Remembered it? <a href="#" onclick="G('s-login');return false;" style="color:var(--teal);font-weight:700;">Sign In</a></p>
+  </div>
+</div>
+
 </div><!-- /#app -->
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+
+
+
 
 
 
@@ -1690,8 +1734,8 @@ function doLogin(){
   const pw=document.getElementById('li-pw').value;
   if(!em||!pw){toast('Please enter email and password.',2500,'err');return;}
   if(S.admins.includes(em)){
-    // Admin logs in via API too — must exist in DB with role='admin'
-    toast('Verifying admin access...',2000);
+    // Admin MUST authenticate via API — no bypass allowed
+    toast('Verifying admin credentials...',2000);
     fetch(API+'/api/auth/login',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -1700,25 +1744,23 @@ function doLogin(){
     .then(r=>r.json())
     .then(function(res){
       if(!res.success){
-        // Fallback: allow admin bypass if DB not yet seeded
-        S.user={id:'admin-local',email:em,firstName:'Admin',role:'admin',premium:true};
-        S.token=null;
-        toast('🔐 Admin access granted (local).',2000);
-        initAdmin();G('s-admin');
+        toast('❌ '+(res.error||'Incorrect admin password.'),3500,'err');
+        document.getElementById('li-pw').classList.add('field-err');
+        return;
+      }
+      if(res.data.user.role!=='admin'){
+        toast('Account does not have admin access. Please sign in with an admin account.',3500,'err');
         return;
       }
       S.user=res.data.user;
       S.token=res.data.token;
       S.premium=true;
       toast('🔐 Admin access granted.',2000);
-      initAdmin();G('s-admin');
+      initAdmin();
+      G('s-admin');
     })
     .catch(function(){
-      // Network error — allow local admin access
-      S.user={id:'admin-local',email:em,firstName:'Admin',role:'admin',premium:true};
-      S.token=null;
-      toast('🔐 Admin access granted (offline).',2000);
-      initAdmin();G('s-admin');
+      toast('❌ Connection error. Please try again.',3000,'err');
     });
     return;
   }
@@ -2589,6 +2631,116 @@ function openChatLegacy(id){
 // Alias for backward compatibility with HTML onclick="openChat(id)"
 function openChat(id){openChatLegacy(id);}
 
+
+/* ══ FORGOT PASSWORD ══ */
+var _fpStep = 'email'; // 'email' | 'reset'
+
+function forgotPasswordStep() {
+  if (_fpStep === 'email') {
+    var email = document.getElementById('fp-email').value.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      toast('Please enter a valid email address.', 2500, 'err'); return;
+    }
+    var btn = document.getElementById('fp-btn');
+    var st  = document.getElementById('fp-status');
+    if (btn) btn.textContent = 'Sending...';
+    if (st)  st.textContent  = '';
+
+    // Use send-verification endpoint to send a reset code
+    fetch(API + '/api/auth/send-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, name: 'Member', type: 'reset' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (btn) btn.textContent = 'Reset Password';
+      if (res.success) {
+        S._fpEmail = email;
+        _fpStep = 'reset';
+        // Show code section
+        var section = document.getElementById('fp-code-section');
+        if (section) section.style.display = 'block';
+        var emailInp = document.getElementById('fp-email');
+        if (emailInp) emailInp.disabled = true;
+        if (btn) btn.textContent = 'Reset Password';
+        if (st)  st.textContent  = '';
+        // Auto-fill code if returned (dev mode)
+        if (res.data && res.data.code) {
+          var cells = document.querySelectorAll('#fp-otp-cells .ocell');
+          res.data.code.split('').forEach(function(d, i) { if(cells[i]) cells[i].value = d; });
+          if (st) st.textContent = 'Code: ' + res.data.code + ' (check your email)';
+        }
+        toast('📧 Reset code sent to ' + email, 4000);
+      } else {
+        if (st) st.textContent = res.error || 'Email not found. Please check and try again.';
+        toast('❌ ' + (res.error || 'Could not send reset code.'), 3500, 'err');
+      }
+    })
+    .catch(function() {
+      if (btn) btn.textContent = 'Send Reset Code';
+      toast('❌ Connection error. Please try again.', 3000, 'err');
+    });
+
+  } else {
+    // Step 2: verify code and set new password
+    var cells   = document.querySelectorAll('#fp-otp-cells .ocell');
+    var code    = Array.from(cells).map(function(c) { return c.value; }).join('');
+    var newPw   = document.getElementById('fp-new-pw').value;
+    var newPw2  = document.getElementById('fp-new-pw2').value;
+    var st      = document.getElementById('fp-status');
+
+    if (code.length < 6) { toast('Please enter the 6-digit code.', 2500, 'err'); return; }
+    if (!newPw || newPw.length < 8) { toast('Password must be at least 8 characters.', 2500, 'err'); return; }
+    if (newPw !== newPw2) { toast('Passwords do not match.', 2500, 'err'); return; }
+
+    if (st) st.textContent = 'Verifying...';
+
+    // Verify code first
+    fetch(API + '/api/auth/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: S._fpEmail, code: code })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success) {
+        if (st) st.textContent = 'Incorrect code. Try again.';
+        toast('❌ Incorrect code.', 2500, 'err'); return;
+      }
+      // Code verified — now reset password
+      return fetch(API + '/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: S._fpEmail, code: code, new_password: newPw })
+      }).then(function(r) { return r.json(); });
+    })
+    .then(function(res) {
+      if (!res) return; // already handled error above
+      if (res.success) {
+        if (st) st.textContent = '';
+        toast('✅ Password reset! Please sign in with your new password.', 4000);
+        _fpStep = 'email';
+        // Reset the form
+        document.getElementById('fp-email').value = '';
+        document.getElementById('fp-email').disabled = false;
+        document.getElementById('fp-new-pw').value = '';
+        document.getElementById('fp-new-pw2').value = '';
+        document.querySelectorAll('#fp-otp-cells .ocell').forEach(function(c){c.value='';});
+        document.getElementById('fp-code-section').style.display = 'none';
+        document.getElementById('fp-btn').textContent = 'Send Reset Code';
+        setTimeout(function() { G('s-login'); }, 1500);
+      } else {
+        if (st) st.textContent = res.error || 'Reset failed. Try again.';
+        toast('❌ ' + (res.error || 'Reset failed.'), 3000, 'err');
+      }
+    })
+    .catch(function() {
+      if (st) st.textContent = '';
+      toast('❌ Connection error. Try again.', 3000, 'err');
+    });
+  }
+}
 /* ══ SWIPE (DISCOVER) ══ */
 const DS={on:false,sx:0,cx:0};
 function initSwipe(){
@@ -2798,6 +2950,11 @@ function runSearch(){
 /* ══ ADMIN ══ */
 function adminTab(i){for(let j=0;j<6;j++){const t=document.getElementById('at'+j),p=document.getElementById('ap'+j);if(t)t.classList.toggle('on',j===i);if(p)p.style.display=j===i?'block':'none';}}
 function initAdmin(){
+  // Ensure token is set for API calls (needed for admin endpoints)
+  if(!S.token){
+    toast('Session expired. Please sign in again.', 3000, 'err');
+    G('s-login'); return;
+  }
   // ── Production banner (insert only once) ──
   var statsEl=document.getElementById('ap0');
   if(statsEl&&!document.getElementById('prod-banner')){
