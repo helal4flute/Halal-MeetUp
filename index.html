@@ -589,7 +589,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <div style="background:#dff2f2;border-radius:var(--rs);padding:10px 12px;font-size:.77rem;color:var(--teal4);margin-bottom:14px;line-height:1.7;">
       📱  to verify number<br>📧 OTP then sent to verify email<br>🎉 Welcome email sent after verification
     </div>
-    <button class="btn bp bfull" onclick="reg1Next()">Verify Phone →</button>
+    <button class="btn bp bfull" onclick="reg1Next()">Send Email Code →</button>
   </div>
 </div>
 
@@ -613,7 +613,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <button class="btn bp bfull" onclick="verifyEmailCode()" style="margin-bottom:12px;font-size:.95rem;padding:14px;">Verify & Continue →</button>
     <p style="font-size:.8rem;color:var(--txt3);">Didn't receive it? Check your spam folder or<br>
       <a href="#" onclick="resendEmailCode();return false;" style="color:var(--teal);font-weight:700;">Send a new code</a></p>
-    <p style="font-size:.72rem;color:var(--txt3);margin-top:14px;line-height:1.6;">Code expires in 10 minutes.<br>Sent from infohalalmeetup@gmail.com</p>
+    <p style="font-size:.72rem;color:var(--txt3);margin-top:14px;line-height:1.6;">Code expires in 10 minutes.<br>Sent from <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="751c1b131a1d14191419181010010005351218141c195b161a18">[email&#160;protected]</a></p>
   </div>
 </div>
 
@@ -1523,7 +1523,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 </div>
 </div><!-- /#app -->
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const API = 'https://halal-meetup-api-production.up.railway.app';
 
 function apiCall(endpoint, method, body) {
@@ -1747,21 +1747,53 @@ function reg1Next(){
   var dob=document.getElementById('rg-dob').value;
   if(!fn||!ln||!ph||!em||!dob){toast('Please fill in all required fields.','err',3000);return;}
   if(!em.includes('@')||!em.includes('.')){toast('Please enter a valid email address.','err',2500);return;}
-  // Store all step 1 data
+  // Save step 1 data
   S.regData={fn:fn,ln:ln,ph:ph,em:em,dob:dob,phone:ph};
-  // Send email verification code via API
-  sendEmailVerification(em,fn);
+  // Send email verification code — no phone OTP
+  toast('Sending verification code to '+em+'...',2500);
+  fetch(API+'/api/auth/send-verification',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:em,name:fn})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.success){
+      var target=document.getElementById('otp-em-target');
+      if(target)target.textContent=em;
+      document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c){c.value='';});
+      var st=document.getElementById('otp-em-status');
+      if(res.data&&res.data.emailSent){
+        // Real email sent via SendGrid
+        if(st)st.textContent='';
+        toast('📧 Verification code sent to '+em,4000);
+      } else if(res.data&&res.data.code){
+        // No SendGrid — auto-fill code and show it to user
+        var code=res.data.code;
+        var cells=document.querySelectorAll('#otp-em-cells .ocell');
+        cells.forEach(function(cell,i){cell.value=code[i]||'';});
+        if(st)st.textContent='Your code: '+code+' (auto-filled)';
+        toast('📧 Code: '+code+' — tap Verify to continue',8000);
+      } else {
+        if(st)st.textContent='';
+        toast('📧 Verification code sent to '+em,4000);
+      }
+      G('s-otp-em');
+    } else {
+      toast('❌ '+(res.error||'Could not send email. Check your connection and try again.'),4000,'err');
+    }
+  })
+  .catch(function(e){
+    console.error('send-verification error:',e);
+    toast('❌ Connection error. Please check your internet and try again.',3500,'err');
+  });
 }
-
-function sendEmailVerification(email, name){
-  var statusEl=document.getElementById('otp-em-status');
-  // Show the email on the screen
+function sendEmailVerification(email,name){
+  var st=document.getElementById('otp-em-status');
+  if(st)st.textContent='Sending...';
   var target=document.getElementById('otp-em-target');
   if(target)target.textContent=email;
-  // Clear any previous code
   document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c){c.value='';});
-  if(statusEl)statusEl.textContent='Sending...';
-  // Call API to send verification email
   fetch(API+'/api/auth/send-verification',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -1769,23 +1801,18 @@ function sendEmailVerification(email, name){
   })
   .then(function(r){return r.json();})
   .then(function(res){
+    if(st)st.textContent='';
     if(res.success){
-      S.otpEmail=res.data&&res.data.code?res.data.code:null; // store if API returns it (dev mode)
-      if(statusEl)statusEl.textContent='';
-      toast('📧 Check your inbox — verification code sent!',4500);
-      G('s-otp-em');
+      toast('📧 New code sent to '+email,3500);
     } else {
-      toast('❌ '+( res.error||'Could not send email. Try again.'),3500,'err');
+      toast('❌ '+(res.error||'Failed to send code.'),3000,'err');
     }
   })
   .catch(function(){
-    toast('❌ Connection error. Check your internet and try again.',3000,'err');
+    if(st)st.textContent='';
+    toast('❌ Connection error.',2500,'err');
   });
 }
-// prefillOTP removed — no longer needed
-
-// resendOTP removed — replaced by resendEmailCode
-
 function otpInput(el,grpId,idx){
   const cells=document.querySelectorAll('#'+grpId+' .ocell');
   if(el.value&&idx<cells.length-1)cells[idx+1].focus();
@@ -2844,9 +2871,10 @@ document.addEventListener('DOMContentLoaded',function(){
   initSwipe();
   renderConvList();
   var ci=document.getElementById('chatInp');
-  if(ci)ci.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  if(ci)ci.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+  });
 });
-
 </script>
 </body>
 </html>
