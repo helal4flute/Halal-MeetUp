@@ -587,45 +587,21 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     </div>
     <div class="ebanner" id="ebanner" style="display:none;"><span style="font-size:1.1rem;">📧</span><div></div></div>
     <div style="background:#dff2f2;border-radius:var(--rs);padding:10px 12px;font-size:.77rem;color:var(--teal4);margin-bottom:14px;line-height:1.7;">
-      📱 OTP sent to your phone to verify number<br>📧 OTP then sent to verify email<br>🎉 Welcome email sent after verification
+      📱  to verify number<br>📧 OTP then sent to verify email<br>🎉 Welcome email sent after verification
     </div>
     <button class="btn bp bfull" onclick="reg1Next()">Verify Phone →</button>
   </div>
 </div>
 
-<!-- ══════════════ S5: OTP PHONE ══════════════ -->
-<div class="scr" id="s-otp-ph" style="background:var(--cream);">
-  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg1')">&#8592;</button><h2>Phone Verification</h2></div>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 24px;text-align:center;">
-    <div style="width:70px;height:70px;background:#dff2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.1rem;margin-bottom:14px;">📱</div>
-    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--teal4);margin-bottom:7px;">Check Your Phone</h3>
-    <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:3px;">6-digit code sent to</p>
-    <p style="font-weight:800;color:var(--txt);margin-bottom:5px;" id="otp-ph-target">+1 555-0000</p>
-    <p id="otp-ph-hint" style="font-size:.82rem;color:var(--teal);font-weight:800;background:#dff2f2;padding:6px 14px;border-radius:8px;"></p>
-    <div class="orow" id="otp-ph-cells">
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',0)" onkeydown="otpKey(event,this,'otp-ph-cells',0)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',1)" onkeydown="otpKey(event,this,'otp-ph-cells',1)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',2)" onkeydown="otpKey(event,this,'otp-ph-cells',2)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',3)" onkeydown="otpKey(event,this,'otp-ph-cells',3)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',4)" onkeydown="otpKey(event,this,'otp-ph-cells',4)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',5)" onkeydown="otpKey(event,this,'otp-ph-cells',5)"/>
-    </div>
-    <button class="btn bp bfull" onclick="verifyOTP('otp-ph-cells','phone')" style="margin-bottom:12px;">Verify & Continue →</button>
-    <p style="font-size:.79rem;color:var(--txt3);">Didn't get it? <a href="#" onclick="resendOTP('phone');return false;" style="color:var(--teal);font-weight:700;">Resend</a></p>
-  </div>
-</div>
-
-<!-- ══════════════ S6: OTP EMAIL ══════════════ -->
+<!-- ══════════════ S5: EMAIL VERIFICATION ══════════════ -->
 <div class="scr" id="s-otp-em" style="background:var(--cream);">
-  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-otp-ph')">&#8592;</button><h2>Email Verification</h2></div>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 24px;text-align:center;">
-    <div style="width:70px;height:70px;background:#fdf0dc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.1rem;margin-bottom:14px;">📧</div>
-    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--teal4);margin-bottom:7px;">Check Your Email</h3>
-    <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:3px;">6-digit code sent to</p>
-    <p style="font-weight:800;color:var(--txt);margin-bottom:5px;" id="otp-em-target"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="433a2c3603263b222e332f266d202c2e">[email&#160;protected]</a></p>
-    <p id="otp-em-hint" style="font-size:.82rem;color:var(--teal);font-weight:800;background:#fdf0dc;padding:6px 14px;border-radius:8px;"></p>
-    <p style="font-size:.74rem;color:var(--teal);">(Demo: code pre-filled ↓)</p>
-    <div class="orow" id="otp-em-cells">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-reg1')">&#8592;</button><h2>Email Verification</h2></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:36px 24px 28px;text-align:center;">
+    <div style="width:76px;height:76px;background:linear-gradient(135deg,#dff2f2,#fdf0dc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.3rem;margin-bottom:18px;box-shadow:0 4px 16px rgba(13,115,119,.15);">📧</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--teal4);margin-bottom:8px;">Verify Your Email</h3>
+    <p style="font-size:.85rem;color:var(--txt3);line-height:1.7;margin-bottom:6px;">We sent a 6-digit code to</p>
+    <p style="font-weight:800;font-size:.95rem;color:var(--teal4);margin-bottom:18px;" id="otp-em-target">your email</p>
+    <div class="orow" id="otp-em-cells" style="margin-bottom:10px;">
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',0)" onkeydown="otpKey(event,this,'otp-em-cells',0)"/>
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',1)" onkeydown="otpKey(event,this,'otp-em-cells',1)"/>
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',2)" onkeydown="otpKey(event,this,'otp-em-cells',2)"/>
@@ -633,13 +609,16 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',4)" onkeydown="otpKey(event,this,'otp-em-cells',4)"/>
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',5)" onkeydown="otpKey(event,this,'otp-em-cells',5)"/>
     </div>
-    <div class="ebanner" style="width:100%;margin-bottom:10px;">
-      <span style="font-size:1.1rem;">🎉</span><div>After verifying, a <strong>welcome email</strong> will be sent from Halal-MeetUp to your inbox!</div>
-    </div>
-    <button class="btn bp bfull" onclick="verifyOTP('otp-em-cells','email')" style="margin-bottom:12px;">Verify Email →</button>
-    <p style="font-size:.79rem;color:var(--txt3);">Didn't get it? <a href="#" onclick="resendOTP('email');return false;" style="color:var(--teal);font-weight:700;">Resend</a></p>
+    <p id="otp-em-status" style="font-size:.78rem;color:var(--txt3);min-height:20px;margin-bottom:12px;"></p>
+    <button class="btn bp bfull" onclick="verifyEmailCode()" style="margin-bottom:12px;font-size:.95rem;padding:14px;">Verify & Continue →</button>
+    <p style="font-size:.8rem;color:var(--txt3);">Didn't receive it? Check your spam folder or<br>
+      <a href="#" onclick="resendEmailCode();return false;" style="color:var(--teal);font-weight:700;">Send a new code</a></p>
+    <p style="font-size:.72rem;color:var(--txt3);margin-top:14px;line-height:1.6;">Code expires in 10 minutes.<br>Sent from infohalalmeetup@gmail.com</p>
   </div>
 </div>
+
+
+
 
 <!-- ══════════════ S7: REG STEP 2 ══════════════ -->
 <div class="scr" id="s-reg2" style="background:var(--cream);">
@@ -1384,17 +1363,15 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="scroll" style="padding:12px 12px 18px;">
     <!-- TAB 0 -->
     <div id="ap0">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;">
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Total Users</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">4,821</p><p style="font-size:.69rem;color:var(--green);">↑ 12% this week</p></div>
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Premium</p><p style="font-size:1.65rem;font-weight:800;color:var(--gold3);">342</p><p style="font-size:.69rem;color:var(--green);">↑ 8% this week</p></div>
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Matches</p><p style="font-size:1.65rem;font-weight:800;color:var(--blue);">1,204</p><p style="font-size:.69rem;color:var(--green);">↑ 5% this week</p></div>
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Revenue (wk)</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">$3,420</p><p style="font-size:.69rem;color:var(--green);">↑ 15% vs last</p></div>
+      <div id="admin-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;">
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Total Users</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Premium</p><p style="font-size:1.65rem;font-weight:800;color:var(--gold3);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Matches</p><p style="font-size:1.65rem;font-weight:800;color:var(--blue);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Revenue (wk)</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
       </div>
-      <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);margin-bottom:8px;">
+      <div id="admin-pending-actions" style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);margin-bottom:8px;">
         <p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">⚠️ Pending Actions</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f4f4f4;"><p style="font-size:.81rem;color:var(--txt2);">ID Verifications pending</p><span class="bdg bgo">18</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f4f4f4;"><p style="font-size:.81rem;color:var(--txt2);">Active reports</p><span class="bdg br">7</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;"><p style="font-size:.81rem;color:var(--txt2);">Blocked msgs (24h)</p><span class="bdg bb">143</span></div>
+        <p style="font-size:.8rem;color:var(--txt3);text-align:center;padding:8px;">Loading...</p>
       </div>
     </div>
     <!-- TAB 1 -->
@@ -1404,11 +1381,11 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     </div>
     <!-- TAB 2 -->
     <div id="ap2" style="display:none;">
-      <div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+      <div id="admin-sub-summary" style="background:#fff;border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
         <p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">Revenue</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div style="background:#dff2f2;border-radius:9px;padding:10px;text-align:center;"><p style="font-size:1.35rem;font-weight:800;color:var(--teal);">$3,420</p><p style="font-size:.69rem;color:var(--txt3);">This Week</p></div>
-          <div style="background:#fdf0dc;border-radius:9px;padding:10px;text-align:center;"><p style="font-size:1.35rem;font-weight:800;color:var(--gold3);">342</p><p style="font-size:.69rem;color:var(--txt3);">Active Subs</p></div>
+          <div style="background:#dff2f2;border-radius:9px;padding:10px;text-align:center;"><p id="admin-revenue-val" style="font-size:1.35rem;font-weight:800;color:var(--teal);">$0.00</p><p style="font-size:.69rem;color:var(--txt3);">This Week</p></div>
+          <div style="background:#fdf0dc;border-radius:9px;padding:10px;text-align:center;"><p id="admin-subs-val" style="font-size:1.35rem;font-weight:800;color:var(--gold3);">0</p><p style="font-size:.69rem;color:var(--txt3);">Active Subs</p></div>
         </div>
       </div>
       <div id="adminSubList"></div>
@@ -1641,7 +1618,7 @@ const S={
   chatPartnerId:null, // userId of chat partner
   pIdx:0,
   callTimer:null,callSecs:0,premium:false,
-  otpPhone:'',otpEmail:'',
+  emailVerified:false,
   unread:{},
   blocked:[],
   deletedConvs:[],
@@ -1763,44 +1740,52 @@ function loadUserSession(){
 
 /* ══ REGISTRATION ══ */
 function reg1Next(){
-  const fn=document.getElementById('rg-fn').value.trim();
-  const ln=document.getElementById('rg-ln').value.trim();
-  const ph=document.getElementById('rg-ph').value.trim();
-  const em=document.getElementById('rg-em').value.trim();
-  const dob=document.getElementById('rg-dob').value;
+  var fn=document.getElementById('rg-fn').value.trim();
+  var ln=document.getElementById('rg-ln').value.trim();
+  var ph=document.getElementById('rg-ph').value.trim();
+  var em=document.getElementById('rg-em').value.trim();
+  var dob=document.getElementById('rg-dob').value;
   if(!fn||!ln||!ph||!em||!dob){toast('Please fill in all required fields.','err',3000);return;}
-  if(!em.includes('@')){toast('Please enter a valid email.','err',2500);return;}
-  S.regData={fn,ln,ph,em,dob,phone:ph};
-  S.otpPhone=String(Math.floor(100000+Math.random()*900000));
-  document.getElementById('otp-ph-target').textContent=ph;
-  // Auto-fill OTP cells for testing (remove prefillOTP in production with real SMS)
-  prefillOTP('otp-ph-cells',S.otpPhone);
-  // Show OTP prominently — remove this toast when Twilio is connected
-  toast('📱 Your code: '+S.otpPhone+' (auto-filled)',6000);
-  // Show code visibly below the OTP input
-  var hint=document.getElementById('otp-ph-hint');
-  if(hint)hint.textContent='Your code: '+S.otpPhone+' — tap Verify to continue';
-  G('s-otp-ph');
+  if(!em.includes('@')||!em.includes('.')){toast('Please enter a valid email address.','err',2500);return;}
+  // Store all step 1 data
+  S.regData={fn:fn,ln:ln,ph:ph,em:em,dob:dob,phone:ph};
+  // Send email verification code via API
+  sendEmailVerification(em,fn);
 }
-function prefillOTP(cellsId,code){
-  setTimeout(()=>{
-    const cells=document.querySelectorAll('#'+cellsId+' .ocell');
-    cells.forEach((c,i)=>{c.value=code[i]||'';});
-  },400);
+
+function sendEmailVerification(email, name){
+  var statusEl=document.getElementById('otp-em-status');
+  // Show the email on the screen
+  var target=document.getElementById('otp-em-target');
+  if(target)target.textContent=email;
+  // Clear any previous code
+  document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c){c.value='';});
+  if(statusEl)statusEl.textContent='Sending...';
+  // Call API to send verification email
+  fetch(API+'/api/auth/send-verification',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,name:name||'Member'})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.success){
+      S.otpEmail=res.data&&res.data.code?res.data.code:null; // store if API returns it (dev mode)
+      if(statusEl)statusEl.textContent='';
+      toast('📧 Check your inbox — verification code sent!',4500);
+      G('s-otp-em');
+    } else {
+      toast('❌ '+( res.error||'Could not send email. Try again.'),3500,'err');
+    }
+  })
+  .catch(function(){
+    toast('❌ Connection error. Check your internet and try again.',3000,'err');
+  });
 }
-function resendOTP(type){
-  if(type==='phone'){
-    S.otpPhone=String(Math.floor(100000+Math.random()*900000));
-    prefillOTP('otp-ph-cells',S.otpPhone);
-    toast('📱 New code: '+S.otpPhone+' (auto-filled)',5000);
-    var h=document.getElementById('otp-ph-hint');if(h)h.textContent='Your code: '+S.otpPhone;
-  } else {
-    S.otpEmail=String(Math.floor(100000+Math.random()*900000));
-    prefillOTP('otp-em-cells',S.otpEmail);
-    toast('📧 New code: '+S.otpEmail+' (auto-filled)',5000);
-    var h2=document.getElementById('otp-em-hint');if(h2)h2.textContent='Your code: '+S.otpEmail;
-  }
-}
+// prefillOTP removed — no longer needed
+
+// resendOTP removed — replaced by resendEmailCode
+
 function otpInput(el,grpId,idx){
   const cells=document.querySelectorAll('#'+grpId+' .ocell');
   if(el.value&&idx<cells.length-1)cells[idx+1].focus();
@@ -1812,32 +1797,52 @@ function otpKey(e,el,grpId,idx){
   }
 }
 function verifyOTP(cellsId,type){
-  const cells=document.querySelectorAll('#'+cellsId+' .ocell');
-  const entered=Array.from(cells).map(c=>c.value).join('');
-  const expected=type==='phone'?S.otpPhone:S.otpEmail;
-  if(entered===expected){
-    toast('✅ Verified!',2000);
-    if(type==='phone'){
-      S.otpEmail=String(Math.floor(100000+Math.random()*900000));
-      document.getElementById('otp-em-target').textContent=S.regData?.em||'your email';
-      prefillOTP('otp-em-cells',S.otpEmail);
-      // Show OTP prominently — remove when SendGrid is connected
-      toast('📧 Your code: '+S.otpEmail+' (auto-filled)',6000);
-      var ehint=document.getElementById('otp-em-hint');
-      if(ehint)ehint.textContent='Your code: '+S.otpEmail+' — tap Verify to continue';
-      setTimeout(()=>G('s-otp-em'),600);
+  // Legacy shim — route to new function
+  if(type==='email')verifyEmailCode();
+}
+
+function verifyEmailCode(){
+  var cells=document.querySelectorAll('#otp-em-cells .ocell');
+  var entered=Array.from(cells).map(function(c){return c.value;}).join('').trim();
+  if(entered.length<6){toast('Please enter all 6 digits.','err',2000);return;}
+  var statusEl=document.getElementById('otp-em-status');
+  if(statusEl)statusEl.textContent='Verifying...';
+  // Verify with API
+  fetch(API+'/api/auth/verify-email',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:S.regData&&S.regData.em,code:entered})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.success){
+      if(statusEl)statusEl.textContent='';
+      S.emailVerified=true;
+      toast('✅ Email verified! Continue your profile.',2500);
+      var b=document.getElementById('ebanner');
+      if(b){b.innerHTML='<span style="font-size:1.1rem;">📧</span><div>Email verified! Complete your profile below.</div>';b.style.display='flex';}
+      setTimeout(function(){G('s-reg2');},500);
     } else {
-      // In prod: send welcome email from infohalalmeetup@gmail.com
-      const b=document.getElementById('ebanner');
-      if(b){b.innerHTML='<span style="font-size:1.1rem;">📧</span><div>Welcome email sent to <strong>'+S.regData?.em+'</strong>!</div>';b.style.display='flex';}
-      setTimeout(()=>G('s-reg2'),600);
+      if(statusEl)statusEl.textContent='Incorrect code — try again.';
+      cells.forEach(function(c){c.value='';c.style.borderColor='var(--red2)';});
+      setTimeout(function(){cells.forEach(function(c){c.style.borderColor='';});},2000);
+      if(cells[0])cells[0].focus();
+      toast('❌ Incorrect code. Please try again.','err',2500);
     }
-  } else {
-    toast('❌ Incorrect code. Try again.','err',2500);
-    cells.forEach(c=>{c.value='';c.style.borderColor='var(--red2)';});
-    setTimeout(()=>cells.forEach(c=>c.style.borderColor=''),2000);
-    cells[0]?.focus();
-  }
+  })
+  .catch(function(){
+    if(statusEl)statusEl.textContent='';
+    toast('❌ Connection error. Try again.','err',2500);
+  });
+}
+
+function resendEmailCode(){
+  var email=S.regData&&S.regData.em;
+  var name=S.regData&&S.regData.fn;
+  if(!email){toast('Please go back and enter your email first.','err',2500);return;}
+  var statusEl=document.getElementById('otp-em-status');
+  if(statusEl)statusEl.textContent='Sending new code...';
+  sendEmailVerification(email,name);
 }
 
 /* ══ VALIDATION ══ */
@@ -1918,8 +1923,9 @@ function completeReg(){
     S.user=res.data.user;
     S.token=res.data.token;
     S.premium=false;
-    toast('🎉 Account created! Welcome to Halal-MeetUp!',3500);
-    setTimeout(function(){G('s-idv1');},400);
+    // Welcome email is sent by the API automatically on registration
+    toast('🎉 Account created! Check your inbox for a welcome email.',4000);
+    setTimeout(function(){G('s-idv1');},500);
   })
   .catch(function(){toast('❌ Connection error. Please try again.',3000,'err');});
 }
@@ -2552,22 +2558,27 @@ function initAdmin(){
   .then(function(res){
     if(!res.success)return;
     var d=res.data;
-    var statsGrid=document.getElementById('admin-stats-grid');
-    if(!statsGrid)return;
-    statsGrid.innerHTML=
-      '<div class="astat"><p class="aslbl">TOTAL USERS</p><p class="asval">'+
-        (d.total_users||0).toLocaleString()+'</p></div>'+
-      '<div class="astat"><p class="aslbl">PREMIUM</p><p class="asval" style="color:var(--gold3);">'+
-        (d.premium_users||0).toLocaleString()+'</p></div>'+
-      '<div class="astat"><p class="aslbl">MATCHES</p><p class="asval" style="color:var(--teal);">'+
-        (d.total_matches||0).toLocaleString()+'</p></div>'+
-      '<div class="astat"><p class="aslbl">REVENUE (WK)</p><p class="asval" style="color:var(--green);">$'+
-        (d.weekly_revenue_usd||0).toFixed(2)+'</p></div>';
+    // Update 2x2 stat cards individually
+    var grid=document.getElementById('admin-stats-grid');
+    if(grid){
+      var cards=grid.querySelectorAll('div');
+      if(cards[0])cards[0].querySelector('p:nth-child(2)').textContent=(d.total_users||0).toLocaleString();
+      if(cards[1])cards[1].querySelector('p:nth-child(2)').textContent=(d.premium_users||0).toLocaleString();
+      if(cards[2])cards[2].querySelector('p:nth-child(2)').textContent=(d.total_matches||0).toLocaleString();
+      if(cards[3])cards[3].querySelector('p:nth-child(2)').textContent='$'+(d.weekly_revenue_usd||0).toFixed(2);
+      // Clear loading text
+      grid.querySelectorAll('p:nth-child(3)').forEach(function(p){p.textContent='';});
+    }
+    // Update subs tab revenue numbers too
+    var revEl=document.getElementById('admin-revenue-val');
+    var subEl=document.getElementById('admin-subs-val');
+    if(revEl)revEl.textContent='$'+(d.weekly_revenue_usd||0).toFixed(2);
+    if(subEl)subEl.textContent=(d.active_subscriptions||0).toLocaleString();
 
     var actionsEl=document.getElementById('admin-pending-actions');
     if(actionsEl){
       actionsEl.innerHTML=
-        '<p style="font-weight:800;margin-bottom:10px;">⚠️ Pending Actions</p>'+
+        '<p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">⚠️ Pending Actions</p>'+
         mkActionRow('ID Verifications pending',(d.pending_verification||0),'bgo')+
         mkActionRow('Active reports',(d.open_reports||0),'br')+
         mkActionRow('Banned users',(d.banned_users||0),'br')+
@@ -2632,10 +2643,11 @@ function initAdmin(){
   })
   .catch(function(){});
 
-  // ── Empty states for other lists ──
+  // ── Empty states for all lists until API loads ──
   var EMPTY='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data yet.</p>';
-  ['adminSubList','adminCallList','adminIDList'].forEach(function(id){
-    var el=document.getElementById(id);if(el)el.innerHTML=EMPTY;
+  ['adminUserList','adminSubList','adminReportList','adminCallList','adminIDList'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&!el.innerHTML.trim())el.innerHTML=EMPTY;
   });
 }
 
