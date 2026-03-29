@@ -1546,6 +1546,15 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 </div><!-- /#app -->
 
 <script>
+const API = 'https://halal-meetup-api-production.up.railway.app';
+
+function apiCall(endpoint, method, body) {
+  var opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+  if (S.token) opts.headers['Authorization'] = 'Bearer ' + S.token;
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(API + endpoint, opts).then(function(r) { return r.json(); });
+}
+
 
 function vpAction(){
   var userId=S._viewingUserId;
@@ -1639,6 +1648,7 @@ const S={
   _pendingDelMode:'',
   _pendingDelId:-1,
   _delChatCallback:null,
+  token:null,
   subStatus:'none',
   subStart:null,
   subRenewsAt:null,
@@ -1676,32 +1686,36 @@ function doLogin(){
   const em=document.getElementById('li-em').value.trim().toLowerCase();
   const pw=document.getElementById('li-pw').value;
   if(!em||!pw){toast('Please enter email and password.',2500,'err');return;}
-  // Admin shortcut
   if(S.admins.includes(em)){
     S.user={id:'admin',email:em,firstName:'Admin',role:'admin',premium:true};
     toast('🔐 Admin access granted.',2000);
     initAdmin();G('s-admin');return;
   }
-  // Look up registered user
-  const found=DB.users.find(u=>u.email.toLowerCase()===em);
-  if(!found){
-    toast('❌ No account found with that email. Please sign up first.',3500,'err');
-    document.getElementById('li-em').classList.add('field-err');
-    return;
-  }
-  if(found.passwordHash!==hashPw(pw)){
-    toast('❌ Incorrect password. Please try again.',3000,'err');
-    document.getElementById('li-pw').classList.add('field-err');
-    return;
-  }
-  document.getElementById('li-em').classList.remove('field-err');
-  document.getElementById('li-pw').classList.remove('field-err');
-  S.user=found;
-  S.premium=found.premium||false;
-  S.subStatus=found.subStatus||'none';
-  loadUserSession();
-  toast('Welcome back, '+found.firstName+'! 🌙',2500);
-  G('s-discover');
+  toast('Signing in...',2000);
+  fetch(API+'/api/auth/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:em,password:pw})
+  })
+  .then(r=>r.json())
+  .then(function(res){
+    if(!res.success){
+      toast('❌ '+res.error,3500,'err');
+      if(res.error.includes('account'))document.getElementById('li-em').classList.add('field-err');
+      else document.getElementById('li-pw').classList.add('field-err');
+      return;
+    }
+    document.getElementById('li-em').classList.remove('field-err');
+    document.getElementById('li-pw').classList.remove('field-err');
+    S.user=res.data.user;
+    S.token=res.data.token;
+    S.premium=res.data.user.premium||false;
+    S.subStatus=res.data.user.sub_status||'none';
+    loadUserSession();
+    toast('Welcome back, '+res.data.user.first_name+'! 🌙',2500);
+    G('s-discover');
+  })
+  .catch(function(){toast('❌ Connection error. Please try again.',3000,'err');});
 }
 
 function loadUserSession(){
@@ -1850,12 +1864,23 @@ function completeReg(){
     createdAt:new Date().toISOString(),
     online:true,
   };
-  DB.users.push(newUser);
-  S.user=newUser;
-  S.premium=false;
-  sendAppEmail('welcome', S.user, null);
-  toast('🎉 Account created! Welcome to Halal-MeetUp!',3500);
-  setTimeout(function(){G('s-idv1');},400);
+  // POST to real API
+  toast('Creating your account...',3000);
+  fetch(API+'/api/auth/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(newUser)
+  })
+  .then(r=>r.json())
+  .then(function(res){
+    if(!res.success){toast('❌ '+res.error,4000,'err');return;}
+    S.user=res.data.user;
+    S.token=res.data.token;
+    S.premium=false;
+    toast('🎉 Account created! Welcome to Halal-MeetUp!',3500);
+    setTimeout(function(){G('s-idv1');},400);
+  })
+  .catch(function(){toast('❌ Connection error. Please try again.',3000,'err');});
 }
 
 /* ══ PHOTOS ══ */
@@ -1968,19 +1993,31 @@ function sendMsg(){
   var blk=checkBlock(txt);
   var now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   var msgId='msg-'+Date.now();
-  var msg={id:msgId,fromId:S.user.id,toId:S.chatPartnerId,text:txt,ts:now,reactions:[],deleted:false,blocked:blk||null,read:false};
-  if(!DB.messages[S.chatId])DB.messages[S.chatId]=[];
-  DB.messages[S.chatId].push(msg);
-  renderChatByMatch();
-  var cont=document.getElementById('chatMsgs');
-  if(cont)setTimeout(function(){cont.scrollTop=cont.scrollHeight;},60);
+  apiCall('/api/matches/'+S.chatId+'/messages','POST',{
+    text:txt,to_user_id:S.chatPartnerId,blocked_reason:blk||null
+  }).then(function(res){
+    if(!res.success){toast('❌ '+res.error,2000,'err');return;}
+    var msg=res.data;
+    if(!DB.messages[S.chatId])DB.messages[S.chatId]=[];
+    DB.messages[S.chatId].push({
+      id:msg.id,fromId:msg.from_user_id,toId:msg.to_user_id,
+      text:msg.text,ts:now,reactions:[],deleted:false,blocked:msg.blocked_reason
+    });
+    renderChatByMatch();
+    var cont=document.getElementById('chatMsgs');
+    if(cont)setTimeout(function(){cont.scrollTop=cont.scrollHeight;},60);
+  }).catch(function(){toast('❌ Could not send.',2000,'err');});
   inp.value='';
 }
 
 /* ══ CONV LIST / DELETE CHATS ══ */
 function renderConvList(){
   var list=document.getElementById('convList');if(!list)return;
-  var myMatches=getMyMatches();
+  apiCall('/api/matches','GET').then(function(res){
+  if(!res.success){list.innerHTML='';return;}
+  var myMatches=res.data;
+  // remap API fields to match local format
+  myMatches=myMatches.map(function(m){return {id:m.match_id,user1Id:S.user.id,user2Id:m.partner_id,createdAt:m.matched_at,_partner:{id:m.partner_id,firstName:m.first_name,lastName:m.last_name,photo_1:m.avatar,online:m.online,verified:m.id_verified},_unread:m.unread_count,_preview:m.last_message,_time:m.last_message_at};});
   list.innerHTML='';
   if(!myMatches.length){
     var emptyDiv=document.createElement('div');
@@ -2063,6 +2100,7 @@ function renderConvList(){
     wrap.appendChild(row);wrap.appendChild(actions);
     list.appendChild(wrap);
   });
+  });  // end apiCall
 }
 
 function removeMatch(matchId){
@@ -2075,24 +2113,18 @@ function removeMatch(matchId){
 /* ── Discover — load real DB profiles ── */
 function loadNextDiscoverProfile(){
   if(!S.user)return;
-  // Get profiles not yet liked/matched, opposite gender
-  var myGender=S.user.gender||'';
-  var seen=DB.likes.filter(function(l){return l.fromId===S.user.id;}).map(function(l){return l.toId;});
-  var matched=getMyMatches().map(function(m){return m.user1Id===S.user.id?m.user2Id:m.user1Id;});
-  var excluded=seen.concat(matched).concat([S.user.id]);
-  var candidates=DB.users.filter(function(u){
-    return !excluded.includes(u.id)&&(myGender==='Male'?u.gender==='Female':myGender==='Female'?u.gender==='Male':true);
-  });
-  if(!candidates.length){
-    showEmptyDiscover();return;
-  }
-  var p=candidates[0];
-  S._discoverCandidateId=p.id;
-  // Update discover card
-  var nameEl=document.getElementById('cName'),subEl=document.getElementById('cSub'),bioEl=document.getElementById('cBio');
-  if(nameEl)nameEl.textContent=p.firstName+' '+p.lastName;
-  if(subEl)subEl.textContent=(p.age||'?')+' · '+(p.city||'')+(p.sect?' · '+p.sect:'');
-  if(bioEl)bioEl.textContent=p.bio||'No bio yet.';
+  apiCall('/api/discover?page='+(S._discoverPage||0),'GET')
+  .then(function(res){
+    if(!res.success||!res.data.length){showEmptyDiscover();return;}
+    var p=res.data[0];
+    S._discoverCandidateId=p.id;
+    S._discoverQueue=res.data;
+    var nameEl=document.getElementById('cName'),subEl=document.getElementById('cSub'),bioEl=document.getElementById('cBio');
+    if(nameEl)nameEl.textContent=(p.first_name||'')+' '+(p.last_name||'');
+    if(subEl)subEl.textContent=(p.age||'?')+' · '+(p.city||'')+(p.sect?' · '+p.sect:'');
+    if(bioEl)bioEl.textContent=p.bio||'No bio yet.';
+  })
+  .catch(function(){showEmptyDiscover();});
 }
 
 function showEmptyDiscover(){
@@ -2139,18 +2171,21 @@ function alreadyMatched(toId){return getMatchId(toId)!==null;}
 function likeProfile(toId){
   if(!S.user||!toId)return;
   if(alreadyLiked(toId)||alreadyMatched(toId))return;
-  DB.likes.push({fromId:S.user.id,toId:toId,createdAt:new Date().toISOString()});
-  var theyLikedUs=DB.likes.some(function(l){return l.fromId===toId&&l.toId===S.user.id;});
-  if(theyLikedUs){
-    var matchId='match-'+Date.now();
-    DB.matches.push({id:matchId,user1Id:S.user.id,user2Id:toId,createdAt:new Date().toISOString()});
-    DB.messages[matchId]=[];
-    S.unread[matchId]=0;
-    var partner=DB.users.find(function(u){return u.id===toId;});
-    showMatchNotification(partner,matchId);
-  } else {
-    showIntroMessagePrompt(toId);
-  }
+  apiCall('/api/likes','POST',{to_user_id:toId})
+  .then(function(res){
+    if(!res.success){toast('❌ '+res.error,2500,'err');return;}
+    if(res.data.result==='MATCHED'){
+      var matchId=res.data.match_id;
+      DB.matches.push({id:matchId,user1Id:S.user.id,user2Id:toId,createdAt:new Date().toISOString()});
+      DB.messages[matchId]=[];
+      S.unread[matchId]=0;
+      var partner=DB.users.find(function(u){return u.id===toId;});
+      showMatchNotification(partner,matchId);
+    } else {
+      showIntroMessagePrompt(toId);
+    }
+  })
+  .catch(function(){toast('❌ Connection error.',2500,'err');});
 }
 function showMatchNotification(partner,matchId){
   var overlay=document.getElementById('match-overlay');
@@ -2186,16 +2221,14 @@ function sendIntroMessage(){
   if(like)like.introSent=true;
   if(!DB.introMessages)DB.introMessages={};
   if(!DB.introMessages[toId])DB.introMessages[toId]=[];
-  DB.introMessages[toId].push({
-    fromId:S.user.id,
-    fromName:S.user.firstName+' '+S.user.lastName,
-    text:txt,
-    ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-    createdAt:new Date().toISOString()
-  });
-  inp.value='';
-  MC('m-intro-msg');
-  toast('Intro sent! Waiting for their response...',4000);
+  apiCall('/api/intro-messages','POST',{to_user_id:toId,text:txt})
+  .then(function(res){
+    if(!res.success){toast('❌ '+res.error,3000,'err');return;}
+    inp.value='';
+    MC('m-intro-msg');
+    toast('Intro sent! Waiting for their response...',4000);
+  })
+  .catch(function(){toast('❌ Connection error.',2500,'err');});
 }
 function openChatByMatch(matchId){
   var match=DB.matches.find(function(m){return m.id===matchId;});
@@ -2219,7 +2252,18 @@ function openChatByMatch(matchId){
 function renderChatByMatch(){
   var cont=document.getElementById('chatMsgs');if(!cont)return;
   if(!S.chatId)return;
-  var msgs=DB.messages[S.chatId]||[];
+  // Load from API first, fall back to local cache
+  apiCall('/api/matches/'+S.chatId+'/messages','GET')
+  .then(function(res){
+    if(res.success&&res.data){
+      DB.messages[S.chatId]=res.data.map(function(m){return {
+        id:m.id,fromId:m.from_user_id,toId:m.to_user_id,
+        text:m.text,ts:m.sent_at?new Date(m.sent_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):m.ts,
+        reactions:m.reactions?JSON.parse(m.reactions||'[]'):[],
+        deleted:m.is_deleted,blocked:m.blocked_reason
+      };});
+    }
+    var msgs=DB.messages[S.chatId]||[];
   cont.innerHTML='';
   if(!msgs.length){
     var empty=document.createElement('div');
@@ -2229,6 +2273,21 @@ function renderChatByMatch(){
   } else {
     msgs.forEach(function(m){cont.appendChild(mkBubbleFromMsg(m));});
   }
+  cont.scrollTop=cont.scrollHeight;
+  }).catch(function(){
+    var msgs=DB.messages[S.chatId]||[];
+    _renderChatMsgs(cont,msgs);
+  });
+}
+
+function _renderChatMsgs(cont,msgs){
+  cont.innerHTML='';
+  if(!msgs||!msgs.length){
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
+    empty.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">You matched!</p><p style="font-size:.78rem;">Say Assalamu Alaikum to start 🌙</p>';
+    cont.appendChild(empty);
+  } else {msgs.forEach(function(m){cont.appendChild(mkBubbleFromMsg(m));});}
   cont.scrollTop=cont.scrollHeight;
 }
 function mkBubbleFromMsg(m){
