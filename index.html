@@ -1205,10 +1205,10 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <div style="background:var(--teal);padding:0 16px 22px;text-align:center;">
       <div style="width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin:0 auto 9px;border:3px solid rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:2.4rem;cursor:pointer;" onclick="loadEdit();G('s-editprofile')">👤</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px;">
-        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:#fff;" id="mp-name">Ahmed Abdullah</h3>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:#fff;" id="mp-name"></h3>
         <span style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
       </div>
-      <p style="color:rgba(255,255,255,.65);font-size:.79rem;margin-bottom:13px;" id="mp-sub">28 · Manchester, UK · Sunni Hanafi</p>
+      <p style="color:rgba(255,255,255,.65);font-size:.79rem;margin-bottom:13px;" id="mp-sub"></p>
       <div style="display:flex;justify-content:center;gap:22px;">
         <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">12</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Matches</p></div>
         <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">47</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Likes</p></div>
@@ -1583,18 +1583,17 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 </div><!-- /#app -->
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
-
-
-
-
-
-
-
+<script>
+/* ═══════════════════════════════════════════════════════════
+   HALAL-MEETUP  |  Production JS  v2.0
+   Admin : mdhelal.ahamed@gmail.com
+   Email : infohalalmeetup@gmail.com
+═══════════════════════════════════════════════════════════ */
 
 const API = 'https://halal-meetup-api-production.up.railway.app';
 
+/* ── API helper ─────────────────────────────────────────── */
 function apiCall(endpoint, method, body) {
   var opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
   if (S.token) opts.headers['Authorization'] = 'Bearer ' + S.token;
@@ -1602,471 +1601,384 @@ function apiCall(endpoint, method, body) {
   return fetch(API + endpoint, opts).then(function(r) { return r.json(); });
 }
 
-
-function vpAction(){
-  var userId=S._viewingUserId;
-  if(!userId||!S.user)return;
-  var matchId=getMatchId(userId);
-  if(matchId){
-    // Already matched — open chat
-    openChatByMatch(matchId);
-  } else {
-    // Like them
-    likeProfile(userId);
-  }
-}
-
-function openViewProfile(userId){
-  S._viewingUserId=userId;
-  var user=DB.users.find(function(u){return u.id===userId;});
-  if(!user)return;
-  // Update all view profile fields
-  var nameEl=document.getElementById('vp-name');
-  var ageCity=document.getElementById('vp-agecity');
-  var sect=document.getElementById('vp-sect');
-  var status=document.getElementById('vp-status');
-  var edu=document.getElementById('vp-edu');
-  var occ=document.getElementById('vp-occ');
-  var bio=document.getElementById('vp-bio');
-  var interests=document.getElementById('vp-interests');
-  if(nameEl)nameEl.textContent=user.firstName+' '+user.lastName;
-  if(ageCity)ageCity.textContent=(user.age||'?')+' · '+(user.city||'')+(user.country?' · '+user.country:'');
-  if(sect)sect.textContent=user.sect||'';
-  if(status)status.textContent=user.maritalStatus||'';
-  if(edu)edu.textContent=user.education||'';
-  if(occ)occ.textContent=user.occupation||'';
-  if(bio)bio.textContent=user.bio||'No bio provided.';
-  if(interests)interests.textContent=user.interests||'';
-  // Update action button
-  var actionBtn=document.getElementById('vp-action-btn');
-  if(actionBtn){
-    var matchId=getMatchId(userId);
-    if(matchId){actionBtn.textContent='💬 Message';actionBtn.style.background='var(--teal)';}
-    else{actionBtn.textContent='💚 Like';actionBtn.style.background='#27ae60';}
-  }
-  G('s-viewprofile');
-}
-
-function openMyProfile(){
-  if(!S.user)return;
-  var u=S.user;
-  var nameEl=document.getElementById('mp-name');
-  var locEl=document.getElementById('mp-location');
-  var sectEl=document.getElementById('mp-sect');
-  var bioEl=document.getElementById('mp-bio');
-  var occEl=document.getElementById('mp-occ');
-  var intEl=document.getElementById('mp-interests');
-  if(nameEl)nameEl.textContent=u.firstName+' '+u.lastName;
-  if(locEl)locEl.textContent=(u.city||'')+(u.country?' · '+u.country:'');
-  if(sectEl)sectEl.textContent=u.sect||'';
-  if(bioEl)bioEl.textContent=u.bio||'';
-  if(occEl)occEl.textContent=u.occupation||'';
-  if(intEl)intEl.textContent=u.interests||'';
-  G('s-myprofile');
-}
-
-/* ══ STATE ══ */
-// ─── SIMULATED DATABASE (in real prod, replace with API calls) ───────────────
+/* ── In-memory DB (mirrors server state) ───────────────── */
 const DB = {
-  users: [], // [{id, firstName, lastName, email, passwordHash, phone, dob, gender, sect,
-             //   maritalStatus, education, country, city, nationality, languages,
-             //   occupation, bio, interests, photos, verified, premium, createdAt}]
-  matches: [], // [{id, user1Id, user2Id, createdAt}]  — mutual likes
-  likes: [],   // [{fromId, toId, createdAt}]  — one-way likes
-  messages: {}, // {matchId: [{id,fromId,toId,text,ts,reactions,deleted}]}
-  callLogs: [], // [{id,type,p1Id,p2Id,dur,status,date}]
+  users: [], matches: [], likes: [], messages: {}, introMessages: {}
 };
 
-// Simple hash for demo (in prod use bcrypt via backend)
-function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCodeAt(i);h|=0;}return h.toString(36);}
-
-const S={
-  user:null,          // logged-in user object from DB.users
-  photos:[0,0,0],
-  chatId:null,        // matchId of active chat
-  chatPartnerId:null, // userId of chat partner
-  pIdx:0,
-  callTimer:null,callSecs:0,premium:false,
-  emailVerified:false,
-  unread:{},
-  blocked:[],
-  deletedConvs:[],
-  selectedConvs:[],
-  _pendingDelMode:'',
-  _pendingDelId:-1,
-  _delChatCallback:null,
-  token:null,
-  subStatus:'none',
-  subStart:null,
-  subRenewsAt:null,
-  admins:['mdhelal.ahamed@gmail.com','admin@halal-meetup.com'],
-  msgs:{}
-};
-
-/* ══ NAVIGATION ══ */
-function G(id){
-  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-  const t=document.getElementById(id);
-  if(t){t.classList.add('on');if(id==='s-matches')renderConvList();if(id==='s-chat')renderChat();}
+function hashPw(pw) {
+  var h = 0;
+  for (var i = 0; i < pw.length; i++) { h = ((h << 5) - h) + pw.charCodeAt(i); h |= 0; }
+  return h.toString(36);
 }
 
-/* ══ TOAST ══ */
-function toast(msg,a,b){
-  var dur=3000,type='';
-  if(typeof a==='number'){dur=a;if(b)type=b;}
-  else if(typeof a==='string'&&a!==''){type=a;if(typeof b==='number')dur=b;}
-  var t=document.getElementById('toast');
-  if(!t)return;
-  t.textContent=msg;
-  t.style.background=type==='err'?'var(--red2)':'var(--teal4)';
-  t.style.display='block';
+/* ── State ──────────────────────────────────────────────── */
+const S = {
+  user: null, token: null, photos: [0,0,0], chatId: null, chatPartnerId: null,
+  pIdx: 0, callTimer: null, callSecs: 0, premium: false, emailVerified: false,
+  subStatus: 'none', subStart: null, subRenewsAt: null,
+  unread: {}, blocked: [], deletedConvs: [], selectedConvs: [],
+  _pendingDelMode: '', _pendingDelId: -1, callLogs: [],
+  msgs: {}, regData: {}, _photoSlotIdx: 0, _photoFiles: {},
+  _discoverCandidateId: null, _discoverQueue: [],
+  _introTargetId: null, _fpEmail: null, _viewingUserId: null,
+  admins: ['mdhelal.ahamed@gmail.com', 'admin@halal-meetup.com'],
+};
+
+/* ── Navigation ─────────────────────────────────────────── */
+function G(id) {
+  document.querySelectorAll('.scr').forEach(function(s) { s.classList.remove('on'); });
+  var t = document.getElementById(id);
+  if (t) {
+    t.classList.add('on');
+    if (id === 's-matches') renderConvList();
+    if (id === 's-chat')    renderChatByMatch();
+    if (id === 's-myprofile') openMyProfile();
+    if (id === 's-admin')   initAdmin();
+  }
+}
+
+/* ── Toast ──────────────────────────────────────────────── */
+function toast(msg, a, b) {
+  var dur = 3000, type = '';
+  if (typeof a === 'number') { dur = a; if (b) type = b; }
+  else if (typeof a === 'string' && a !== '') { type = a; if (typeof b === 'number') dur = b; }
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.background = type === 'err' ? 'var(--red2)' : 'var(--teal4)';
+  t.style.display = 'block';
   clearTimeout(t._t);
-  t._t=setTimeout(function(){t.style.display='none';},dur);
+  t._t = setTimeout(function() { t.style.display = 'none'; }, dur);
 }
 
-/* ══ MODAL ══ */
-function M(screen,mid){var el=document.getElementById(mid);if(el)el.classList.add('on');}
-function MC(mid){var el=document.getElementById(mid);if(el)el.classList.remove('on');}
+/* ── Modal ──────────────────────────────────────────────── */
+function M(screenId, mid) { var el = document.getElementById(mid); if (el) el.classList.add('on'); }
+function MC(mid) { var el = document.getElementById(mid); if (el) el.classList.remove('on'); }
 
-/* ══ LOGIN ══ */
-function doLogin(){
-  const em=document.getElementById('li-em').value.trim().toLowerCase();
-  const pw=document.getElementById('li-pw').value;
-  if(!em||!pw){toast('Please enter email and password.',2500,'err');return;}
-  if(S.admins.includes(em)){
-    // Admin MUST authenticate via API — no bypass allowed
-    toast('Verifying admin credentials...',2000);
-    fetch(API+'/api/auth/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:em,password:pw})
+/* ── Login ──────────────────────────────────────────────── */
+function doLogin() {
+  var em = document.getElementById('li-em').value.trim().toLowerCase();
+  var pw = document.getElementById('li-pw').value;
+  if (!em || !pw) { toast('Please enter email and password.', 2500, 'err'); return; }
+
+  if (S.admins.includes(em)) {
+    toast('Verifying admin credentials...', 2000);
+    fetch(API + '/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: em, password: pw })
     })
-    .then(r=>r.json())
-    .then(function(res){
-      if(!res.success){
-        toast('❌ '+(res.error||'Incorrect admin password.'),3500,'err');
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success) {
+        toast('❌ ' + (res.error || 'Incorrect password.'), 3500, 'err');
         document.getElementById('li-pw').classList.add('field-err');
         return;
       }
-      if(res.data.user.role!=='admin'){
-        toast('Account does not have admin access. Please sign in with an admin account.',3500,'err');
+      if (res.data.user.role !== 'admin') {
+        toast('This account does not have admin access.', 3500, 'err');
         return;
       }
-      S.user=res.data.user;
-      S.token=res.data.token;
-      S.premium=true;
-      toast('🔐 Admin access granted.',2000);
-      initAdmin();
+      S.user  = res.data.user;
+      S.token = res.data.token;
+      S.premium = true;
+      toast('🔐 Admin access granted.', 2000);
       G('s-admin');
     })
-    .catch(function(){
-      toast('❌ Connection error. Please try again.',3000,'err');
-    });
+    .catch(function() { toast('❌ Connection error. Please try again.', 3000, 'err'); });
     return;
   }
-  toast('Signing in...',2000);
-  fetch(API+'/api/auth/login',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:em,password:pw})
+
+  toast('Signing in...', 2000);
+  fetch(API + '/api/auth/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: em, password: pw })
   })
-  .then(r=>r.json())
-  .then(function(res){
-    if(!res.success){
-      toast('❌ '+res.error,3500,'err');
-      if(res.error.includes('account'))document.getElementById('li-em').classList.add('field-err');
-      else document.getElementById('li-pw').classList.add('field-err');
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.success) {
+      toast('❌ ' + res.error, 3500, 'err');
+      if (res.error && res.error.includes('account'))
+        document.getElementById('li-em').classList.add('field-err');
+      else
+        document.getElementById('li-pw').classList.add('field-err');
       return;
     }
     document.getElementById('li-em').classList.remove('field-err');
     document.getElementById('li-pw').classList.remove('field-err');
-    S.user=res.data.user;
-    S.token=res.data.token;
-    S.premium=res.data.user.premium||false;
-    S.subStatus=res.data.user.sub_status||'none';
+    S.user      = res.data.user;
+    S.token     = res.data.token;
+    S.premium   = res.data.user.premium || false;
+    S.subStatus = res.data.user.sub_status || 'none';
     loadUserSession();
-    toast('Welcome back, '+res.data.user.first_name+'! 🌙',2500);
+    toast('Welcome back, ' + res.data.user.first_name + '! 🌙', 2500);
     G('s-discover');
   })
-  .catch(function(){toast('❌ Connection error. Please try again.',3000,'err');});
+  .catch(function() { toast('❌ Connection error. Please try again.', 3000, 'err'); });
 }
 
-function loadUserSession(){
-  // Load user's matches, unread counts
-  if(!S.user)return;
-  var myMatches=getMyMatches();
-  S.unread={};
-  myMatches.forEach(function(match){
-    var msgs=DB.messages[match.id]||[];
-    var unread=msgs.filter(function(m){return m.toId===S.user.id&&!m.read;}).length;
-    S.unread[match.id]=unread;
-  });
-  // Refresh discover card
+function loadUserSession() {
+  if (!S.user) return;
+  S.unread = {};
   loadNextDiscoverProfile();
 }
 
-/* ══ REGISTRATION ══ */
-function reg1Next(){
-  var fn=document.getElementById('rg-fn').value.trim();
-  var ln=document.getElementById('rg-ln').value.trim();
-  var ph=document.getElementById('rg-ph').value.trim();
-  var em=document.getElementById('rg-em').value.trim();
-  var dob=document.getElementById('rg-dob').value;
-  if(!fn||!ln||!ph||!em||!dob){toast('Please fill in all required fields.','err',3000);return;}
-  if(!em.includes('@')||!em.includes('.')){toast('Please enter a valid email address.','err',2500);return;}
-  // Save step 1 data
-  S.regData={fn:fn,ln:ln,ph:ph,em:em,dob:dob,phone:ph};
-  // Send email verification code — no phone OTP
-  toast('Sending verification code to '+em+'...',2500);
-  fetch(API+'/api/auth/send-verification',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:em,name:fn})
+/* ── Registration ───────────────────────────────────────── */
+function reg1Next() {
+  var fn  = document.getElementById('rg-fn').value.trim();
+  var ln  = document.getElementById('rg-ln').value.trim();
+  var ph  = document.getElementById('rg-ph').value.trim();
+  var em  = document.getElementById('rg-em').value.trim();
+  var dob = document.getElementById('rg-dob').value;
+  if (!fn || !ln || !ph || !em || !dob) { toast('Please fill in all required fields.', 'err', 3000); return; }
+  if (!em.includes('@') || !em.includes('.')) { toast('Please enter a valid email address.', 'err', 2500); return; }
+  S.regData = { fn: fn, ln: ln, ph: ph, em: em, dob: dob, phone: ph };
+  toast('Sending verification code to ' + em + '...', 2500);
+  fetch(API + '/api/auth/send-verification', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: em, name: fn })
   })
-  .then(function(r){return r.json();})
-  .then(function(res){
-    if(res.success){
-      var target=document.getElementById('otp-em-target');
-      if(target)target.textContent=em;
-      document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c){c.value='';});
-      var st=document.getElementById('otp-em-status');
-      if(st)st.textContent='';
-      if(res.data&&res.data.code){
-        // Code returned in response (dev mode or no email provider)
-        var code=res.data.code;
-        var cells=document.querySelectorAll('#otp-em-cells .ocell');
-        cells.forEach(function(cell,i){cell.value=code[i]||'';});
-        if(st)st.textContent='Code: '+code+' (check your email or use this)';
-        toast('📧 Code: '+code,8000);
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    var target = document.getElementById('otp-em-target');
+    if (target) target.textContent = em;
+    document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c) { c.value = ''; });
+    var st = document.getElementById('otp-em-status');
+    if (st) st.textContent = '';
+    if (res.success) {
+      if (res.data && res.data.code) {
+        var code = res.data.code;
+        document.querySelectorAll('#otp-em-cells .ocell').forEach(function(cell, i) { cell.value = code[i] || ''; });
+        if (st) st.textContent = 'Code: ' + code + ' (also sent to your email)';
+        toast('📧 Code: ' + code, 8000);
       } else {
-        toast('📧 Verification code sent to '+em+' — check your inbox',4000);
+        toast('📧 Verification code sent to ' + em + ' — check your inbox', 4000);
       }
-      G('s-otp-em');  // Always navigate
     } else {
-      // Even on error — still navigate so user can try entering a code
-      // (code may have been sent even if response had an issue)
-      toast('⚠️ '+(res.error||'Check your email for the code'),4000,'err');
-      var target2=document.getElementById('otp-em-target');
-      if(target2)target2.textContent=em;
-      G('s-otp-em');
+      toast('⚠️ ' + (res.error || 'Check your email for the code'), 4000, 'err');
     }
+    G('s-otp-em');
   })
-  .catch(function(e){
-    console.error('send-verification error:',e);
-    // Still navigate — let user try entering a code manually
-    toast('⚠️ Network issue — if you have a code, enter it below',4000,'err');
-    var target=document.getElementById('otp-em-target');
-    if(target)target.textContent=em;
+  .catch(function(e) {
+    console.error('send-verification error:', e);
+    toast('⚠️ Network issue — navigating to code entry', 3000, 'err');
     G('s-otp-em');
   });
 }
-function sendEmailVerification(email,name){
-  var st=document.getElementById('otp-em-status');
-  if(st)st.textContent='Sending...';
-  var target=document.getElementById('otp-em-target');
-  if(target)target.textContent=email;
-  document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c){c.value='';});
-  fetch(API+'/api/auth/send-verification',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:email,name:name||'Member'})
+
+function sendEmailVerification(email, name) {
+  var st = document.getElementById('otp-em-status');
+  if (st) st.textContent = 'Sending...';
+  var target = document.getElementById('otp-em-target');
+  if (target) target.textContent = email;
+  document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c) { c.value = ''; });
+  fetch(API + '/api/auth/send-verification', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, name: name || 'Member' })
   })
-  .then(function(r){return r.json();})
-  .then(function(res){
-    if(st)st.textContent='';
-    if(res.success){
-      toast('📧 New code sent to '+email,3500);
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (st) st.textContent = '';
+    if (res.success) {
+      if (res.data && res.data.code) {
+        document.querySelectorAll('#otp-em-cells .ocell').forEach(function(cell, i) {
+          cell.value = (res.data.code[i] || '');
+        });
+        if (st) st.textContent = 'Code: ' + res.data.code;
+      }
+      toast('📧 New code sent to ' + email, 3500);
     } else {
-      toast('❌ '+(res.error||'Failed to send code.'),3000,'err');
+      toast('❌ ' + (res.error || 'Failed to send code.'), 3000, 'err');
     }
   })
-  .catch(function(){
-    if(st)st.textContent='';
-    toast('❌ Connection error.',2500,'err');
-  });
+  .catch(function() { if (st) st.textContent = ''; toast('❌ Connection error.', 2500, 'err'); });
 }
+
+/* ── OTP ────────────────────────────────────────────────── */
 function otpInput(el, grpId, idx) {
-  // Keep only digits
   el.value = el.value.replace(/[^0-9]/g, '').slice(-1);
   var cells = document.querySelectorAll('#' + grpId + ' .ocell');
   if (el.value && idx < cells.length - 1) cells[idx + 1].focus();
 }
+function otpKey(e, el, grpId, idx) {
+  if (e.key === 'Backspace' && !el.value && idx > 0) {
+    var cells = document.querySelectorAll('#' + grpId + ' .ocell');
+    cells[idx - 1].focus();
+  }
+}
 function otpPaste(e, grpId) {
-  // Handle paste of full 6-digit code
   e.preventDefault();
-  var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+  var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
   var cells = document.querySelectorAll('#' + grpId + ' .ocell');
-  for (var i = 0; i < cells.length && i < pasted.length; i++) {
-    cells[i].value = pasted[i];
-  }
-  if (pasted.length >= cells.length) cells[cells.length-1].focus();
+  cells.forEach(function(cell, i) { cell.value = pasted[i] || ''; });
+  if (pasted.length >= cells.length) cells[cells.length - 1].focus();
 }
-function otpKey(e,el,grpId,idx){
-  if(e.key==='Backspace'&&!el.value&&idx>0){
-    const cells=document.querySelectorAll('#'+grpId+' .ocell');
-    cells[idx-1].focus();
-  }
-}
-function verifyOTP(cellsId,type){
-  // Legacy shim — route to new function
-  if(type==='email')verifyEmailCode();
-}
-
-function verifyEmailCode(){
-  var cells=document.querySelectorAll('#otp-em-cells .ocell');
-  var entered=Array.from(cells).map(function(c){return c.value;}).join('').trim();
-  if(entered.length<6){toast('Please enter all 6 digits.','err',2000);return;}
-  var statusEl=document.getElementById('otp-em-status');
-  if(statusEl)statusEl.textContent='Verifying...';
-  // Verify with API
-  fetch(API+'/api/auth/verify-email',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:S.regData&&S.regData.em,code:entered})
+function verifyOTP(cellsId, type) { if (type === 'email') verifyEmailCode(); }
+function verifyEmailCode() {
+  var cells = document.querySelectorAll('#otp-em-cells .ocell');
+  var entered = Array.from(cells).map(function(c) { return c.value; }).join('').trim();
+  if (entered.length < 6) { toast('Please enter all 6 digits.', 'err', 2000); return; }
+  var st = document.getElementById('otp-em-status');
+  if (st) st.textContent = 'Verifying...';
+  fetch(API + '/api/auth/verify-email', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: S.regData && S.regData.em, code: entered })
   })
-  .then(function(r){return r.json();})
-  .then(function(res){
-    if(res.success){
-      if(statusEl)statusEl.textContent='';
-      S.emailVerified=true;
-      toast('✅ Email verified! Continue your profile.',2500);
-      var b=document.getElementById('ebanner');
-      if(b){b.innerHTML='<span style="font-size:1.1rem;">📧</span><div>Email verified! Complete your profile below.</div>';b.style.display='flex';}
-      setTimeout(function(){G('s-reg2');},500);
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      if (st) st.textContent = '';
+      S.emailVerified = true;
+      toast('✅ Email verified! Continue your profile.', 2500);
+      setTimeout(function() { G('s-reg2'); }, 500);
     } else {
-      if(statusEl)statusEl.textContent='Incorrect code — try again.';
-      cells.forEach(function(c){c.value='';c.style.borderColor='var(--red2)';});
-      setTimeout(function(){cells.forEach(function(c){c.style.borderColor='';});},2000);
-      if(cells[0])cells[0].focus();
-      toast('❌ Incorrect code. Please try again.','err',2500);
+      if (st) st.textContent = 'Incorrect code — try again.';
+      cells.forEach(function(c) { c.value = ''; c.style.borderColor = 'var(--red2)'; });
+      setTimeout(function() { cells.forEach(function(c) { c.style.borderColor = ''; }); }, 2000);
+      if (cells[0]) cells[0].focus();
+      toast('❌ Incorrect code. Please try again.', 'err', 2500);
     }
   })
-  .catch(function(){
-    if(statusEl)statusEl.textContent='';
-    toast('❌ Connection error. Try again.','err',2500);
-  });
+  .catch(function() { if (st) st.textContent = ''; toast('❌ Connection error.', 'err', 2500); });
+}
+function resendEmailCode() {
+  sendEmailVerification(S.regData && S.regData.em, S.regData && S.regData.fn);
 }
 
-function resendEmailCode(){
-  var email=S.regData&&S.regData.em;
-  var name=S.regData&&S.regData.fn;
-  if(!email){toast('Please go back and enter your email first.','err',2500);return;}
-  var statusEl=document.getElementById('otp-em-status');
-  if(statusEl)statusEl.textContent='Sending new code...';
-  sendEmailVerification(email,name);
-}
-
-/* ══ VALIDATION ══ */
-function showPopup(icon,title,msg,fields){
-  document.getElementById('popup-icon').textContent=icon;
-  document.getElementById('popup-title').textContent=title;
-  document.getElementById('popup-msg').textContent=msg;
-  var pf=document.getElementById('popup-fields');
-  if(fields&&fields.length){pf.style.display='block';pf.innerHTML=fields.map(f=>'<p>⚠ '+f+'</p>').join('');}
-  else{pf.style.display='none';}
+/* ── Validation helpers ─────────────────────────────────── */
+function showPopup(icon, title, msg, fields) {
+  document.getElementById('popup-icon').textContent = icon;
+  document.getElementById('popup-title').textContent = title;
+  document.getElementById('popup-msg').textContent = msg;
+  var pf = document.getElementById('popup-fields');
+  if (fields && fields.length) { pf.style.display = 'block'; pf.innerHTML = fields.map(function(f) { return '<p>⚠ ' + f + '</p>'; }).join(''); }
+  else { pf.style.display = 'none'; }
   document.getElementById('val-popup').classList.add('on');
 }
-function markErr(el,errId){if(!el)return;el.classList.add('field-err');el.classList.remove('field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='none';var em=document.getElementById(errId);if(em)em.classList.add('show');}
-function markOK(el,errId){if(!el)return;el.classList.remove('field-err');el.classList.add('field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='block';var em=document.getElementById(errId);if(em)em.classList.remove('show');}
-function clearMark(el,errId){if(!el)return;el.classList.remove('field-err','field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='none';var em=document.getElementById(errId);if(em)em.classList.remove('show');}
-function liveValidate(el){if(!el.value.trim())el.classList.add('field-err');else{el.classList.remove('field-err');el.classList.add('field-ok');}}
-function liveValidateSelect(el,errId){if(!el.value)markErr(el,errId);else markOK(el,errId);}
-function liveValidateTA(el,errId){if(!el.value.trim()||el.value.trim().length<30)markErr(el,errId);else markOK(el,errId);}
-function liveValidatePhone(el){var v=el.value.replace(/\s/g,'');if(v.length<7)markErr(el,'rg-ph-err');else markOK(el,'rg-ph-err');}
-function liveValidateEmail(el){if(!el.value.trim()||!el.value.includes('@')||!el.value.includes('.'))markErr(el,'rg-em-err');else markOK(el,'rg-em-err');}
-function liveValidateDOB(el){if(!el.value){markErr(el,'rg-dob-err');return;}var dob=new Date(el.value);var age=new Date().getFullYear()-dob.getFullYear();if(age<18){markErr(el,'rg-dob-err');document.getElementById('rg-dob-err').textContent='⚠ You must be at least 18 years old';}else markOK(el,'rg-dob-err');}
-function liveValidatePW(){var el=document.getElementById('rg-pw');if(!el)return;if(el.value.length<8)markErr(el,'rg-pw-err');else markOK(el,'rg-pw-err');var el2=document.getElementById('rg-pw2');if(el2&&el2.value)liveValidatePW2();}
-function liveValidatePW2(){var el=document.getElementById('rg-pw2');var pw=document.getElementById('rg-pw');if(!el||!pw)return;if(!el.value||el.value!==pw.value)markErr(el,'rg-pw2-err');else markOK(el,'rg-pw2-err');}
-function onTermsChange(){var cb=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var err=document.getElementById('rg-terms-err');if(cb.checked){if(wrap){wrap.style.borderColor='var(--teal)';wrap.style.background='#f0fff8';}if(err)err.classList.remove('show');}else{if(wrap){wrap.style.borderColor='var(--sand)';wrap.style.background='var(--white)';}}}
-function reg2Next(){var errors=[];var gender=document.getElementById('rg-gender');var sect=document.getElementById('rg-sect');var mstatus=document.getElementById('rg-mstatus');var edu=document.getElementById('rg-edu');if(!gender||!gender.value){markErr(gender,'rg-gender-err');errors.push('Gender is required');}else markOK(gender,'rg-gender-err');if(!sect||!sect.value){markErr(sect,'rg-sect-err');errors.push('Islamic Sect is required');}else markOK(sect,'rg-sect-err');if(!mstatus||!mstatus.value){markErr(mstatus,'rg-mstatus-err');errors.push('Marital Status is required');}else markOK(mstatus,'rg-mstatus-err');if(!edu||!edu.value){markErr(edu,'rg-edu-err');errors.push('Education is required');}else markOK(edu,'rg-edu-err');if(errors.length){showPopup('📋','Step 2 — Required Fields','Please fill in all required fields.',errors);return;}
-  S.regData=Object.assign(S.regData||{},{gender:gender.value,sect:sect.value,maritalStatus:mstatus.value,education:edu.value});
-  G('s-reg3');}
-function reg3Next(){var errors=[];var country=document.getElementById('rg-country');var city=document.getElementById('rg-city');var nat=document.getElementById('rg-nat');var lang=document.getElementById('rg-lang');if(!country||!country.value){markErr(country,'rg-country-err');errors.push('Country is required');}else markOK(country,'rg-country-err');if(!city||!city.value.trim()){markErr(city,'rg-city-err');errors.push('City is required');}else markOK(city,'rg-city-err');if(!nat||!nat.value.trim()){markErr(nat,'rg-nat-err');errors.push('Nationality is required');}else markOK(nat,'rg-nat-err');if(!lang||!lang.value.trim()){markErr(lang,'rg-lang-err');errors.push('Languages required');}else markOK(lang,'rg-lang-err');if(errors.length){showPopup('📍','Step 3 — Required Fields','Please fill in all required fields.',errors);return;}
-  S.regData=Object.assign(S.regData||{},{country:country.value,city:city.value,nationality:nat.value,languages:lang.value});
-  G('s-reg4');}
-function reg5Next(){var errors=[];var bio=document.getElementById('rg-bio');var occ=document.getElementById('rg-occ');var hobbies=document.getElementById('rg-hobbies');if(!bio||!bio.value.trim()||bio.value.trim().length<30){markErr(bio,'rg-bio-err');errors.push('About Me: min 30 characters');}else markOK(bio,'rg-bio-err');if(!occ||!occ.value.trim()){markErr(occ,'rg-occ-err');errors.push('Occupation required');}else markOK(occ,'rg-occ-err');if(!hobbies||!hobbies.value.trim()){markErr(hobbies,'rg-hobbies-err');errors.push('Interests required');}else markOK(hobbies,'rg-hobbies-err');if(errors.length){showPopup('✍️','Step 5 — Required Fields','Please fill in all required fields.',errors);return;}
-  S.regData=Object.assign(S.regData||{},{bio:bio.value,occupation:occ.value,interests:hobbies.value});
-  G('s-reg6');}
-function completeReg(){
-  var errors=[];
-  var pwEl=document.getElementById('rg-pw');var pw2El=document.getElementById('rg-pw2');
-  var terms=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var termsErr=document.getElementById('rg-terms-err');
-  if(!pwEl.value||pwEl.value.length<8){markErr(pwEl,'rg-pw-err');errors.push('Password must be at least 8 characters');}else markOK(pwEl,'rg-pw-err');
-  if(!pw2El.value||pw2El.value!==pwEl.value){markErr(pw2El,'rg-pw2-err');errors.push('Passwords do not match');}else if(pwEl.value.length>=8)markOK(pw2El,'rg-pw2-err');
-  if(!terms.checked){if(wrap){wrap.style.borderColor='var(--red2)';wrap.style.background='#fff5f5';wrap.style.animation='shake .3s ease';setTimeout(function(){wrap.style.animation='';},350);}if(termsErr)termsErr.classList.add('show');errors.push('You must accept the Terms & Conditions');}
-  if(errors.length){if(errors.length===1&&!terms.checked&&pwEl.value.length>=8&&pw2El.value===pwEl.value){showPopup('☑️','Please Accept Terms','You must accept the Terms of Service and Privacy Policy.',['Check the box: "I agree to the Terms of Service, Privacy Policy, and Community Guidelines"']);}else{showPopup('⚠️','Almost There!','Please fix the following issues.',errors);}return;}
-  var name=(S.regData&&S.regData.fn)?S.regData.fn:'User';
-  var email=(S.regData&&S.regData.em)?S.regData.em:'';
-  // Build full user object from all reg steps
-  // Build payload with snake_case field names matching the API
-  var newUser={
-    first_name:   name,
-    last_name:    (S.regData&&S.regData.ln)          ||'',
-    email:        email,
-    password:     pwEl.value,                          // raw password — API hashes with bcrypt
-    phone:        (S.regData&&S.regData.ph)           ||'',
-    dob:          (S.regData&&S.regData.dob)          ||'',
-    gender:        (S.regData&&S.regData.gender&&['Male','Female'].includes(S.regData.gender))
-                    ? S.regData.gender : 'Male',
-    sect:          (S.regData&&S.regData.sect)          ||'',
-    marital_status:(S.regData&&S.regData.maritalStatus&&
-                    ['Never Married','Divorced','Widowed'].includes(S.regData.maritalStatus))
-                    ? S.regData.maritalStatus : 'Never Married',
-    education:    (S.regData&&S.regData.education)    ||'',
-    country:      (S.regData&&S.regData.country)      ||'',
-    city:         (S.regData&&S.regData.city)         ||'',
-    nationality:  (S.regData&&S.regData.nationality)  ||'',
-    languages:    (S.regData&&S.regData.languages)    ||'',
-    occupation:   (S.regData&&S.regData.occupation)   ||'',
-    bio:          (S.regData&&S.regData.bio)          ||'No bio provided.',
-    interests:    (S.regData&&S.regData.interests)    ||'',
-    photo_1:      '',
-    photo_2:      '',
-    photo_3:      '',
-  };
-  // POST to real API
-  toast('Creating your account...',3000);
-  fetch(API+'/api/auth/register',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(newUser)
-  })
-  .then(r=>r.json())
-  .then(function(res){
-    if(!res.success){
-      var msg=res.error||'Registration failed. Please try again.';
-      // Show specific guidance for common errors
-      if(msg.includes('already registered'))msg='This email is already registered. Please log in.';
-      if(msg.includes('18 years'))msg='You must be at least 18 years old to register.';
-      toast('❌ '+msg,5000,'err');
-      return;
-    }
-    S.user=res.data.user;
-    S.token=res.data.token;
-    S.premium=false;
-    // Welcome email is sent by the API automatically on registration
-    toast('🎉 Account created! Check your inbox for a welcome email.',4000);
-    setTimeout(function(){G('s-idv1');},500);
-  })
-  .catch(function(){toast('❌ Connection error. Please try again.',3000,'err');});
+function markErr(el, errId) { if (!el) return; el.classList.add('field-err'); el.classList.remove('field-ok'); var em = document.getElementById(errId); if (em) em.classList.add('show'); }
+function markOK(el, errId)  { if (!el) return; el.classList.remove('field-err'); el.classList.add('field-ok'); var em = document.getElementById(errId); if (em) em.classList.remove('show'); }
+function clearMark(el, errId) { if (!el) return; el.classList.remove('field-err', 'field-ok'); var em = document.getElementById(errId); if (em) em.classList.remove('show'); }
+function liveValidate(el) { if (!el.value.trim()) el.classList.add('field-err'); else { el.classList.remove('field-err'); el.classList.add('field-ok'); } }
+function liveValidateSelect(el, errId) { if (!el.value) markErr(el, errId); else markOK(el, errId); }
+function liveValidateTA(el, errId) { if (!el.value.trim() || el.value.trim().length < 30) markErr(el, errId); else markOK(el, errId); }
+function liveValidatePhone(el) { var v = el.value.replace(/\s/g, ''); if (v.length < 7) markErr(el, 'rg-ph-err'); else markOK(el, 'rg-ph-err'); }
+function liveValidateEmail(el) { if (!el.value.trim() || !el.value.includes('@') || !el.value.includes('.')) markErr(el, 'rg-em-err'); else markOK(el, 'rg-em-err'); }
+function liveValidateDOB(el) { if (!el.value) { markErr(el, 'rg-dob-err'); return; } var dob = new Date(el.value); var age = new Date().getFullYear() - dob.getFullYear(); if (age < 18) { markErr(el, 'rg-dob-err'); document.getElementById('rg-dob-err').textContent = '⚠ You must be at least 18 years old'; } else markOK(el, 'rg-dob-err'); }
+function liveValidatePW() { var el = document.getElementById('rg-pw'); if (!el) return; if (el.value.length < 8) markErr(el, 'rg-pw-err'); else markOK(el, 'rg-pw-err'); var el2 = document.getElementById('rg-pw2'); if (el2 && el2.value) liveValidatePW2(); }
+function liveValidatePW2() { var el = document.getElementById('rg-pw2'); var pw = document.getElementById('rg-pw'); if (!el || !pw) return; if (!el.value || el.value !== pw.value) markErr(el, 'rg-pw2-err'); else markOK(el, 'rg-pw2-err'); }
+function onTermsChange() { var cb = document.getElementById('rg-terms'); var wrap = document.getElementById('terms-wrap'); if (cb.checked) { if (wrap) { wrap.style.borderColor = 'var(--teal)'; wrap.style.background = '#f0fff8'; } } else { if (wrap) { wrap.style.borderColor = 'var(--sand)'; wrap.style.background = 'var(--white)'; } } }
+
+/* ── Reg step savers ────────────────────────────────────── */
+function reg2Next() {
+  var gender = document.getElementById('rg-gender');
+  var sect   = document.getElementById('rg-sect');
+  var ms     = document.getElementById('rg-mstatus');
+  var edu    = document.getElementById('rg-edu');
+  var errors = [];
+  if (!gender || !gender.value) { markErr(gender, 'rg-gender-err'); errors.push('Gender is required'); } else markOK(gender, 'rg-gender-err');
+  if (!sect   || !sect.value)   { markErr(sect,   'rg-sect-err');   errors.push('Islamic Sect is required'); } else markOK(sect, 'rg-sect-err');
+  if (!ms     || !ms.value)     { markErr(ms,     'rg-mstatus-err');errors.push('Marital Status is required'); } else markOK(ms, 'rg-mstatus-err');
+  if (!edu    || !edu.value)    { markErr(edu,     'rg-edu-err');    errors.push('Education is required'); } else markOK(edu, 'rg-edu-err');
+  if (errors.length) { showPopup('📋', 'Step 2 — Required Fields', 'Please fill in all required fields.', errors); return; }
+  S.regData = Object.assign(S.regData || {}, { gender: gender.value, sect: sect.value, maritalStatus: ms.value, education: edu.value });
+  G('s-reg3');
+}
+function reg3Next() {
+  var country = document.getElementById('rg-country');
+  var city    = document.getElementById('rg-city');
+  var nat     = document.getElementById('rg-nat');
+  var lang    = document.getElementById('rg-lang');
+  var errors  = [];
+  if (!country || !country.value)    { markErr(country, 'rg-country-err'); errors.push('Country is required'); } else markOK(country, 'rg-country-err');
+  if (!city    || !city.value.trim()){ markErr(city,    'rg-city-err');    errors.push('City is required'); }    else markOK(city, 'rg-city-err');
+  if (!nat     || !nat.value.trim()) { markErr(nat,     'rg-nat-err');     errors.push('Nationality required'); } else markOK(nat, 'rg-nat-err');
+  if (!lang    || !lang.value.trim()){ markErr(lang,    'rg-lang-err');    errors.push('Languages required'); }  else markOK(lang, 'rg-lang-err');
+  if (errors.length) { showPopup('📍', 'Step 3 — Required Fields', 'Please fill in all required fields.', errors); return; }
+  S.regData = Object.assign(S.regData || {}, { country: country.value, city: city.value, nationality: nat.value, languages: lang.value });
+  G('s-reg4');
+}
+function reg5Next() {
+  var bio     = document.getElementById('rg-bio');
+  var occ     = document.getElementById('rg-occ');
+  var hobbies = document.getElementById('rg-hobbies');
+  var errors  = [];
+  if (!bio     || !bio.value.trim()     || bio.value.trim().length < 10)  { markErr(bio,     'rg-bio-err');     errors.push('About Me: min 10 characters'); }    else markOK(bio, 'rg-bio-err');
+  if (!occ     || !occ.value.trim())                                        { markErr(occ,     'rg-occ-err');     errors.push('Occupation required'); }              else markOK(occ, 'rg-occ-err');
+  if (!hobbies || !hobbies.value.trim())                                    { markErr(hobbies, 'rg-hobbies-err'); errors.push('Interests required'); }               else markOK(hobbies, 'rg-hobbies-err');
+  if (errors.length) { showPopup('✍️', 'Step 5 — Required Fields', 'Please fill in all required fields.', errors); return; }
+  S.regData = Object.assign(S.regData || {}, { bio: bio.value, occupation: occ.value, interests: hobbies.value });
+  G('s-reg6');
 }
 
-/* ══ PHOTOS ══ */
+function completeReg() {
+  var pwEl   = document.getElementById('rg-pw');
+  var pw2El  = document.getElementById('rg-pw2');
+  var terms  = document.getElementById('rg-terms');
+  var wrap   = document.getElementById('terms-wrap');
+  var termsErr = document.getElementById('rg-terms-err');
+  var errors = [];
+  if (!pwEl.value || pwEl.value.length < 8) { markErr(pwEl, 'rg-pw-err'); errors.push('Password must be at least 8 characters'); } else markOK(pwEl, 'rg-pw-err');
+  if (!pw2El.value || pw2El.value !== pwEl.value) { markErr(pw2El, 'rg-pw2-err'); errors.push('Passwords do not match'); } else if (pwEl.value.length >= 8) markOK(pw2El, 'rg-pw2-err');
+  if (!terms.checked) { if (wrap) { wrap.style.borderColor = 'var(--red2)'; wrap.style.background = '#fff5f5'; } if (termsErr) termsErr.classList.add('show'); errors.push('You must accept the Terms & Conditions'); }
+  if (errors.length) { showPopup('⚠️', 'Almost There!', 'Please fix the following issues.', errors); return; }
+
+  var rd = S.regData || {};
+  var payload = {
+    first_name:    rd.fn          || '',
+    last_name:     rd.ln          || '',
+    email:         rd.em          || '',
+    password:      pwEl.value,
+    phone:         rd.ph          || '',
+    dob:           rd.dob         || '',
+    gender:        (['Male','Female'].includes(rd.gender) ? rd.gender : 'Male'),
+    sect:          rd.sect        || '',
+    marital_status:(['Never Married','Divorced','Widowed'].includes(rd.maritalStatus) ? rd.maritalStatus : 'Never Married'),
+    education:     rd.education   || '',
+    country:       rd.country     || '',
+    city:          rd.city        || '',
+    nationality:   rd.nationality || '',
+    languages:     rd.languages   || '',
+    occupation:    rd.occupation  || '',
+    bio:           rd.bio         || 'No bio yet.',
+    interests:     rd.interests   || '',
+    photo_1: '', photo_2: '', photo_3: '',
+  };
+
+  toast('Creating your account...', 3000);
+  fetch(API + '/api/auth/register', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.success) {
+      var msg = res.error || 'Registration failed. Please try again.';
+      if (msg.includes('already registered')) msg = 'This email is already registered. Please log in.';
+      toast('❌ ' + msg, 5000, 'err');
+      return;
+    }
+    S.user  = res.data.user;
+    S.token = res.data.token;
+    S.premium = false;
+    toast('🎉 Account created! Welcome to Halal-MeetUp!', 3500);
+    setTimeout(function() { G('s-idv1'); }, 400);
+  })
+  .catch(function() { toast('❌ Connection error. Please try again.', 3000, 'err'); });
+}
+
+/* ── Photos ─────────────────────────────────────────────── */
 function photoTap(i) {
   var slot = document.getElementById('ps' + i);
-  // If already uploaded — tapping clears it
   if (S.photos[i]) {
     S.photos[i] = 0;
     S._photoFiles = S._photoFiles || {};
     delete S._photoFiles[i];
-    var lbl = i===0?'Main':i===1?'2nd':'3rd';
-    slot.innerHTML = '<span style="font-size:1.8rem;">📷</span>'
-      + '<span class="plbl">'+lbl+' (req)</span><span class="rdot"></span>';
+    var lbl = i === 0 ? 'Main' : i === 1 ? '2nd' : '3rd';
+    slot.innerHTML = '<span style="font-size:1.8rem;">📷</span><span class="plbl">' + lbl + ' (req)</span><span class="rdot"></span>';
     slot.classList.remove('filled');
     document.getElementById('pctr').textContent = S.photos.filter(Boolean).length + '/3 uploaded';
     return;
   }
-  // Show source choice sheet
   S._photoSlotIdx = i;
   var sheet = document.getElementById('photo-source-sheet');
   if (sheet) sheet.classList.add('on');
@@ -2076,34 +1988,19 @@ function openPhotoSource(source) {
   var sheet = document.getElementById('photo-source-sheet');
   if (sheet) sheet.classList.remove('on');
   var i = S._photoSlotIdx;
-
-  // Small delay to let sheet close animation finish
   setTimeout(function() {
     var inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = 'image/*';  // broadest possible — iOS needs this
-    // Only set capture if camera selected AND not iOS (iOS ignores it anyway)
-    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (source === 'camera' && !isIOS) {
-      inp.capture = 'environment';
-    }
-    // Must be visible and in DOM for iOS Safari to trigger
+    inp.type   = 'file';
+    inp.accept = 'image/*';
+    var isIOS  = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (source === 'camera' && !isIOS) inp.capture = 'environment';
     inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
     document.body.appendChild(inp);
-
-    // iOS Safari requires a real user-gesture triggered click
-    // using a timeout breaks the gesture chain — use direct click
-    inp.addEventListener('change', function(ev) {
-      if (!inp.files || !inp.files[0]) {
-        if (document.body.contains(inp)) document.body.removeChild(inp);
-        return;
-      }
+    inp.addEventListener('change', function() {
+      if (!inp.files || !inp.files[0]) { if (document.body.contains(inp)) document.body.removeChild(inp); return; }
       var file = inp.files[0];
       if (document.body.contains(inp)) document.body.removeChild(inp);
-
-      if (file.size > 15 * 1024 * 1024) {
-        toast('Photo too large. Max 15MB.', 3000, 'err'); return;
-      }
+      if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
       var reader = new FileReader();
       reader.onload = function(e) {
         var slot = document.getElementById('ps' + i);
@@ -2111,1058 +2008,760 @@ function openPhotoSource(source) {
         S.photos[i] = 1;
         S._photoFiles = S._photoFiles || {};
         S._photoFiles[i] = file;
-        slot.innerHTML = '<img src="' + e.target.result + '" '
-          + 'style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">';
+        slot.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">';
         slot.classList.add('filled');
         var ctr = document.getElementById('pctr');
         if (ctr) ctr.textContent = S.photos.filter(Boolean).length + '/3 uploaded';
-        toast('Photo ' + (i+1) + ' added!', 1800);
+        toast('Photo ' + (i + 1) + ' added!', 1800);
       };
       reader.onerror = function() { toast('Could not load photo. Try another.', 2500, 'err'); };
       reader.readAsDataURL(file);
     });
-
     inp.click();
   }, 300);
 }
 
-
-function checkPhotos(){if(S.photos.filter(Boolean).length<3){toast('Please upload all 3 required photos.','err',2500);return;}G('s-reg5');}
-function selectID(el){document.querySelectorAll('.idopt').forEach(x=>x.style.borderColor='var(--sand)');el.style.borderColor='var(--teal)';}
-function tapUpload(el, msg) {
-  // Create hidden file input
-  var inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/jpeg,image/png,image/webp,application/pdf';
-  inp.style.display = 'none';
-  document.body.appendChild(inp);
-  inp.onchange = function() {
-    if (!inp.files || !inp.files[0]) return;
-    var file = inp.files[0];
-    var maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      toast('File too large. Max 10MB.', 3000, 'err');
-      document.body.removeChild(inp);
-      return;
-    }
-    // Show preview for images
-    if (file.type.startsWith('image/')) {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        el.style.borderColor = 'var(--teal)';
-        el.style.background = '#dff2f2';
-        el.innerHTML = '<img src="' + e.target.result + '" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:6px;">'
-          + '<p style="color:var(--teal);font-weight:800;font-size:.85rem;">✅ ' + msg + '</p>'
-          + '<p style="font-size:.72rem;color:var(--txt3);">' + file.name + '</p>';
-        // Store file reference for upload
-        el._file = file;
-        toast('✅ ' + msg, 2000);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      el.style.borderColor = 'var(--teal)';
-      el.style.background = '#dff2f2';
-      el.innerHTML = '<div style="font-size:2.5rem;margin-bottom:6px;">✅</div>'
-        + '<p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'
-        + '<p style="font-size:.72rem;color:var(--txt3);">' + file.name + '</p>';
-      el._file = file;
-      toast('✅ ' + msg, 2000);
-    }
-    document.body.removeChild(inp);
-  };
-  inp.click();
-}
-function takeSelfie() {
-  // Try camera first, fall back to file picker
-  var sring = document.querySelector('.sring');
-  var btn = document.getElementById('selfiebtn');
-
-  // Create file input that opens front camera on mobile
-  var inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/*';
-  inp.capture = 'user'; // front camera on mobile
-  inp.style.display = 'none';
-  document.body.appendChild(inp);
-
-  inp.onchange = function() {
-    if (!inp.files || !inp.files[0]) return;
-    var file = inp.files[0];
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      // Show selfie preview
-      if (sring) {
-        sring.innerHTML = '<img src="' + e.target.result + '" '
-          + 'style="width:140px;height:140px;border-radius:50%;object-fit:cover;'
-          + 'border:3px solid var(--teal);display:block;margin:0 auto;">';
-      }
-      if (btn) {
-        btn.textContent = '✅ Selfie Captured!';
-        btn.style.background = 'var(--green)';
-        btn.style.color = '#fff';
-      }
-      // Store file
-      S._selfieFile = file;
-      toast('✅ Selfie captured!', 2000);
-    };
-    reader.readAsDataURL(file);
-    document.body.removeChild(inp);
-  };
-
-  inp.oncancel = function() {
-    document.body.removeChild(inp);
-  };
-
-  inp.click();
+function checkPhotos() {
+  if (S.photos.filter(Boolean).length < 3) { toast('Please upload all 3 required photos.', 'err', 2500); return; }
+  G('s-reg5');
 }
 
-/* ══ BLOCK DETECTION ══ */
-const PH_RX=/(\+?\d[\d\s\-().]{6,}\d)|(\b(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)\b)/i;
-const LP_RX=/\b(live photo|live pic|snapchat|snap|instagram|ig\b|facetime|whatsapp|telegram)\b/i;
-function checkBlock(msg){if(PH_RX.test(msg))return'phone';if(!S.premium&&LP_RX.test(msg))return'livephoto';return null;}
+function selectID(el) { document.querySelectorAll('.idopt').forEach(function(x) { x.style.borderColor = 'var(--sand)'; }); el.style.borderColor = 'var(--teal)'; }
+function tapUpload(el, msg) { el.style.borderColor = 'var(--teal)'; el.style.background = '#dff2f2'; el.innerHTML = '<div style="font-size:2.5rem;margin-bottom:6px;">✅</div><p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'; }
+function takeSelfie() { var b = document.getElementById('selfiebtn'); b.textContent = '✅ Selfie Captured!'; b.style.background = 'var(--green)'; }
 
-/* ══ CHAT ══ */
-function openChat(id){
-  S.chatId=id;S.unread[id]=0;renderConvList();
-  const p=(DB.users.find(function(u){return u.id===id;})||{id:id,name:'Unknown',firstName:'Unknown',lastName:'',verified:false,online:false,bio:'',age:'',city:'',sect:'',maritalStatus:'',education:'',occupation:'',interests:''});
-  var notice=document.getElementById('blocked-notice');
-  var cbar=document.querySelector('.cbar');
-  if(S.blocked.includes(id)){if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';}
-  else{if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';}
-  document.getElementById('chat-name').innerHTML=p.name+(p.verified?' <span style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span>':'');
-  document.getElementById('chat-status').textContent=p.online?'Online now':'Last seen recently';
-  renderChat();G('s-chat');
+/* ── Block detection ─────────────────────────────────────── */
+var PH_RX = /(\+?\d[\d\s\-().]{6,}\d)/i;
+var LP_RX = /\b(snapchat|instagram|ig\b|facetime|whatsapp|telegram)\b/i;
+function checkBlock(msg) { if (PH_RX.test(msg)) return 'phone'; if (!S.premium && LP_RX.test(msg)) return 'livephoto'; return null; }
+
+/* ══ MATCH SYSTEM ══════════════════════════════════════════ */
+function getMyMatches() {
+  if (!S.user) return [];
+  return apiCall('/api/matches', 'GET').then(function(res) { return res.success ? res.data : []; });
 }
-function renderChat(){
-  var cont=document.getElementById('chatMsgs');if(!cont)return;
-  if(!Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId]=[];
-  var msgs=S.msgs[S.chatId];
-  cont.innerHTML='';
-  if(msgs.length===0){
-    var empty=document.createElement('div');
-    empty.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
-    empty.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">No messages yet</p><p style="font-size:.78rem;">Say Assalamu Alaikum to start!</p>';
-    cont.appendChild(empty);
-  } else {msgs.forEach(function(m){cont.appendChild(mkBubble(m));});}
-  cont.scrollTop=cont.scrollHeight;
+function getMatchId(userId) {
+  if (!S.user) return null;
+  var match = DB.matches.find(function(m) { return (m.user1Id === S.user.id && m.user2Id === userId) || (m.user2Id === S.user.id && m.user1Id === userId); });
+  return match ? match.id : null;
 }
-function mkBubble(m){
-  var wrap=document.createElement('div');
-  wrap.className='bwrap'+(m.f==='me'?' sent':'');
-  wrap.dataset.msgId=m.id||'';
-  if(m.f!=='me'){var av=document.createElement('div');av.className='avsm';av.style.background='linear-gradient(135deg,var(--teal),var(--gold))';av.textContent='👤';wrap.appendChild(av);}
-  var col=document.createElement('div');col.style.flex='1';col.style.minWidth='0';
-  var rbar=document.createElement('div');rbar.className='react-bar';
-  ['❤️','😊','🤲','😂','👍','✨'].forEach(function(e){var rb=document.createElement('button');rb.className='react-btn';rb.textContent=e;rb.onclick=function(ev){ev.stopPropagation();addReaction(m.id,e,wrap);rbar.classList.remove('show');};rbar.appendChild(rb);});
-  var ctxTrigger=document.createElement('button');ctxTrigger.className='react-btn';ctxTrigger.textContent='⋯';ctxTrigger.onclick=function(ev){ev.stopPropagation();showCtxMenu(m,wrap);};rbar.appendChild(ctxTrigger);
-  col.appendChild(rbar);
-  var bub=document.createElement('div');
-  if(m.blocked==='phone'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Message Blocked</strong><br><span style="font-size:.79rem;">Phone numbers cannot be shared in chat.</span>';}
-  else if(m.blocked==='livephoto'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Premium Required</strong><br><span style="font-size:.79rem;">Live photos require Premium.</span>';}
-  else if(m.deleted){bub.className='bub '+(m.f==='me'?'bout':'bin');bub.style.opacity='.5';bub.style.fontStyle='italic';bub.textContent='🗑 Message deleted';}
-  else{bub.className='bub '+(m.f==='me'?'bout':'bin');bub.textContent=m.t;}
-  var lpTimer;
-  bub.addEventListener('touchstart',function(){lpTimer=setTimeout(function(){rbar.classList.add('show');},500);},{passive:true});
-  bub.addEventListener('touchend',function(){clearTimeout(lpTimer);});
-  bub.addEventListener('touchmove',function(){clearTimeout(lpTimer);},{passive:true});
-  bub.addEventListener('contextmenu',function(ev){ev.preventDefault();showCtxMenu(m,wrap);});
-  col.appendChild(bub);
-  if(m.reactions&&m.reactions.length){var chips=document.createElement('div');chips.className='react-chips';var counts={};m.reactions.forEach(function(r){counts[r]=(counts[r]||0)+1;});Object.keys(counts).forEach(function(emoji){var chip=document.createElement('span');chip.className='rchip';chip.textContent=emoji+' '+counts[emoji];chip.onclick=function(){addReaction(m.id,emoji,wrap);};chips.appendChild(chip);});col.appendChild(chips);}
-  if(!m.blocked&&!m.deleted&&m.f==='me'){var actRow=document.createElement('div');actRow.className='bub-actions';var replyBtn=document.createElement('button');replyBtn.className='bub-action-btn';replyBtn.textContent='↩ Reply';replyBtn.onclick=function(){var inp=document.getElementById('chatInp');if(inp){inp.value='↩ "'+m.t.substring(0,30)+(m.t.length>30?'…':'')+'" ';inp.focus();}};var copyBtn=document.createElement('button');copyBtn.className='bub-action-btn';copyBtn.textContent='📋 Copy';copyBtn.onclick=function(){if(navigator.clipboard&&m.t)navigator.clipboard.writeText(m.t);toast('Copied!',1500);};var delBtn=document.createElement('button');delBtn.className='bub-action-btn danger';delBtn.textContent='🗑️ Delete';delBtn.onclick=function(){deleteMsg(m.id);};actRow.appendChild(replyBtn);actRow.appendChild(copyBtn);actRow.appendChild(delBtn);col.appendChild(actRow);}
-  if(!m.blocked&&!m.deleted&&m.f==='them'){var actRow2=document.createElement('div');actRow2.className='bub-actions';var replyBtn2=document.createElement('button');replyBtn2.className='bub-action-btn';replyBtn2.textContent='↩ Reply';replyBtn2.onclick=function(){var inp=document.getElementById('chatInp');if(inp){inp.value='↩ "'+m.t.substring(0,30)+(m.t.length>30?'…':'')+'" ';inp.focus();}};actRow2.appendChild(replyBtn2);col.appendChild(actRow2);}
-  var tm=document.createElement('div');tm.className='btm';tm.textContent=m.ts+(m.f==='me'?' ✓✓':'');col.appendChild(tm);
-  wrap.appendChild(col);return wrap;
-}
-function showCtxMenu(m,wrap){
-  document.querySelectorAll('.ctx-menu').forEach(function(el){el.remove();});
-  var menu=document.createElement('div');menu.className='ctx-menu'+(m.f==='me'?' sent':'');
-  var actions=[{icon:'📋',label:'Copy message',fn:function(){if(navigator.clipboard&&m.t)navigator.clipboard.writeText(m.t);toast('Copied!',1500);}}];
-  if(m.f==='me'&&!m.deleted)actions.push({icon:'🗑️',label:'Delete message',fn:function(){deleteMsg(m.id);},danger:true});
-  actions.push({icon:'↩️',label:'Reply',fn:function(){var inp=document.getElementById('chatInp');if(inp){inp.value='↩ "'+m.t.substring(0,30)+(m.t.length>30?'…':'')+'" ';inp.focus();}}});
-  actions.forEach(function(a){var btn=document.createElement('button');btn.className='ctx-item'+(a.danger?' danger':'');btn.innerHTML=a.icon+' '+a.label;btn.onclick=function(ev){ev.stopPropagation();a.fn();menu.remove();};menu.appendChild(btn);});
-  wrap.appendChild(menu);
-  setTimeout(function(){document.addEventListener('click',function close(){menu.remove();document.removeEventListener('click',close);});},50);
-}
-function addReaction(msgId,emoji,wrap){if(!msgId)return;var msgs=S.msgs[S.chatId]||[];var msg=msgs.find(function(m){return m.id===msgId;});if(!msg)return;if(!msg.reactions)msg.reactions=[];var idx=msg.reactions.indexOf(emoji);if(idx>=0)msg.reactions.splice(idx,1);else msg.reactions.push(emoji);renderChat();}
-function deleteMsg(msgId){if(!msgId)return;var msgs=S.msgs[S.chatId]||[];var msg=msgs.find(function(m){return m.id===msgId;});if(msg)msg.deleted=true;renderChat();toast('Message deleted',1800);}
-function blockUser(){MC('m-block');if(!S.blocked.includes(S.chatId))S.blocked.push(S.chatId);S.unread[S.chatId]=0;renderConvList();var notice=document.getElementById('blocked-notice');var cbar=document.querySelector('.cbar');if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';toast('🚫 User blocked.',3500);}
-function unblockUser(){var idx=S.blocked.indexOf(S.chatId);if(idx>=0)S.blocked.splice(idx,1);var notice=document.getElementById('blocked-notice');var cbar=document.querySelector('.cbar');if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';toast('✅ User unblocked.',2000);}
-function openCallLogs(){
-  var list=document.getElementById('callLogList');if(!list)return;
-  if(!S.callLogs||!S.callLogs.length){
-    list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--txt3);"><div style="font-size:2.5rem;margin-bottom:10px;">📋</div><p style="font-size:.85rem;font-weight:700;">No call history yet</p></div>';
-    G('s-calllogs');return;
-  }
-  var statusColors={completed:'var(--green)',missed:'var(--red2)',declined:'var(--txt3)'};
-  var statusLabels={completed:'Completed',missed:'Missed',declined:'Declined'};
-  list.innerHTML=S.callLogs.map(function(cl){
-    var color=statusColors[cl.status]||'var(--txt3)';var lbl=statusLabels[cl.status]||cl.status;
-    var icon=cl.type==='video'?'🎥':'📞';
-    var iconBg=cl.status==='missed'?'#fce8e8':cl.status==='completed'?'#e0f2f2':'#f0ece6';
-    return'<div class="clog-item"><div class="clog-icon" style="background:'+iconBg+'">'+icon+'</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">'+cl.p1+'</p><p style="font-size:.74rem;color:var(--txt3);">'+cl.date+' · '+cl.dur+'</p></div><span style="font-size:.72rem;font-weight:800;color:'+color+';">'+lbl+'</span></div>';
-  }).join('');
-  G('s-calllogs');
-}
-
-/* ══ SEND MESSAGE ══ */
-function sendMsg(){
-  var inp=document.getElementById('chatInp');if(!inp)return;
-  var txt=inp.value.trim();if(!txt)return;
-  if(!S.user){toast('Please log in first.',2000,'err');return;}
-  if(!S.chatId){toast('No active chat.',1500,'err');return;}
-  if(S.blocked.includes(S.chatPartnerId)){toast('You have blocked this user.',2000,'err');return;}
-  var blk=checkBlock(txt);
-  var now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  var msgId='msg-'+Date.now();
-  apiCall('/api/matches/'+S.chatId+'/messages','POST',{
-    text:txt,to_user_id:S.chatPartnerId,blocked_reason:blk||null
-  }).then(function(res){
-    if(!res.success){toast('❌ '+res.error,2000,'err');return;}
-    var msg=res.data;
-    if(!DB.messages[S.chatId])DB.messages[S.chatId]=[];
-    DB.messages[S.chatId].push({
-      id:msg.id,fromId:msg.from_user_id,toId:msg.to_user_id,
-      text:msg.text,ts:now,reactions:[],deleted:false,blocked:msg.blocked_reason
-    });
-    renderChatByMatch();
-    var cont=document.getElementById('chatMsgs');
-    if(cont)setTimeout(function(){cont.scrollTop=cont.scrollHeight;},60);
-  }).catch(function(){toast('❌ Could not send.',2000,'err');});
-  inp.value='';
-}
-
-/* ══ CONV LIST / DELETE CHATS ══ */
-function renderConvList(){
-  var list=document.getElementById('convList');if(!list)return;
-  apiCall('/api/matches','GET').then(function(res){
-  if(!res.success){list.innerHTML='';return;}
-  var myMatches=res.data;
-  // remap API fields to match local format
-  myMatches=myMatches.map(function(m){return {id:m.match_id,user1Id:S.user.id,user2Id:m.partner_id,createdAt:m.matched_at,_partner:{id:m.partner_id,firstName:m.first_name,lastName:m.last_name,photo_1:m.avatar,online:m.online,verified:m.id_verified},_unread:m.unread_count,_preview:m.last_message,_time:m.last_message_at};});
-  list.innerHTML='';
-  if(!myMatches.length){
-    var emptyDiv=document.createElement('div');
-    emptyDiv.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
-    emptyDiv.innerHTML='<div style="font-size:3rem;margin-bottom:12px;">💞</div><p style="font-weight:800;font-size:.9rem;margin-bottom:6px;">No matches yet</p><p style="font-size:.78rem;line-height:1.6;">Swipe right on Discover.<br>When someone likes you back, they appear here!</p>';
-    var discBtn=document.createElement('button');
-    discBtn.className='btn bp';discBtn.style.marginTop='14px';discBtn.textContent='Go Discover 💚';
-    discBtn.onclick=function(){G('s-discover');};
-    emptyDiv.appendChild(discBtn);
-    list.appendChild(emptyDiv);
-    return;
-  }
-  var colours=['var(--teal),var(--gold)','#a084ca,#c0a0e0','#d4a574,#b08050','#5a9ad0,#2e6aaa','#5aaa70,#2e6a50'];
-  myMatches.forEach(function(match,i){
-    var partner=getMatchPartner(match);
-    if(!partner)return;
-    var msgs=DB.messages[match.id]||[];
-    var lastMsg=msgs.length?msgs[msgs.length-1]:null;
-    var previewText=lastMsg?lastMsg.text.substring(0,40)+(lastMsg.text.length>40?'...':''):'💞 You matched! Say Assalamu Alaikum';
-    var unread=S.unread[match.id]||0;
-    var col=colours[i%colours.length];
-    var timeStr=lastMsg?lastMsg.ts:(match.createdAt?new Date(match.createdAt).toLocaleDateString():'');
-
-    // Outer wrap
-    var wrap=document.createElement('div');
-    wrap.className='conv-row-wrap';
-    wrap.id='conv-wrap-'+match.id;
-
-    // Row
-    var row=document.createElement('div');
-    row.className='conv-row';
-    row.id='conv-row-'+match.id;
-    row.onclick=function(){openChatByMatch(match.id);};
-
-    // Avatar
-    var av=document.createElement('div');
-    av.style.cssText='position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,'+col+');display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;';
-    av.innerHTML='👤'+(partner.online?'<div class="odot"></div>':'');
-
-    // Text content
-    var content=document.createElement('div');
-    content.style.cssText='flex:1;min-width:0;';
-
-    var topRow=document.createElement('div');
-    topRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;';
-
-    var nameWrap=document.createElement('div');
-    nameWrap.style.cssText='display:flex;align-items:center;gap:5px;';
-    var nameEl=document.createElement('p');
-    nameEl.style.cssText='font-weight:800;font-size:.87rem;';
-    nameEl.textContent=partner.firstName+' '+partner.lastName;
-    nameWrap.appendChild(nameEl);
-    if(partner.verified){var vBadge=document.createElement('span');vBadge.style.cssText='font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;';vBadge.textContent='✓';nameWrap.appendChild(vBadge);}
-
-    var timeEl=document.createElement('p');
-    timeEl.style.cssText='font-size:.69rem;color:var(--txt3);';
-    timeEl.textContent=timeStr;
-
-    topRow.appendChild(nameWrap);topRow.appendChild(timeEl);
-
-    var preview=document.createElement('p');
-    preview.style.cssText='font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-    preview.textContent=previewText;
-
-    content.appendChild(topRow);content.appendChild(preview);
-
-    row.appendChild(av);row.appendChild(content);
-
-    if(unread>0){var badge=document.createElement('div');badge.className='unread-badge';badge.textContent=unread;row.appendChild(badge);}
-
-    // Action buttons
-    var actions=document.createElement('div');
-    actions.className='conv-row-actions';
-    var delBtn=document.createElement('button');
-    delBtn.className='conv-del-btn';
-    delBtn.innerHTML='🗑️<br><span style="font-size:.62rem">Delete</span>';
-    (function(matchId){delBtn.onclick=function(e){e.stopPropagation();removeMatch(matchId);};})(match.id);
-    actions.appendChild(delBtn);
-
-    wrap.appendChild(row);wrap.appendChild(actions);
-    list.appendChild(wrap);
-  });
-  });  // end apiCall
-}
-
-function removeMatch(matchId){
-  DB.matches=DB.matches.filter(function(m){return m.id!==matchId;});
-  delete DB.messages[matchId];
-  renderConvList();
-  toast('Match removed.',2000);
-}
-
-/* ── Discover — load real DB profiles ── */
-function loadNextDiscoverProfile(){
-  if(!S.user)return;
-  apiCall('/api/discover?page='+(S._discoverPage||0),'GET')
-  .then(function(res){
-    if(!res.success||!res.data.length){showEmptyDiscover();return;}
-    var p=res.data[0];
-    S._discoverCandidateId=p.id;
-    S._discoverQueue=res.data;
-    var nameEl=document.getElementById('cName'),subEl=document.getElementById('cSub'),bioEl=document.getElementById('cBio');
-    if(nameEl)nameEl.textContent=(p.first_name||'')+' '+(p.last_name||'');
-    if(subEl)subEl.textContent=(p.age||'?')+' · '+(p.city||'')+(p.sect?' · '+p.sect:'');
-    if(bioEl)bioEl.textContent=p.bio||'No bio yet.';
-  })
-  .catch(function(){showEmptyDiscover();});
-}
-
-function showEmptyDiscover(){
-  var card=document.getElementById('swipeCard');
-  if(!card)return;
-  card.innerHTML='';
-  var div=document.createElement('div');
-  div.style.cssText='height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;';
-  div.innerHTML='<div style="font-size:3.5rem;margin-bottom:14px;">🌙</div>'
-    +'<p style="font-size:1.35rem;font-weight:600;margin-bottom:8px;">You have seen everyone!</p>'
-    +'<p style="color:var(--txt3);font-size:.83rem;line-height:1.6;">Check back later as new members join.<br>May Allah make it easy for you. Ameen.</p>';
-  card.appendChild(div);
-}
-
-function getDiscoverActions(){
-  return S._discoverCandidateId;
-}
-
-/* ════════════════════════════════════════════════════
-   MATCH SYSTEM
-════════════════════════════════════════════════════ */
-function getMyMatches(){
-  if(!S.user)return[];
-  return DB.matches.filter(function(m){return m.user1Id===S.user.id||m.user2Id===S.user.id;});
-}
-function getMatchPartner(match){
-  if(!S.user)return null;
-  var partnerId=match.user1Id===S.user.id?match.user2Id:match.user1Id;
-  return DB.users.find(function(u){return u.id===partnerId;})||null;
-}
-function getMatchId(userId){
-  if(!S.user)return null;
-  var match=DB.matches.find(function(m){
-    return(m.user1Id===S.user.id&&m.user2Id===userId)||(m.user2Id===S.user.id&&m.user1Id===userId);
-  });
-  return match?match.id:null;
-}
-function alreadyLiked(toId){
-  if(!S.user)return false;
-  return DB.likes.some(function(l){return l.fromId===S.user.id&&l.toId===toId;});
-}
-function alreadyMatched(toId){return getMatchId(toId)!==null;}
-
-function likeProfile(toId){
-  if(!S.user||!toId)return;
-  if(alreadyLiked(toId)||alreadyMatched(toId))return;
-  apiCall('/api/likes','POST',{to_user_id:toId})
-  .then(function(res){
-    if(!res.success){toast('❌ '+res.error,2500,'err');return;}
-    if(res.data.result==='MATCHED'){
-      var matchId=res.data.match_id;
-      DB.matches.push({id:matchId,user1Id:S.user.id,user2Id:toId,createdAt:new Date().toISOString()});
-      DB.messages[matchId]=[];
-      S.unread[matchId]=0;
-      var partner=DB.users.find(function(u){return u.id===toId;});
-      showMatchNotification(partner,matchId);
+function likeProfile(toId) {
+  if (!S.user || !toId || !S.token) return;
+  apiCall('/api/likes', 'POST', { to_user_id: toId })
+  .then(function(res) {
+    if (!res.success) return;
+    if (res.data.result === 'MATCHED') {
+      var matchId = res.data.match_id;
+      DB.matches.push({ id: matchId, user1Id: S.user.id, user2Id: toId, createdAt: new Date().toISOString() });
+      DB.messages[matchId] = [];
+      S.unread[matchId] = 0;
+      showMatchNotification(toId, matchId);
     } else {
       showIntroMessagePrompt(toId);
     }
   })
-  .catch(function(){toast('❌ Connection error.',2500,'err');});
+  .catch(function() {});
 }
-function showMatchNotification(partner,matchId){
-  var overlay=document.getElementById('match-overlay');
-  var pName=document.getElementById('match-partner-name');
-  var matchBtn=document.getElementById('match-chat-btn');
-  if(!overlay||!pName)return;
-  pName.textContent=partner?(partner.firstName+' '+partner.lastName):'Your new match';
-  if(matchBtn)matchBtn.onclick=function(){hideMatchOverlay();openChatByMatch(matchId);};
-  overlay.style.display='flex';
-  setTimeout(hideMatchOverlay,8000);
+function showMatchNotification(partnerId, matchId) {
+  var overlay = document.getElementById('match-overlay');
+  var pName   = document.getElementById('match-partner-name');
+  var btn     = document.getElementById('match-chat-btn');
+  if (!overlay) return;
+  if (pName) pName.textContent = 'Your new match';
+  if (btn) btn.onclick = function() { hideMatchOverlay(); openChatByMatch(matchId); };
+  overlay.style.display = 'flex';
+  setTimeout(hideMatchOverlay, 8000);
 }
-function hideMatchOverlay(){
-  var overlay=document.getElementById('match-overlay');
-  if(overlay)overlay.style.display='none';
+function hideMatchOverlay() { var o = document.getElementById('match-overlay'); if (o) o.style.display = 'none'; }
+function showIntroMessagePrompt(toId) {
+  S._introTargetId = toId;
+  var modal = document.getElementById('m-intro-msg');
+  if (modal) modal.classList.add('on');
 }
-function showIntroMessagePrompt(toId){
-  var existingIntro=DB.likes.find(function(l){return l.fromId===S.user.id&&l.toId===toId&&l.introSent;});
-  if(existingIntro){toast('You already sent an intro. Waiting for their response!',3000);return;}
-  S._introTargetId=toId;
-  var modal=document.getElementById('m-intro-msg');
-  var partnerEl=document.getElementById('intro-partner-name');
-  var partner=DB.users.find(function(u){return u.id===toId;});
-  if(partnerEl)partnerEl.textContent=partner?partner.firstName:'them';
-  if(modal)modal.classList.add('on');
-}
-function sendIntroMessage(){
-  var inp=document.getElementById('intro-msg-inp');
-  if(!inp)return;
-  var txt=inp.value.trim();
-  if(!txt||txt.length<5){toast('Please write a short intro message.',2000,'err');return;}
-  var toId=S._introTargetId;if(!toId)return;
-  var like=DB.likes.find(function(l){return l.fromId===S.user.id&&l.toId===toId;});
-  if(like)like.introSent=true;
-  if(!DB.introMessages)DB.introMessages={};
-  if(!DB.introMessages[toId])DB.introMessages[toId]=[];
-  apiCall('/api/intro-messages','POST',{to_user_id:toId,text:txt})
-  .then(function(res){
-    if(!res.success){toast('❌ '+res.error,3000,'err');return;}
-    inp.value='';
+function sendIntroMessage() {
+  var inp = document.getElementById('intro-msg-inp');
+  if (!inp) return;
+  var txt = inp.value.trim();
+  if (!txt || txt.length < 5) { toast('Please write a short intro message.', 2000, 'err'); return; }
+  apiCall('/api/intro-messages', 'POST', { to_user_id: S._introTargetId, text: txt })
+  .then(function(res) {
+    inp.value = '';
     MC('m-intro-msg');
-    toast('Intro sent! Waiting for their response...',4000);
+    if (res.success) toast('Intro sent! Waiting for their response...', 4000);
+    else toast('❌ ' + (res.error || 'Failed to send intro.'), 3000, 'err');
   })
-  .catch(function(){toast('❌ Connection error.',2500,'err');});
+  .catch(function() { toast('❌ Connection error.', 2500, 'err'); });
 }
-function openChatByMatch(matchId){
-  var match=DB.matches.find(function(m){return m.id===matchId;});
-  if(!match){toast('Chat not available.',2000,'err');return;}
-  var partner=getMatchPartner(match);
-  if(!partner){toast('User not found.',2000,'err');return;}
-  S.chatId=matchId;S.chatPartnerId=partner.id;
-  S.unread[matchId]=0;
-  if(!DB.messages[matchId])DB.messages[matchId]=[];
-  (DB.messages[matchId]||[]).forEach(function(m){if(m.toId===S.user.id)m.read=true;});
-  var nameEl=document.getElementById('chat-name');
-  var statusEl=document.getElementById('chat-status');
-  if(nameEl)nameEl.innerHTML=partner.firstName+' '+partner.lastName+(partner.verified?' <span style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">&#10003;</span>':'');
-  if(statusEl)statusEl.textContent=partner.online?'Online now':'Last seen recently';
-  var notice=document.getElementById('blocked-notice');
-  var cbar=document.querySelector('.cbar');
-  if(S.blocked.includes(partner.id)){if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';}
-  else{if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';}
-  renderChatByMatch();G('s-chat');
+function openChatByMatch(matchId) {
+  S.chatId = matchId;
+  apiCall('/api/matches', 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var match = res.data.find(function(m) { return m.match_id === matchId; });
+    if (!match) return;
+    S.chatPartnerId = match.partner_id;
+    var nameEl   = document.getElementById('chat-name');
+    var statusEl = document.getElementById('chat-status');
+    if (nameEl) nameEl.textContent = match.first_name + ' ' + match.last_name;
+    if (statusEl) statusEl.textContent = match.online ? 'Online now' : 'Last seen recently';
+    var notice = document.getElementById('blocked-notice');
+    var cbar   = document.querySelector('.cbar');
+    if (S.blocked.includes(match.partner_id)) { if (notice) notice.style.display = 'block'; if (cbar) cbar.style.display = 'none'; }
+    else { if (notice) notice.style.display = 'none'; if (cbar) cbar.style.display = 'flex'; }
+    renderChatByMatch();
+    G('s-chat');
+  });
 }
-function renderChatByMatch(){
-  var cont=document.getElementById('chatMsgs');if(!cont)return;
-  if(!S.chatId)return;
-  // Load from API first, fall back to local cache
-  apiCall('/api/matches/'+S.chatId+'/messages','GET')
-  .then(function(res){
-    if(res.success&&res.data){
-      DB.messages[S.chatId]=res.data.map(function(m){return {
-        id:m.id,fromId:m.from_user_id,toId:m.to_user_id,
-        text:m.text,ts:m.sent_at?new Date(m.sent_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):m.ts,
-        reactions:m.reactions?JSON.parse(m.reactions||'[]'):[],
-        deleted:m.is_deleted,blocked:m.blocked_reason
-      };});
+function openChat(id) {
+  var matchId = getMatchId(id);
+  if (matchId) openChatByMatch(matchId);
+  else toast('You need to match first before chatting.', 2500, 'err');
+}
+function renderChatByMatch() {
+  var cont = document.getElementById('chatMsgs');
+  if (!cont || !S.chatId) return;
+  apiCall('/api/matches/' + S.chatId + '/messages', 'GET')
+  .then(function(res) {
+    cont.innerHTML = '';
+    var msgs = res.success ? res.data : [];
+    if (!msgs.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center;padding:40px 20px;color:var(--txt3);';
+      empty.innerHTML = '<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">You matched!</p><p style="font-size:.78rem;">Say Assalamu Alaikum 🌙</p>';
+      cont.appendChild(empty);
+    } else {
+      msgs.forEach(function(m) {
+        var legacyMsg = { id: m.id, f: m.from_user_id === S.user.id ? 'me' : 'them',
+          t: m.text, ts: m.sent_at ? new Date(m.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+          reactions: m.reactions ? JSON.parse(m.reactions || '[]') : [], deleted: m.is_deleted, blocked: m.blocked_reason };
+        cont.appendChild(mkBubble(legacyMsg));
+      });
     }
-    var msgs=DB.messages[S.chatId]||[];
-  cont.innerHTML='';
-  if(!msgs.length){
-    var empty=document.createElement('div');
-    empty.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
-    empty.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">You matched!</p><p style="font-size:.78rem;">Say Assalamu Alaikum to start 🌙</p>';
-    cont.appendChild(empty);
-  } else {
-    msgs.forEach(function(m){cont.appendChild(mkBubbleFromMsg(m));});
-  }
-  cont.scrollTop=cont.scrollHeight;
-  }).catch(function(){
-    var msgs=DB.messages[S.chatId]||[];
-    _renderChatMsgs(cont,msgs);
+    cont.scrollTop = cont.scrollHeight;
+  })
+  .catch(function() {
+    cont.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--txt3);">Could not load messages.</div>';
   });
 }
 
-function _renderChatMsgs(cont,msgs){
-  cont.innerHTML='';
-  if(!msgs||!msgs.length){
-    var empty=document.createElement('div');
-    empty.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
-    empty.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">You matched!</p><p style="font-size:.78rem;">Say Assalamu Alaikum to start 🌙</p>';
-    cont.appendChild(empty);
-  } else {msgs.forEach(function(m){cont.appendChild(mkBubbleFromMsg(m));});}
-  cont.scrollTop=cont.scrollHeight;
+/* ── sendMsg ─────────────────────────────────────────────── */
+function sendMsg() {
+  var inp = document.getElementById('chatInp');
+  if (!inp) return;
+  var txt = inp.value.trim();
+  if (!txt || !S.chatId || !S.user) return;
+  if (S.blocked.includes(S.chatPartnerId)) { toast('You have blocked this user.', 2000, 'err'); return; }
+  var blk = checkBlock(txt);
+  var now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  inp.value = '';
+  apiCall('/api/matches/' + S.chatId + '/messages', 'POST', {
+    text: txt, to_user_id: S.chatPartnerId, blocked_reason: blk || null
+  })
+  .then(function(res) {
+    if (res.success) renderChatByMatch();
+    else toast('❌ Could not send.', 2000, 'err');
+  })
+  .catch(function() { toast('❌ Connection error.', 2000, 'err'); });
 }
-function mkBubbleFromMsg(m){
-  var isMine=m.fromId===S.user.id;
-  var legacyMsg={id:m.id,f:isMine?'me':'them',t:m.text,ts:m.ts,reactions:m.reactions,deleted:m.deleted,blocked:m.blocked};
-  return mkBubble(legacyMsg);
-}
-function removeMatch(matchId){
-  DB.matches=DB.matches.filter(function(m){return m.id!==matchId;});
-  delete DB.messages[matchId];
-  renderConvList();
-  toast('Match removed.',2000);
-}
-function openChatLegacy(id){
-  // Legacy openChat — redirect to match-based chat if match exists
-  var matchId=getMatchId(id);
-  if(matchId){openChatByMatch(matchId);}
-  else{toast('You need to match first before chatting.',2500,'err');}
-}
-// Alias for backward compatibility with HTML onclick="openChat(id)"
-function openChat(id){openChatLegacy(id);}
 
+/* ── Bubble builder ─────────────────────────────────────── */
+function mkBubble(m) {
+  var wrap = document.createElement('div');
+  wrap.className = 'bwrap' + (m.f === 'me' ? ' sent' : '');
+  if (m.f !== 'me') { var av = document.createElement('div'); av.className = 'avsm'; av.style.background = 'linear-gradient(135deg,var(--teal),var(--gold))'; av.textContent = '👤'; wrap.appendChild(av); }
+  var col  = document.createElement('div'); col.style.flex = '1'; col.style.minWidth = '0';
+  var bub  = document.createElement('div');
+  if (m.blocked === 'phone') { bub.className = 'bub bblocked'; bub.innerHTML = '<strong style="color:var(--gold3);font-size:.74rem;">🚫 Phone numbers blocked</strong>'; }
+  else if (m.deleted)        { bub.className = 'bub ' + (m.f === 'me' ? 'bout' : 'bin'); bub.style.opacity = '.5'; bub.style.fontStyle = 'italic'; bub.textContent = '🗑 Message deleted'; }
+  else                       { bub.className = 'bub ' + (m.f === 'me' ? 'bout' : 'bin'); bub.textContent = m.t; }
+  col.appendChild(bub);
+  var tm = document.createElement('div'); tm.className = 'btm'; tm.textContent = m.ts + (m.f === 'me' ? ' ✓✓' : '');
+  col.appendChild(tm);
+  wrap.appendChild(col);
+  return wrap;
+}
 
-/* ══ FORGOT PASSWORD ══ */
-var _fpStep = 'email'; // 'email' | 'reset'
+/* ── Conv list ──────────────────────────────────────────── */
+function renderConvList() {
+  var list = document.getElementById('convList');
+  if (!list) return;
+  if (!S.token) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--txt3);"><p>Please sign in to see your matches.</p></div>';
+    return;
+  }
+  apiCall('/api/matches', 'GET')
+  .then(function(res) {
+    list.innerHTML = '';
+    if (!res.success || !res.data.length) {
+      var emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText = 'text-align:center;padding:40px 20px;color:var(--txt3);';
+      emptyDiv.innerHTML = '<div style="font-size:3rem;margin-bottom:12px;">💞</div><p style="font-weight:800;font-size:.9rem;margin-bottom:6px;">No matches yet</p><p style="font-size:.78rem;line-height:1.6;">Swipe right on Discover to start matching!</p>';
+      var btn = document.createElement('button');
+      btn.className = 'btn bp'; btn.style.marginTop = '14px'; btn.textContent = 'Go Discover 💚';
+      btn.onclick = function() { G('s-discover'); };
+      emptyDiv.appendChild(btn);
+      list.appendChild(emptyDiv);
+      return;
+    }
+    var colours = ['var(--teal),var(--gold)', '#a084ca,#c0a0e0', '#d4a574,#b08050', '#5a9ad0,#2e6aaa', '#5aaa70,#2e6a50'];
+    res.data.forEach(function(match, i) {
+      var row = document.createElement('div');
+      row.className = 'conv-row';
+      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:12px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.05);';
+      var av = document.createElement('div');
+      av.style.cssText = 'width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,' + colours[i % colours.length] + ');display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;';
+      av.textContent = '👤';
+      var info = document.createElement('div'); info.style.flex = '1'; info.style.minWidth = '0';
+      var nameEl = document.createElement('p'); nameEl.style.cssText = 'font-weight:800;font-size:.87rem;margin-bottom:2px;'; nameEl.textContent = (match.first_name || '') + ' ' + (match.last_name || '');
+      var previewEl = document.createElement('p'); previewEl.style.cssText = 'font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; previewEl.textContent = match.last_message || '💞 You matched! Say Assalamu Alaikum';
+      info.appendChild(nameEl); info.appendChild(previewEl);
+      if (match.unread_count > 0) { var badge = document.createElement('div'); badge.className = 'unread-badge'; badge.textContent = match.unread_count; row.appendChild(badge); }
+      row.appendChild(av); row.appendChild(info);
+      (function(matchId) { row.onclick = function() { openChatByMatch(matchId); }; })(match.match_id);
+      list.appendChild(row);
+    });
+  })
+  .catch(function() {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3);">Could not load matches.</div>';
+  });
+}
 
+/* ── Discover ─────────────────────────────────────────────── */
+function loadNextDiscoverProfile() {
+  if (!S.user || !S.token) return;
+  apiCall('/api/discover?page=' + (S._discoverPage || 0), 'GET')
+  .then(function(res) {
+    if (!res.success || !res.data.length) { showEmptyDiscover(); return; }
+    var p = res.data[0];
+    S._discoverCandidateId = p.id;
+    S._discoverQueue = res.data;
+    var nameEl = document.getElementById('cName');
+    var subEl  = document.getElementById('cSub');
+    var bioEl  = document.getElementById('cBio');
+    if (nameEl) nameEl.textContent = (p.first_name || '') + ' ' + (p.last_name || '');
+    if (subEl)  subEl.textContent  = (p.age || '?') + ' · ' + (p.city || '') + (p.sect ? ' · ' + p.sect : '');
+    if (bioEl)  bioEl.textContent  = p.bio || 'No bio yet.';
+  })
+  .catch(function() { showEmptyDiscover(); });
+}
+function showEmptyDiscover() {
+  var card = document.getElementById('swipeCard');
+  if (!card) return;
+  card.innerHTML = '';
+  var div = document.createElement('div');
+  div.style.cssText = 'height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;';
+  div.innerHTML = '<div style="font-size:3.5rem;margin-bottom:14px;">🌙</div><p style="font-size:1.35rem;font-weight:600;margin-bottom:8px;">You have seen everyone!</p><p style="color:var(--txt3);font-size:.83rem;line-height:1.6;">Check back later as new members join.<br>May Allah make it easy for you. Ameen.</p>';
+  card.appendChild(div);
+}
+
+/* ── Profile display ─────────────────────────────────────── */
+function openViewProfile(userId) {
+  S._viewingUserId = userId;
+  apiCall('/api/users/' + userId, 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var u = res.data;
+    var nameEl = document.getElementById('vp-name');
+    var subEl  = document.getElementById('vp-sub');
+    var bioEl  = document.getElementById('vp-bio');
+    if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
+    if (subEl)  subEl.textContent  = (u.age || '?') + ' · ' + (u.city || '') + (u.country ? ', ' + u.country : '');
+    if (bioEl)  bioEl.textContent  = u.bio || '';
+    var btn = document.getElementById('vp-action-btn');
+    if (btn) {
+      var matchId = getMatchId(userId);
+      if (matchId) { btn.textContent = '💬 Message'; btn.style.background = 'var(--teal)'; }
+      else { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
+    }
+    G('s-viewprofile');
+  });
+}
+function vpAction() {
+  var userId  = S._viewingUserId;
+  if (!userId || !S.user) return;
+  var matchId = getMatchId(userId);
+  if (matchId) openChatByMatch(matchId);
+  else likeProfile(userId);
+}
+
+function openMyProfile() {
+  if (!S.user) return;
+  // Fetch fresh data from API
+  apiCall('/api/users/me', 'GET')
+  .then(function(res) {
+    var u = res.success ? res.data : S.user;
+    // Update S.user with fresh data
+    if (res.success) S.user = res.data;
+    var nameEl = document.getElementById('mp-name');
+    var locEl  = document.getElementById('mp-location');
+    var sectEl = document.getElementById('mp-sect');
+    var bioEl  = document.getElementById('mp-bio');
+    var occEl  = document.getElementById('mp-occ');
+    var intEl  = document.getElementById('mp-interests');
+    var ageEl  = document.getElementById('mp-age');
+    var eduEl  = document.getElementById('mp-edu');
+    var mstEl  = document.getElementById('mp-mstatus');
+    if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
+    if (locEl)  locEl.textContent  = (u.city || '') + (u.country ? ', ' + u.country : '');
+    if (sectEl) sectEl.textContent = u.sect || '';
+    if (bioEl)  bioEl.textContent  = u.bio  || '';
+    if (occEl)  occEl.textContent  = u.occupation || '';
+    if (intEl)  intEl.textContent  = u.interests  || '';
+    if (ageEl)  ageEl.textContent  = u.age  || '';
+    if (eduEl)  eduEl.textContent  = u.education  || '';
+    if (mstEl)  mstEl.textContent  = u.marital_status || '';
+    // Premium status
+    var subEl = document.getElementById('mp-sub');
+    if (subEl) subEl.textContent = u.premium ? 'Premium' : 'Free';
+  })
+  .catch(function() {
+    var u = S.user || {};
+    var nameEl = document.getElementById('mp-name');
+    if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
+  });
+}
+
+function loadEdit() {
+  var u = S.user || {};
+  var fields = { 'ep-fn': u.first_name, 'ep-ln': u.last_name, 'ep-occ': u.occupation,
+                 'ep-city': u.city, 'ep-bio': u.bio, 'ep-interests': u.interests };
+  Object.keys(fields).forEach(function(id) { var el = document.getElementById(id); if (el) el.value = fields[id] || ''; });
+}
+
+function saveProfile() {
+  var updates = {
+    first_name: document.getElementById('ep-fn').value,
+    last_name:  document.getElementById('ep-ln').value,
+    occupation: document.getElementById('ep-occ').value,
+    city:       document.getElementById('ep-city').value,
+    bio:        document.getElementById('ep-bio').value,
+    interests:  document.getElementById('ep-interests') ? document.getElementById('ep-interests').value : '',
+  };
+  apiCall('/api/users/me', 'PUT', updates)
+  .then(function(res) {
+    if (res.success) {
+      S.user = Object.assign(S.user, updates);
+      toast('✅ Profile updated!', 2500);
+      openMyProfile();
+    } else {
+      toast('❌ ' + (res.error || 'Update failed.'), 2500, 'err');
+    }
+  })
+  .catch(function() { toast('❌ Connection error.', 2500, 'err'); });
+}
+
+function editPhotoTap() {
+  var inp = document.createElement('input');
+  inp.type   = 'file';
+  inp.accept = 'image/*';
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files || !inp.files[0]) { document.body.removeChild(inp); return; }
+    var file = inp.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var sl = document.getElementById('eps2');
+      if (sl) { sl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">'; sl.classList.add('filled'); }
+      S._editPhoto = file;
+      toast('Photo updated!', 2000);
+    };
+    reader.readAsDataURL(file);
+    setTimeout(function() { if (document.body.contains(inp)) document.body.removeChild(inp); }, 1000);
+  });
+  inp.click();
+}
+
+/* ── Block / unblock ─────────────────────────────────────── */
+function blockUser()   { MC('m-block'); if (!S.blocked.includes(S.chatPartnerId)) S.blocked.push(S.chatPartnerId); var notice = document.getElementById('blocked-notice'); var cbar = document.querySelector('.cbar'); if (notice) notice.style.display = 'block'; if (cbar) cbar.style.display = 'none'; toast('🚫 User blocked.', 3500); }
+function unblockUser() { var idx = S.blocked.indexOf(S.chatPartnerId); if (idx >= 0) S.blocked.splice(idx, 1); var notice = document.getElementById('blocked-notice'); var cbar = document.querySelector('.cbar'); if (notice) notice.style.display = 'none'; if (cbar) cbar.style.display = 'flex'; toast('✅ User unblocked.', 2000); }
+
+/* ── Report ──────────────────────────────────────────────── */
+function submitReport() {
+  var r = document.getElementById('rep-reason').value;
+  var d = document.getElementById('rep-details').value.trim();
+  if (!r) { toast('Please select a reason.', 'err', 2000); return; }
+  if (!d || d.length < 10) { toast('Please provide more detail.', 'err', 2500); return; }
+  apiCall('/api/reports', 'POST', { reported_id: S.chatPartnerId, reason: r, details: d })
+  .then(function(res) {
+    MC('m-report');
+    toast(res.success ? '🚩 Report submitted. Team reviews within 24h.' : '❌ ' + (res.error || 'Failed.'), 4000);
+  });
+}
+
+/* ── Calls ──────────────────────────────────────────────── */
+function startCall(type) {
+  if (!S.premium) { if (S.subStatus === 'cancelled') toast('Your subscription is cancelled. Re-subscribe to use calls.', 3000, 'err'); M('s-chat', 'm-sub'); return; }
+  var p = S.user;
+  document.getElementById('call-name').textContent = 'Calling...';
+  document.getElementById('call-type').textContent = (type === 'video' ? '🎥 Video' : '📞 Voice') + ' Call';
+  S.callSecs = 0; clearInterval(S.callTimer);
+  S.callTimer = setInterval(function() {
+    S.callSecs++;
+    var mins = String(Math.floor(S.callSecs / 60)).padStart(2, '0');
+    var secs = String(S.callSecs % 60).padStart(2, '0');
+    var el = document.getElementById('call-timer');
+    if (el) el.textContent = '00:' + mins + ':' + secs;
+  }, 1000);
+  G('s-call');
+}
+function endCall() { clearInterval(S.callTimer); G('s-chat'); toast('Call ended.', 2000); }
+function toggleCB(id, i1, i2, l1, l2) { var btn = document.getElementById(id); if (!btn) return; btn.classList.toggle('act'); var sp = btn.querySelector('span'); var lbl = btn.querySelector('span:last-child'); if (btn.classList.contains('act')) { if (sp) sp.textContent = i1; if (lbl) lbl.textContent = l1; } else { if (sp) sp.textContent = i2; if (lbl) lbl.textContent = l2; } }
+function openCallLogs() {
+  var list = document.getElementById('callLogList');
+  if (!list) return;
+  apiCall('/api/calls', 'GET')
+  .then(function(res) {
+    if (!res.success || !res.data.length) {
+      list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--txt3);"><div style="font-size:2.5rem;margin-bottom:10px;">📋</div><p style="font-size:.85rem;font-weight:700;">No call history yet</p></div>';
+    } else {
+      list.innerHTML = res.data.map(function(cl) {
+        var icon = cl.call_type === 'video' ? '🎥' : '📞';
+        var color = cl.status === 'completed' ? 'var(--green)' : cl.status === 'missed' ? 'var(--red2)' : 'var(--txt3)';
+        return '<div class="clog-item"><div class="clog-icon">' + icon + '</div><div style="flex:1;"><p style="font-weight:800;font-size:.88rem;">' + (cl.caller_name || 'Unknown') + '</p><p style="font-size:.74rem;color:var(--txt3);">' + (cl.started_at || '') + '</p></div><span style="font-size:.72rem;font-weight:800;color:' + color + ';">' + cl.status + '</span></div>';
+      }).join('');
+    }
+    G('s-calllogs');
+  })
+  .catch(function() { G('s-calllogs'); });
+}
+
+/* ── Subscription ────────────────────────────────────────── */
+function fmtCard(el) { var v = el.value.replace(/\D/g, '').substring(0, 16); el.value = v.replace(/(.{4})/g, '$1 ').trim(); }
+function fmtExp(el)  { var v = el.value.replace(/\D/g, '').substring(0, 4); if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2); el.value = v; }
+function processPayment() {
+  var num = document.getElementById('cc-num').value.replace(/\s/g, '');
+  var exp = document.getElementById('cc-exp').value;
+  var cvv = document.getElementById('cc-cvv').value;
+  var nm  = document.getElementById('cc-name').value.trim();
+  if (num.length < 16) { toast('Please enter a valid 16-digit card number.', 'err', 2500); return; }
+  if (!exp.includes('/')) { toast('Please enter a valid expiry (MM/YY).', 'err', 2500); return; }
+  if (cvv.length < 3) { toast('Please enter a valid CVV.', 'err', 2500); return; }
+  if (!nm) { toast('Please enter the name on your card.', 'err', 2500); return; }
+  var isReSub = S.subStatus === 'cancelled';
+  var now = new Date();
+  var renewDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  apiCall('/api/subscriptions', 'POST', { action: isReSub ? 'resubscribe' : 'subscribe', stripe_sub_id: 'manual_' + Date.now(), stripe_customer_id: '' })
+  .then(function(res) {
+    MC('m-sub');
+    S.premium = true; S.subStatus = 'active'; S.subRenewsAt = renewDate.toLocaleDateString();
+    if (S.user) { S.user.premium = true; S.user.sub_status = 'active'; }
+    toast('👑 Premium activated! Renews ' + renewDate.toLocaleDateString(), 3500);
+    updateSubModal();
+  })
+  .catch(function() { MC('m-sub'); S.premium = true; toast('👑 Premium activated!', 3000); });
+}
+function cancelSubscription() {
+  S.premium = false; S.subStatus = 'cancelled';
+  if (S.user) { S.user.premium = false; S.user.sub_status = 'cancelled'; }
+  MC('m-manage-sub');
+  apiCall('/api/subscriptions', 'POST', { action: 'cancel', stripe_sub_id: '', stripe_customer_id: '' }).catch(function() {});
+  toast('Subscription cancelled. Access ends today.', 3500, 'err');
+  updateSubModal();
+}
+function updateSubModal() {
+  var cancelBtn = document.getElementById('sub-cancel-btn');
+  var resubBtn  = document.getElementById('sub-resub-btn');
+  var statusLine = document.getElementById('sub-status-line');
+  var activeBlock    = document.getElementById('sub-active-block');
+  var cancelledBlock = document.getElementById('sub-cancelled-block');
+  if (S.premium && S.subStatus === 'active') {
+    if (activeBlock)    activeBlock.style.display    = 'block';
+    if (cancelledBlock) cancelledBlock.style.display = 'none';
+    if (cancelBtn) cancelBtn.style.display = 'block';
+    if (resubBtn)  resubBtn.style.display  = 'none';
+    if (statusLine && S.subRenewsAt) statusLine.textContent = 'Next renewal: ' + S.subRenewsAt;
+  } else {
+    if (activeBlock)    activeBlock.style.display    = 'none';
+    if (cancelledBlock) cancelledBlock.style.display = 'block';
+    if (cancelBtn) cancelBtn.style.display = 'none';
+    if (resubBtn)  resubBtn.style.display  = 'block';
+  }
+}
+function openManageSub() { updateSubModal(); M('s-myprofile', 'm-manage-sub'); }
+function confirmCancelSub() { MC('m-manage-sub'); M('s-myprofile', 'm-confirm-cancel-sub'); }
+
+/* ── Search ──────────────────────────────────────────────── */
+function runSearch() {
+  var country  = document.getElementById('sf-c').value;
+  var sect     = document.getElementById('sf-s').value;
+  var ms       = document.getElementById('sf-ms').value;
+  var verOnly  = document.getElementById('sf-v').checked;
+  if (!S.token) { toast('Please sign in to search.', 2500, 'err'); return; }
+  var params = new URLSearchParams();
+  if (country) params.set('country', country);
+  if (sect)    params.set('sect', sect);
+  if (ms)      params.set('marital_status', ms);
+  if (verOnly) params.set('verified_only', 'true');
+  apiCall('/api/search?' + params.toString(), 'GET')
+  .then(function(res) {
+    document.getElementById('srResults').style.display = 'block';
+    if (!res.success || !res.data.length) {
+      document.getElementById('srCount').textContent = '0 profiles found';
+      document.getElementById('srList').innerHTML = '<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No profiles match your filters.</p>';
+      return;
+    }
+    document.getElementById('srCount').textContent = res.data.length + ' profile' + (res.data.length !== 1 ? 's' : '') + ' found';
+    document.getElementById('srList').innerHTML = res.data.map(function(p) {
+      return '<div onclick="openViewProfile(\'' + p.id + '\')" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">' + (p.first_name || '') + ' ' + (p.last_name || '') + '</p><p style="font-size:.75rem;color:var(--txt3);">' + (p.age || '?') + ' · ' + (p.city || '') + ' · ' + (p.sect || '') + '</p></div></div>';
+    }).join('');
+  })
+  .catch(function() { toast('❌ Search failed.', 2500, 'err'); });
+}
+
+/* ── Admin ───────────────────────────────────────────────── */
+function adminTab(i) {
+  for (var j = 0; j < 6; j++) {
+    var t = document.getElementById('at' + j);
+    var p = document.getElementById('ap' + j);
+    if (t) t.classList.toggle('on', j === i);
+    if (p) p.style.display = j === i ? 'block' : 'none';
+  }
+}
+
+function initAdmin() {
+  if (!S.token) { toast('Please sign in as admin first.', 3000, 'err'); G('s-login'); return; }
+  // Production banner
+  var statsEl = document.getElementById('ap0');
+  if (statsEl && !document.getElementById('prod-banner')) {
+    var cfg = document.createElement('div');
+    cfg.id = 'prod-banner';
+    cfg.style.cssText = 'background:#e8f5e9;border:1px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;';
+    cfg.innerHTML = '<p style="font-weight:800;color:#1e8449;margin-bottom:4px;">🟢 Production Mode</p><p style="color:#2d6a4f;margin-bottom:2px;">Admin: mdhelal.ahamed@gmail.com</p><p style="color:#2d6a4f;">Notifications: infohalalmeetup@gmail.com</p>';
+    statsEl.insertBefore(cfg, statsEl.firstChild);
+  }
+  var LOADING = '<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">Loading...</p>';
+  var EMPTY   = '<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data yet.</p>';
+  ['adminUserList','adminSubList','adminReportList','adminCallList','adminIDList'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.innerHTML = LOADING;
+  });
+
+  // Load stats
+  apiCall('/api/admin/stats', 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var d = res.data;
+    var grid = document.getElementById('admin-stats-grid');
+    if (grid) {
+      var cards = grid.querySelectorAll('div');
+      if (cards[0]) cards[0].querySelector('p:nth-child(2)').textContent = (d.total_users || 0).toLocaleString();
+      if (cards[1]) cards[1].querySelector('p:nth-child(2)').textContent = (d.premium_users || 0).toLocaleString();
+      if (cards[2]) cards[2].querySelector('p:nth-child(2)').textContent = (d.total_matches || 0).toLocaleString();
+      if (cards[3]) cards[3].querySelector('p:nth-child(2)').textContent = '$' + (d.weekly_revenue_usd || 0).toFixed(2);
+      grid.querySelectorAll('p:nth-child(3)').forEach(function(p) { p.textContent = ''; });
+    }
+    var revEl = document.getElementById('admin-revenue-val');
+    var subEl = document.getElementById('admin-subs-val');
+    if (revEl) revEl.textContent = '$' + (d.weekly_revenue_usd || 0).toFixed(2);
+    if (subEl) subEl.textContent = (d.active_subscriptions || 0).toLocaleString();
+    var actionsEl = document.getElementById('admin-pending-actions');
+    if (actionsEl) {
+      actionsEl.innerHTML = '<p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">⚠️ Pending Actions</p>' +
+        mkActionRow('ID Verifications pending', d.pending_verification || 0, 'bgo') +
+        mkActionRow('Active reports', d.open_reports || 0, 'br') +
+        mkActionRow('Banned users', d.banned_users || 0, 'br') +
+        mkActionRow('New users (7 days)', d.new_users_last_7_days || 0, 'bb');
+    }
+  })
+  .catch(function() {});
+
+  // Load users
+  apiCall('/api/admin/users', 'GET')
+  .then(function(res) {
+    var el = document.getElementById('adminUserList'); if (!el) return;
+    if (!res.success || !res.data.length) { el.innerHTML = EMPTY; return; }
+    el.innerHTML = '';
+    res.data.forEach(function(u) {
+      var row = document.createElement('div');
+      row.style.cssText = 'background:#fff;border-radius:11px;padding:11px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;';
+      var info = document.createElement('div'); info.style.flex = '1'; info.style.minWidth = '0';
+      var nm = document.createElement('p'); nm.style.cssText = 'font-weight:800;font-size:.85rem;'; nm.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
+      var sb = document.createElement('p'); sb.style.cssText = 'font-size:.72rem;color:var(--txt3);'; sb.textContent = (u.email || '') + ' · ' + (u.country || '');
+      info.appendChild(nm); info.appendChild(sb);
+      var bdg = document.createElement('span'); bdg.className = 'bdg ' + (u.is_banned ? 'br' : u.id_verified ? 'bb' : 'bgo'); bdg.style.fontSize = '.58rem'; bdg.textContent = u.is_banned ? 'Banned' : u.id_verified ? 'Verified' : 'Pending';
+      var bb = document.createElement('button'); bb.style.cssText = 'background:#fce6e6;color:var(--red2);border:none;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;'; bb.textContent = u.is_banned ? 'Unban' : 'Ban';
+      (function(uid, banned) { bb.onclick = function() { adminBanUser(uid, !banned); }; })(u.id, u.is_banned);
+      var vb = document.createElement('button'); vb.style.cssText = 'background:#e2f5e8;color:var(--green);border:none;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;'; vb.textContent = u.id_verified ? '✓' : 'Verify';
+      (function(uid) { vb.onclick = function() { adminVerifyUser(uid, true); }; })(u.id);
+      row.appendChild(info); row.appendChild(bdg); row.appendChild(bb); row.appendChild(vb);
+      el.appendChild(row);
+    });
+  })
+  .catch(function() { var el = document.getElementById('adminUserList'); if (el) el.innerHTML = EMPTY; });
+
+  // Load reports
+  apiCall('/api/admin/reports', 'GET')
+  .then(function(res) {
+    var el = document.getElementById('adminReportList'); if (!el) return;
+    if (!res.success || !res.data.length) { el.innerHTML = EMPTY; return; }
+    el.innerHTML = res.data.map(function(r) {
+      return '<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><p style="font-weight:800;font-size:.85rem;">' + (r.reason || '') + '</p><span class="bdg ' + (r.status === 'open' ? 'br' : 'bgn') + '" style="font-size:.58rem;">' + r.status + '</span></div><p style="font-size:.75rem;color:var(--txt3);">' + (r.reporter_name || '') + ' → ' + (r.reported_name || '') + '</p></div>';
+    }).join('');
+  })
+  .catch(function() { var el = document.getElementById('adminReportList'); if (el) el.innerHTML = EMPTY; });
+
+  ['adminSubList','adminCallList','adminIDList'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.innerHTML = EMPTY;
+  });
+}
+
+function mkActionRow(label, count, badgeClass) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--sand);">' +
+    '<p style="font-size:.83rem;">' + label + '</p>' +
+    '<span class="bdg ' + badgeClass + '" style="font-size:.75rem;min-width:28px;text-align:center;">' + count + '</span></div>';
+}
+function adminBanUser(userId, ban) {
+  apiCall('/api/admin/users/' + userId + '/ban', 'PATCH', { ban: ban, reason: ban ? 'Violation of community guidelines' : '' })
+  .then(function(res) { if (res.success) { toast(ban ? 'User banned.' : 'User unbanned.', 2500); initAdmin(); } else toast('❌ ' + (res.error || 'Failed'), 2500, 'err'); });
+}
+function adminVerifyUser(userId, approved) {
+  apiCall('/api/admin/users/' + userId + '/verify', 'PATCH', { approved: approved })
+  .then(function(res) { if (res.success) { toast(approved ? 'User verified.' : 'Rejected.', 2500); initAdmin(); } else toast('❌ ' + (res.error || 'Failed'), 2500, 'err'); });
+}
+
+/* ── Forgot password ─────────────────────────────────────── */
+var _fpStep = 'email';
 function forgotPasswordStep() {
   if (_fpStep === 'email') {
     var email = document.getElementById('fp-email').value.trim().toLowerCase();
-    if (!email || !email.includes('@')) {
-      toast('Please enter a valid email address.', 2500, 'err'); return;
-    }
+    if (!email || !email.includes('@')) { toast('Please enter a valid email address.', 2500, 'err'); return; }
     var btn = document.getElementById('fp-btn');
     var st  = document.getElementById('fp-status');
     if (btn) btn.textContent = 'Sending...';
-    if (st)  st.textContent  = '';
-
-    // Use send-verification endpoint to send a reset code
     fetch(API + '/api/auth/send-verification', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, name: 'Member', type: 'reset' })
     })
     .then(function(r) { return r.json(); })
     .then(function(res) {
       if (btn) btn.textContent = 'Reset Password';
       if (res.success) {
-        S._fpEmail = email;
-        _fpStep = 'reset';
-        // Show code section
+        S._fpEmail = email; _fpStep = 'reset';
         var section = document.getElementById('fp-code-section');
         if (section) section.style.display = 'block';
         var emailInp = document.getElementById('fp-email');
         if (emailInp) emailInp.disabled = true;
-        if (btn) btn.textContent = 'Reset Password';
-        if (st)  st.textContent  = '';
-        // Auto-fill code if returned (dev mode)
         if (res.data && res.data.code) {
           var cells = document.querySelectorAll('#fp-otp-cells .ocell');
-          res.data.code.split('').forEach(function(d, i) { if(cells[i]) cells[i].value = d; });
-          if (st) st.textContent = 'Code: ' + res.data.code + ' (check your email)';
+          res.data.code.split('').forEach(function(d, i) { if (cells[i]) cells[i].value = d; });
+          if (st) st.textContent = 'Code: ' + res.data.code + ' (also sent to email)';
         }
         toast('📧 Reset code sent to ' + email, 4000);
       } else {
-        if (st) st.textContent = res.error || 'Email not found. Please check and try again.';
+        if (st) st.textContent = res.error || 'Could not send reset code.';
         toast('❌ ' + (res.error || 'Could not send reset code.'), 3500, 'err');
       }
     })
-    .catch(function() {
-      if (btn) btn.textContent = 'Send Reset Code';
-      toast('❌ Connection error. Please try again.', 3000, 'err');
-    });
-
+    .catch(function() { if (btn) btn.textContent = 'Send Reset Code'; toast('❌ Connection error.', 3000, 'err'); });
   } else {
-    // Step 2: verify code and set new password
-    var cells   = document.querySelectorAll('#fp-otp-cells .ocell');
-    var code    = Array.from(cells).map(function(c) { return c.value; }).join('');
-    var newPw   = document.getElementById('fp-new-pw').value;
-    var newPw2  = document.getElementById('fp-new-pw2').value;
-    var st      = document.getElementById('fp-status');
-
+    var cells  = document.querySelectorAll('#fp-otp-cells .ocell');
+    var code   = Array.from(cells).map(function(c) { return c.value; }).join('');
+    var newPw  = document.getElementById('fp-new-pw').value;
+    var newPw2 = document.getElementById('fp-new-pw2').value;
+    var st2    = document.getElementById('fp-status');
     if (code.length < 6) { toast('Please enter the 6-digit code.', 2500, 'err'); return; }
     if (!newPw || newPw.length < 8) { toast('Password must be at least 8 characters.', 2500, 'err'); return; }
     if (newPw !== newPw2) { toast('Passwords do not match.', 2500, 'err'); return; }
-
-    if (st) st.textContent = 'Verifying...';
-
-    // Verify code first
-    fetch(API + '/api/auth/verify-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: S._fpEmail, code: code })
+    if (st2) st2.textContent = 'Resetting...';
+    fetch(API + '/api/auth/reset-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: S._fpEmail, code: code, new_password: newPw })
     })
     .then(function(r) { return r.json(); })
     .then(function(res) {
-      if (!res.success) {
-        if (st) st.textContent = 'Incorrect code. Try again.';
-        toast('❌ Incorrect code.', 2500, 'err'); return;
-      }
-      // Code verified — now reset password
-      return fetch(API + '/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: S._fpEmail, code: code, new_password: newPw })
-      }).then(function(r) { return r.json(); });
-    })
-    .then(function(res) {
-      if (!res) return; // already handled error above
+      if (st2) st2.textContent = '';
       if (res.success) {
-        if (st) st.textContent = '';
-        toast('✅ Password reset! Please sign in with your new password.', 4000);
+        toast('✅ Password reset! Please sign in.', 4000);
         _fpStep = 'email';
-        // Reset the form
         document.getElementById('fp-email').value = '';
         document.getElementById('fp-email').disabled = false;
         document.getElementById('fp-new-pw').value = '';
         document.getElementById('fp-new-pw2').value = '';
-        document.querySelectorAll('#fp-otp-cells .ocell').forEach(function(c){c.value='';});
+        cells.forEach(function(c) { c.value = ''; });
         document.getElementById('fp-code-section').style.display = 'none';
         document.getElementById('fp-btn').textContent = 'Send Reset Code';
         setTimeout(function() { G('s-login'); }, 1500);
       } else {
-        if (st) st.textContent = res.error || 'Reset failed. Try again.';
+        if (st2) st2.textContent = res.error || 'Reset failed.';
         toast('❌ ' + (res.error || 'Reset failed.'), 3000, 'err');
       }
     })
-    .catch(function() {
-      if (st) st.textContent = '';
-      toast('❌ Connection error. Try again.', 3000, 'err');
-    });
-  }
-}
-/* ══ SWIPE (DISCOVER) ══ */
-const DS={on:false,sx:0,cx:0};
-function initSwipe(){
-  const cv=document.getElementById('swipeCard');if(!cv)return;
-  cv.addEventListener('mousedown',e=>{DS.on=true;DS.sx=e.clientX;document.addEventListener('mousemove',onDM);document.addEventListener('mouseup',onDU);});
-  cv.addEventListener('touchstart',e=>{DS.on=true;DS.sx=e.touches[0].clientX;document.addEventListener('touchmove',onDT,{passive:false});document.addEventListener('touchend',onDE);},{passive:true});
-}
-function onDM(e){if(!DS.on)return;applyDrag(e.clientX-DS.sx);}
-function onDT(e){if(!DS.on)return;e.preventDefault();applyDrag(e.touches[0].clientX-DS.sx);}
-function onDU(){document.removeEventListener('mousemove',onDM);document.removeEventListener('mouseup',onDU);finishDrag();}
-function onDE(){document.removeEventListener('touchmove',onDT);document.removeEventListener('touchend',onDE);finishDrag();}
-function applyDrag(dx){DS.cx=dx;const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='none';c.style.transform=`translateX(${dx}px) rotate(${dx*.07}deg)`;const lo=document.getElementById('ov-like'),no=document.getElementById('ov-nope');if(lo)lo.style.opacity=dx>40?Math.min((dx-40)/80,1):0;if(no)no.style.opacity=dx<-40?Math.min((-dx-40)/80,1):0;}
-function finishDrag(){DS.on=false;if(Math.abs(DS.cx)>85)doSwipe(DS.cx>0?'right':'left');else resetCard();DS.cx=0;}
-function resetCard(){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .4s cubic-bezier(.34,1.1,.64,1)';c.style.transform='';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});}
-function doSwipe(dir){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .38s ease,opacity .38s';if(dir==='right')c.style.transform='translateX(600px) rotate(28deg)';else if(dir==='left')c.style.transform='translateX(-600px) rotate(-28deg)';else c.style.transform='translateY(-600px)';c.style.opacity='0';document.getElementById('swipehint').style.display='none';setTimeout(()=>{
-    // Record the like if swiped right
-    if(dir==='right'&&S._discoverCandidateId){likeProfile(S._discoverCandidateId);}
-    // Load next profile
-    loadNextDiscoverProfile();
-    c.style.transition='none';c.style.opacity='0';c.style.transform='scale(.92)';
-    setTimeout(()=>{c.style.transition='transform .35s cubic-bezier(.34,1.1,.64,1),opacity .3s';c.style.transform='';c.style.opacity='1';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});},50);
-  },360);}
-
-/* ══ CALLS ══ */
-function startCall(type){
-  if(!S.premium){
-    if(S.subStatus==='cancelled'){toast('Your subscription is cancelled. Re-subscribe to use calls.',3000,'err');M('s-chat','m-sub');return;}
-    M('s-chat','m-sub');return;
-  }
-  const p=(DB.users.find(function(u){return u.id===S.chatPartnerId;})||{name:'Member',firstName:'Member',lastName:'',verified:false,online:false});
-  document.getElementById('call-name').textContent=p.name;
-  document.getElementById('call-type').textContent=(type==='video'?'🎥 Video':'📞 Voice')+' Call';
-  S.callSecs=0;clearInterval(S.callTimer);
-  S.callTimer=setInterval(()=>{S.callSecs++;const mins=String(Math.floor(S.callSecs/60)).padStart(2,'0');const secs=String(S.callSecs%60).padStart(2,'0');const el=document.getElementById('call-timer');if(el)el.textContent='00:'+mins+':'+secs;},1000);
-  G('s-call');
-}
-function endCall(){clearInterval(S.callTimer);G('s-chat');toast('Call ended.',2000);}
-function toggleCB(id,i1,i2,l1,l2){const btn=document.getElementById(id);if(!btn)return;btn.classList.toggle('act');const sp=btn.querySelector('span');const lbl=btn.querySelector('span:last-child');if(btn.classList.contains('act')){if(sp)sp.textContent=i1;if(lbl)lbl.textContent=l1;}else{if(sp)sp.textContent=i2;if(lbl)lbl.textContent=l2;}}
-
-/* ══ PROFILE ══ */
-function loadEdit(){
-  var u=S.user||{};
-  var fields={'ep-fn':u.firstName,'ep-ln':u.lastName,'ep-occ':u.occupation,'ep-city':u.city,'ep-bio':u.bio,'ep-sect':u.sect,'ep-interests':u.interests,'ep-nationality':u.nationality,'ep-edu':u.education,'ep-status':u.maritalStatus};
-  Object.keys(fields).forEach(function(id){var el=document.getElementById(id);if(el)el.value=fields[id]||'';});
-}
-function saveProfile(){
-  var updates={firstName:document.getElementById('ep-fn').value,lastName:document.getElementById('ep-ln').value,occupation:document.getElementById('ep-occ').value,city:document.getElementById('ep-city').value,bio:document.getElementById('ep-bio').value};
-  var optFields=['ep-sect','ep-interests','ep-nationality','ep-edu'];
-  optFields.forEach(function(id){var el=document.getElementById(id);if(el){var key=id.replace('ep-','');updates[key]=el.value;}});
-  S.user=Object.assign(S.user,updates);
-  // Update in DB too
-  var dbUser=DB.users.find(function(u){return u.id===S.user.id;});
-  if(dbUser)Object.assign(dbUser,updates);
-  openMyProfile();
-  toast('✅ Profile updated!',2500);
-}
-function editPhotoTap() {
-  var inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/jpeg,image/png,image/webp,image/*';
-  inp.style.cssText = 'position:fixed;top:-100px;left:-100px;opacity:0;';
-  document.body.appendChild(inp);
-  inp.addEventListener('change', function() {
-    if (!inp.files || !inp.files[0]) return;
-    var file = inp.files[0];
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var sl = document.getElementById('eps2');
-      if (sl) {
-        sl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
-        sl.classList.add('filled');
-      }
-      S._editPhoto = file;
-      toast('Photo updated!', 2000);
-    };
-    reader.readAsDataURL(file);
-    setTimeout(function() {
-      if (document.body.contains(inp)) document.body.removeChild(inp);
-    }, 1000);
-  });
-  setTimeout(function() { inp.click(); }, 100);
-}
-
-/* ══ REPORT ══ */
-function submitReport(){const r=document.getElementById('rep-reason').value;const d=document.getElementById('rep-details').value.trim();if(!r){toast('Please select a reason.','err',2000);return;}if(!d||d.length<10){toast('Please provide more detail.','err',2500);return;}MC('m-report');toast('🚩 Report submitted. Team reviews within 24h.',4000);}
-
-/* ══ PAYMENT ══ */
-function fmtCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
-function fmtExp(el){let v=el.value.replace(/\D/g,'').substring(0,4);if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2);el.value=v;}
-function processPayment(){
-  const num=document.getElementById('cc-num').value.replace(/\s/g,'');
-  const exp=document.getElementById('cc-exp').value;
-  const cvv=document.getElementById('cc-cvv').value;
-  const nm=document.getElementById('cc-name').value.trim();
-  if(num.length<16){toast('Please enter a valid 16-digit card number.','err',2500);return;}
-  if(!exp.includes('/')){toast('Please enter a valid expiry (MM/YY).','err',2500);return;}
-  if(cvv.length<3){toast('Please enter a valid CVV.','err',2500);return;}
-  if(!nm){toast('Please enter the name on your card.','err',2500);return;}
-  // In prod: use Stripe.js to tokenise card and charge via your backend
-  var isReSub = S.subStatus==='cancelled';
-  var now=new Date();
-  var renewDate=new Date(now.getTime()+7*24*60*60*1000);
-  S.premium=true;
-  S.subStatus='active';
-  S.subStart=now.toLocaleDateString();
-  S.subRenewsAt=renewDate.toLocaleDateString();
-  if(S.user)S.user.premium=true;
-  MC('m-sub');
-  if(isReSub){
-    // In prod: send re-subscription email from infohalalmeetup@gmail.com
-    sendAppEmail('resubscribe', S.user, renewDate);
-    toast('👑 Welcome back! Premium re-activated.',3500);
-  } else {
-    // In prod: send new subscription email from infohalalmeetup@gmail.com
-    sendAppEmail('subscribe', S.user, renewDate);
-    toast('👑 Premium activated! Renews '+renewDate.toLocaleDateString(),3500);
-  }
-  // Update subscription modal to show cancel option
-  updateSubModal();
-}
-
-function updateSubModal(){
-  var subBtn=document.getElementById('sub-cancel-btn');
-  if(subBtn)subBtn.style.display=S.premium?'block':'none';
-  var subStatus=document.getElementById('sub-status-line');
-  if(subStatus){
-    if(S.premium&&S.subRenewsAt){
-      subStatus.textContent='Auto-renews: '+S.subRenewsAt;
-      subStatus.style.color='var(--green)';
-    } else if(S.subStatus==='cancelled'){
-      subStatus.textContent='Subscription cancelled';
-      subStatus.style.color='var(--red2)';
-    }
+    .catch(function() { if (st2) st2.textContent = ''; toast('❌ Connection error.', 3000, 'err'); });
   }
 }
 
-function openManageSub(){
-  var activeBlock=document.getElementById('sub-active-block');
-  var cancelledBlock=document.getElementById('sub-cancelled-block');
-  var cancelBtn=document.getElementById('sub-cancel-btn');
-  var resubBtn=document.getElementById('sub-resub-btn');
-  var statusLine=document.getElementById('sub-status-line');
-  if(S.premium&&S.subStatus==='active'){
-    if(activeBlock)activeBlock.style.display='block';
-    if(cancelledBlock)cancelledBlock.style.display='none';
-    if(cancelBtn)cancelBtn.style.display='block';
-    if(resubBtn)resubBtn.style.display='none';
-    if(statusLine&&S.subRenewsAt)statusLine.textContent='Next renewal: '+S.subRenewsAt;
-  } else {
-    if(activeBlock)activeBlock.style.display='none';
-    if(cancelledBlock)cancelledBlock.style.display='block';
-    if(cancelBtn)cancelBtn.style.display='none';
-    if(resubBtn)resubBtn.style.display='block';
-  }
-  M('s-myprofile','m-manage-sub');
-}
-function confirmCancelSub(){
-  MC('m-manage-sub');
-  M('s-myprofile','m-confirm-cancel-sub');
-}
-function cancelSubscription(){
-  if(!S.premium)return;
-  S.premium=false;
-  S.subStatus='cancelled';
-  if(S.user)S.user.premium=false;
-  MC('m-manage-sub');
-  // In prod: cancel Stripe subscription via backend, send cancellation email
-  sendAppEmail('cancel', S.user, null);
-  toast('Subscription cancelled. Access ends today.',3500,'err');
-  // Kick out of any premium features
-  if(LG.active){exitLudo();}
-  updateSubModal();
-}
-
-function sendAppEmail(type, user, renewDate){
-  var name=(user&&user.firstName)?user.firstName:'Member';
-  var email=(user&&user.email)?user.email:'';
-  var emails={
-    subscribe:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Welcome to Halal-MeetUp Premium!\n\nDear '+name+',\n\nThank you for subscribing to Halal-MeetUp Premium!\n\nYour subscription is now active and auto-renews weekly.\nNext renewal: '+( renewDate?renewDate.toLocaleDateString():'')+'\n\nWhat you now have access to:\n• Audio & Video calls\n• Live Ludo game with your match\n• Live photo sharing\n• Priority profile visibility\n\nTo cancel anytime, go to My Profile > Settings > Manage Subscription.\n\nJazakAllah khayr,\nThe Halal-MeetUp Team\ninfohalalmeetup@gmail.com',
-
-    resubscribe:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Halal-MeetUp Premium — Welcome Back!\n\nDear '+name+',\n\nAlhamdulillah! Your Halal-MeetUp Premium subscription has been re-activated.\n\nNext renewal: '+(renewDate?renewDate.toLocaleDateString():'')+'\n\nAll premium features are now available again.\nTo cancel anytime, go to My Profile > Settings > Manage Subscription.\n\nJazakAllah khayr,\nThe Halal-MeetUp Team\ninfohalalmeetup@gmail.com',
-
-    cancel:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Halal-MeetUp Subscription Cancelled\n\nDear '+name+',\n\nYour Halal-MeetUp Premium subscription has been cancelled.\n\nYou can re-subscribe at any time from My Profile > Settings.\nWe hope to see you back soon in sha Allah.\n\nJazakAllah khayr,\nThe Halal-MeetUp Team\ninfohalalmeetup@gmail.com',
-
-    welcome:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Welcome to Halal-MeetUp — Your Journey Begins! 🌙\n\nAssalamu Alaikum '+name+',\n\nAlhamdulillah — welcome to Halal-MeetUp! We are so glad you are here.\n\nHalal-MeetUp is a safe, Shariah-compliant matrimonial platform built for serious Muslims seeking nikkah.\n\n━━━━━━━━━━━━━━━━━━━━━━━\nGETTING STARTED\n━━━━━━━━━━━━━━━━━━━━━━━\n\n1. Complete your profile\n   Add a clear photo and write a genuine bio (min 30 chars).\n   The more you share, the more matches you receive.\n\n2. Discover matches\n   Swipe right to like, left to pass. When both like each other, you match!\n\n3. Start a conversation\n   Send a halal, respectful message. Remember: no phone numbers allowed.\n\n4. Search & filter\n   Use Search to find by country, sect, age range, and verified status.\n\n━━━━━━━━━━━━━━━━━━━━━━━\nFEATURES\n━━━━━━━━━━━━━━━━━━━━━━━\n\n🆓 FREE features:\n   • Create profile & upload photos\n   • Discover & swipe profiles\n   • Text chat with matches\n   • React & reply to messages\n\n👑 PREMIUM ($10/week, auto-renews):\n   • Audio & Video calls\n   • Play Ludo with your match (live camera!)\n   • Live photo sharing\n   • Priority in discovery\n   • Cancel anytime from My Profile\n\n━━━━━━━━━━━━━━━━━━━━━━━\nSAFETY RULES\n━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ All profiles are ID-verified\n✅ Phone numbers are automatically blocked\n✅ Report any inappropriate behaviour immediately\n✅ Screenshots are disabled to protect your privacy\n\n━━━━━━━━━━━━━━━━━━━━━━━\nNEED HELP?\n━━━━━━━━━━━━━━━━━━━━━━━\n\nEmail us: infohalalmeetup@gmail.com\nAdmin: mdhelal.ahamed@gmail.com\n\nJazakAllah khayr for joining.\nMay Allah bless your search with ease and success. Ameen.\n\nWarm regards,\nThe Halal-MeetUp Team'
-  };
-  // In production this triggers an actual email API call (e.g. SendGrid/Mailgun)
-  console.log(emails[type]||'Unknown email type: '+type);
-}
-
-/* ══ SEARCH ══ */
-function runSearch(){
-  const country=document.getElementById('sf-c').value;
-  const sect=document.getElementById('sf-s').value;
-  const status=document.getElementById('sf-ms').value;
-  const verOnly=document.getElementById('sf-v').checked;
-  let res=[...DB.users];
-  if(country)res=res.filter(p=>(p.city&&p.city.toLowerCase().includes(country.toLowerCase()))||(p.country&&p.country.toLowerCase().includes(country.toLowerCase())));
-  if(sect)res=res.filter(p=>p.sect&&p.sect.toLowerCase().includes(sect.toLowerCase().replace('sunni ','').replace('shia ','')));
-  if(status)res=res.filter(p=>p.maritalStatus===status);
-  if(verOnly)res=res.filter(p=>p.verified);
-  document.getElementById('srResults').style.display='block';
-  document.getElementById('srCount').textContent=res.length+' profile'+(res.length!==1?'s':'')+' found';
-  document.getElementById('srList').innerHTML=res.length?res.map(p=>`<div onclick="openViewProfile('${p.id}')" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤${p.online?'<div class="odot"></div>':''}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;"><p style="font-weight:800;font-size:.88rem;">${p.firstName} ${p.lastName}</p>${p.verified?'<span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;">✓</span>':''}</div><p style="font-size:.75rem;color:var(--txt3);">${p.age||'?'} · ${p.city||''} · ${p.sect||''}</p></div><button class="btn bp bsm" onclick="event.stopPropagation();openViewProfile('${p.id}')">View</button></div>`).join(''):'<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No profiles match your filters.</p>';
-}
-
-/* ══ ADMIN ══ */
-function adminTab(i){for(let j=0;j<6;j++){const t=document.getElementById('at'+j),p=document.getElementById('ap'+j);if(t)t.classList.toggle('on',j===i);if(p)p.style.display=j===i?'block':'none';}}
-function initAdmin(){
-  // Ensure token is set for API calls (needed for admin endpoints)
-  if(!S.token){
-    toast('Session expired. Please sign in again.', 3000, 'err');
-    G('s-login'); return;
-  }
-  // ── Production banner (insert only once) ──
-  var statsEl=document.getElementById('ap0');
-  if(statsEl&&!document.getElementById('prod-banner')){
-    var cfg=document.createElement('div');
-    cfg.id='prod-banner';
-    cfg.style.cssText='background:#e8f5e9;border:1px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;';
-    cfg.innerHTML='<p style="font-weight:800;color:#1e8449;margin-bottom:4px;">🟢 Production Mode</p>'
-      +'<p style="color:#2d6a4f;margin-bottom:2px;">Admin: mdhelal.ahamed@gmail.com</p>'
-      +'<p style="color:#2d6a4f;">Notifications: infohalalmeetup@gmail.com</p>';
-    statsEl.insertBefore(cfg,statsEl.firstChild);
-  }
-
-  // ── Load real stats from API ──
-  apiCall('/api/admin/stats','GET')
-  .then(function(res){
-    if(!res.success)return;
-    var d=res.data;
-    // Update 2x2 stat cards individually
-    var grid=document.getElementById('admin-stats-grid');
-    if(grid){
-      var cards=grid.querySelectorAll('div');
-      if(cards[0])cards[0].querySelector('p:nth-child(2)').textContent=(d.total_users||0).toLocaleString();
-      if(cards[1])cards[1].querySelector('p:nth-child(2)').textContent=(d.premium_users||0).toLocaleString();
-      if(cards[2])cards[2].querySelector('p:nth-child(2)').textContent=(d.total_matches||0).toLocaleString();
-      if(cards[3])cards[3].querySelector('p:nth-child(2)').textContent='$'+(d.weekly_revenue_usd||0).toFixed(2);
-      // Clear loading text
-      grid.querySelectorAll('p:nth-child(3)').forEach(function(p){p.textContent='';});
-    }
-    // Update subs tab revenue numbers too
-    var revEl=document.getElementById('admin-revenue-val');
-    var subEl=document.getElementById('admin-subs-val');
-    if(revEl)revEl.textContent='$'+(d.weekly_revenue_usd||0).toFixed(2);
-    if(subEl)subEl.textContent=(d.active_subscriptions||0).toLocaleString();
-
-    var actionsEl=document.getElementById('admin-pending-actions');
-    if(actionsEl){
-      actionsEl.innerHTML=
-        '<p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">⚠️ Pending Actions</p>'+
-        mkActionRow('ID Verifications pending',(d.pending_verification||0),'bgo')+
-        mkActionRow('Active reports',(d.open_reports||0),'br')+
-        mkActionRow('Banned users',(d.banned_users||0),'br')+
-        mkActionRow('New users (7 days)',(d.new_users_last_7_days||0),'bb');
-    }
-  })
-  .catch(function(e){console.log('Stats load failed:',e);});
-
-  // ── Load users list ──
-  apiCall('/api/admin/users','GET')
-  .then(function(res){
-    var el=document.getElementById('adminUserList');if(!el)return;
-    if(!res.success||!res.data.length){
-      el.innerHTML='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No users registered yet.</p>';
-      return;
-    }
-    el.innerHTML='';
-    res.data.forEach(function(u){
-      var row=document.createElement('div');
-      row.style.cssText='background:#fff;border-radius:11px;padding:11px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;';
-      var info=document.createElement('div');info.style.flex='1';info.style.minWidth='0';
-      var nm=document.createElement('p');nm.style.cssText='font-weight:800;font-size:.85rem;';
-      nm.textContent=(u.first_name||'')+' '+(u.last_name||'');
-      var sb=document.createElement('p');sb.style.cssText='font-size:.72rem;color:var(--txt3);';
-      sb.textContent=(u.email||'')+' · '+(u.country||'');
-      info.appendChild(nm);info.appendChild(sb);
-      var bdg=document.createElement('span');
-      bdg.className='bdg '+(u.is_banned?'br':u.id_verified?'bb':'bgo');
-      bdg.style.fontSize='.58rem';
-      bdg.textContent=u.is_banned?'Banned':u.id_verified?'Verified':'Pending';
-      var bb=document.createElement('button');
-      bb.style.cssText='background:#fce6e6;color:var(--red2);border:none;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;';
-      bb.textContent=u.is_banned?'Unban':'Ban';
-      (function(uid,banned){bb.onclick=function(){adminBanUser(uid,!banned);};})(u.id,u.is_banned);
-      var vb=document.createElement('button');
-      vb.style.cssText='background:#e2f5e8;color:var(--green);border:none;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;';
-      vb.textContent=u.id_verified?'Verified':'Verify';
-      if(!u.id_verified){(function(uid){vb.onclick=function(){adminVerifyUser(uid,true);};})(u.id);}
-      row.appendChild(info);row.appendChild(bdg);row.appendChild(bb);row.appendChild(vb);
-      el.appendChild(row);
-    });
-  })
-  .catch(function(){});
-
-  // ── Load reports ──
-  apiCall('/api/admin/reports','GET')
-  .then(function(res){
-    var el=document.getElementById('adminReportList');if(!el)return;
-    if(!res.success||!res.data.length){
-      el.innerHTML='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No reports yet.</p>';
-      return;
-    }
-    el.innerHTML=res.data.map(function(r){
-      return '<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;">'
-        +'<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
-          +'<p style="font-weight:800;font-size:.85rem;">'+r.reason+'</p>'
-          +'<span class="bdg '+(r.status==='open'?'br':r.status==='investigating'?'bgo':'bgn')+'" style="font-size:.58rem;">'+r.status+'</span>'
-        +'</div>'
-        +'<p style="font-size:.75rem;color:var(--txt3);">'+r.reporter_name+' → '+r.reported_name+'</p>'
-      +'</div>';
-    }).join('');
-  })
-  .catch(function(){});
-
-  // ── Empty states for all lists until API loads ──
-  var EMPTY='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data yet.</p>';
-  ['adminUserList','adminSubList','adminReportList','adminCallList','adminIDList'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el&&!el.innerHTML.trim())el.innerHTML=EMPTY;
-  });
-}
-
-function mkActionRow(label, count, badgeClass){
-  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--sand);">'
-    +'<p style="font-size:.83rem;">'+label+'</p>'
-    +'<span class="bdg '+badgeClass+'" style="font-size:.75rem;min-width:28px;text-align:center;">'+count+'</span>'
-  +'</div>';
-}
-
-function adminBanUser(userId, ban){
-  var reason=ban?'Violation of community guidelines':'';
-  apiCall('/api/admin/users/'+userId+'/ban','PATCH',{ban:ban,reason:reason})
-  .then(function(res){
-    if(res.success){toast(ban?'User banned.':'User unbanned.',2500);initAdmin();}
-    else toast('❌ '+res.error,2500,'err');
-  });
-}
-
-function adminVerifyUser(userId, approved){
-  apiCall('/api/admin/users/'+userId+'/verify','PATCH',{approved:approved})
-  .then(function(res){
-    if(res.success){toast(approved?'User verified.':'Rejected.',2500);initAdmin();}
-    else toast('❌ '+res.error,2500,'err');
-  });
-}
-
-/* ══ SCREENSHOT PROTECTION ══ */
-document.addEventListener('keydown',function(e){
-  if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','s'].includes(e.key))){
+/* ── Screenshot protection ───────────────────────────────── */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && ['3','4','s'].includes(e.key))) {
     e.preventDefault();
-    toast('🚫 Screenshots disabled for your security.','err',3500);
+    toast('🚫 Screenshots disabled for your security.', 'err', 3500);
   }
 });
 
-/* ══════════════════════════════════════════
-   LUDO GAME ENGINE
-══════════════════════════════════════════ */
-var CELL=320/15;
-var LC={red:'#e74c3c',red_l:'#fadbd8',green:'#27ae60',green_l:'#d5f5e3',blue:'#2980b9',blue_l:'#d6eaf8',yellow:'#f1c40f',yellow_l:'#fef9e7',white:'#f8f9fa',gold:'#c9963a'};
-function getCellType(r,c){
-  if(r<6&&c<6)return{type:'home',color:LC.red,light:LC.red_l};
-  if(r<6&&c>=9)return{type:'home',color:LC.green,light:LC.green_l};
-  if(r>=9&&c<6)return{type:'home',color:LC.yellow,light:LC.yellow_l};
-  if(r>=9&&c>=9)return{type:'home',color:LC.blue,light:LC.blue_l};
-  if(r>=6&&r<=8&&c>=6&&c<=8)return{type:'center'};
-  if(r>=1&&r<=5&&c===7)return{type:'path',color:LC.red_l,border:LC.red};
-  if(r===7&&c>=9&&c<=13)return{type:'path',color:LC.green_l,border:LC.green};
-  if(r>=9&&r<=13&&c===7)return{type:'path',color:LC.blue_l,border:LC.blue};
-  if(r===7&&c>=1&&c<=5)return{type:'path',color:LC.yellow_l,border:LC.yellow};
-  var safes=[[2,6],[6,12],[12,8],[8,2],[6,1],[1,8],[8,13],[13,6]];
-  for(var i=0;i<safes.length;i++){if(safes[i][0]===r&&safes[i][1]===c)return{type:'safe',color:'#fff',star:true};}
-  return{type:'path',color:LC.white};
+/* ══ SWIPE (DISCOVER) ══════════════════════════════════════ */
+var DS = { on: false, sx: 0, cx: 0 };
+function initSwipe() {
+  var cv = document.getElementById('swipeCard'); if (!cv) return;
+  cv.addEventListener('mousedown', function(e) { DS.on = true; DS.sx = e.clientX; document.addEventListener('mousemove', onDM); document.addEventListener('mouseup', onDU); });
+  cv.addEventListener('touchstart', function(e) { DS.on = true; DS.sx = e.touches[0].clientX; document.addEventListener('touchmove', onDT, { passive: false }); document.addEventListener('touchend', onDE); }, { passive: true });
 }
-function makeRedPath(){
-  var p=[];
-  for(var c=1;c<=5;c++)p.push([6,c]);
-  for(var r=5;r>=0;r--)p.push([r,6]);
-  p.push([0,7]);p.push([0,8]);
-  for(var r2=1;r2<=5;r2++)p.push([r2,8]);
-  for(var c2=9;c2<=13;c2++)p.push([6,c2]);
-  p.push([7,14]);p.push([8,14]);
-  for(var c3=13;c3>=9;c3--)p.push([8,c3]);
-  for(var r3=9;r3<=13;r3++)p.push([r3,8]);
-  p.push([14,7]);p.push([14,6]);
-  for(var r4=13;r4>=9;r4--)p.push([r4,6]);
-  for(var c4=5;c4>=1;c4--)p.push([8,c4]);
-  p.push([7,0]);
-  for(var c5=1;c5<=5;c5++)p.push([7,c5]);
-  p.push([7,6]);
-  return p;
+function onDM(e) { if (!DS.on) return; applyDrag(e.clientX - DS.sx); }
+function onDT(e) { if (!DS.on) return; e.preventDefault(); applyDrag(e.touches[0].clientX - DS.sx); }
+function onDU() { document.removeEventListener('mousemove', onDM); document.removeEventListener('mouseup', onDU); finishDrag(); }
+function onDE() { document.removeEventListener('touchmove', onDT); document.removeEventListener('touchend', onDE); finishDrag(); }
+function applyDrag(dx) {
+  DS.cx = dx;
+  var c = document.getElementById('swipeCard'); if (!c) return;
+  c.style.transition = 'none';
+  c.style.transform  = 'translateX(' + dx + 'px) rotate(' + (dx * 0.07) + 'deg)';
+  var lo = document.getElementById('ov-like'), no = document.getElementById('ov-nope');
+  if (lo) lo.style.opacity = dx > 40 ? Math.min((dx - 40) / 80, 1) : 0;
+  if (no) no.style.opacity = dx < -40 ? Math.min((-dx - 40) / 80, 1) : 0;
 }
+function finishDrag() {
+  DS.on = false;
+  if (Math.abs(DS.cx) > 85) doSwipe(DS.cx > 0 ? 'right' : 'left');
+  else resetCard();
+  DS.cx = 0;
+}
+function resetCard() {
+  var c = document.getElementById('swipeCard'); if (!c) return;
+  c.style.transition = 'transform .4s cubic-bezier(.34,1.1,.64,1)';
+  c.style.transform  = '';
+  ['ov-like','ov-nope','ov-super'].forEach(function(id) { var el = document.getElementById(id); if (el) el.style.opacity = 0; });
+}
+function doSwipe(dir) {
+  var c = document.getElementById('swipeCard'); if (!c) return;
+  c.style.transition = 'transform .38s ease,opacity .38s';
+  if (dir === 'right') c.style.transform = 'translateX(600px) rotate(28deg)';
+  else c.style.transform = 'translateX(-600px) rotate(-28deg)';
+  c.style.opacity = '0';
+  var swipehint = document.getElementById('swipehint');
+  if (swipehint) swipehint.style.display = 'none';
+  if (dir === 'right' && S._discoverCandidateId) likeProfile(S._discoverCandidateId);
+  setTimeout(function() {
+    loadNextDiscoverProfile();
+    c.style.transition = 'none'; c.style.opacity = '0'; c.style.transform = 'scale(.92)';
+    setTimeout(function() {
+      c.style.transition = 'transform .35s cubic-bezier(.34,1.1,.64,1),opacity .3s';
+      c.style.transform  = ''; c.style.opacity = '1';
+      ['ov-like','ov-nope','ov-super'].forEach(function(id) { var el = document.getElementById(id); if (el) el.style.opacity = 0; });
+    }, 50);
+  }, 360);
+}
+
+/* ══ LUDO GAME ENGINE ══════════════════════════════════════ */
+var CELL = 320/15;
+var LC = { red:'#e74c3c', red_l:'#fadbd8', green:'#27ae60', green_l:'#d5f5e3', blue:'#2980b9', blue_l:'#d6eaf8', yellow:'#f1c40f', yellow_l:'#fef9e7', white:'#f8f9fa', gold:'#c9963a' };
+function getCellType(r,c){ if(r<6&&c<6)return{type:'home',color:LC.red,light:LC.red_l}; if(r<6&&c>=9)return{type:'home',color:LC.green,light:LC.green_l}; if(r>=9&&c<6)return{type:'home',color:LC.yellow,light:LC.yellow_l}; if(r>=9&&c>=9)return{type:'home',color:LC.blue,light:LC.blue_l}; if(r>=6&&r<=8&&c>=6&&c<=8)return{type:'center'}; if(r>=1&&r<=5&&c===7)return{type:'path',color:LC.red_l,border:LC.red}; if(r===7&&c>=9&&c<=13)return{type:'path',color:LC.green_l,border:LC.green}; if(r>=9&&r<=13&&c===7)return{type:'path',color:LC.blue_l,border:LC.blue}; if(r===7&&c>=1&&c<=5)return{type:'path',color:LC.yellow_l,border:LC.yellow}; var safes=[[2,6],[6,12],[12,8],[8,2],[6,1],[1,8],[8,13],[13,6]]; for(var i=0;i<safes.length;i++){if(safes[i][0]===r&&safes[i][1]===c)return{type:'safe',color:'#fff',star:true};} return{type:'path',color:LC.white}; }
+function makeRedPath(){ var p=[]; for(var c=1;c<=5;c++)p.push([6,c]); for(var r=5;r>=0;r--)p.push([r,6]); p.push([0,7]);p.push([0,8]); for(var r2=1;r2<=5;r2++)p.push([r2,8]); for(var c2=9;c2<=13;c2++)p.push([6,c2]); p.push([7,14]);p.push([8,14]); for(var c3=13;c3>=9;c3--)p.push([8,c3]); for(var r3=9;r3<=13;r3++)p.push([r3,8]); p.push([14,7]);p.push([14,6]); for(var r4=13;r4>=9;r4--)p.push([r4,6]); for(var c4=5;c4>=1;c4--)p.push([8,c4]); p.push([7,0]); for(var c5=1;c5<=5;c5++)p.push([7,c5]); p.push([7,6]); return p; }
 var RED_PATH=makeRedPath();
 var GREEN_PATH=[[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[7,8],[7,9],[7,10],[7,11],[7,12],[7,13]];
 var HOME_YARDS={red:[[1,1],[1,4],[4,1],[4,4]],green:[[1,10],[1,13],[4,10],[4,13]],yellow:[[10,1],[10,4],[13,1],[13,4]],blue:[[10,10],[10,13],[13,10],[13,13]]};
 var LG={active:false,currentTurn:'red',diceValue:0,diceRolled:false,micOn:true,vidOn:true,camOn:false,camStream:null,winner:null,aiTimer:null,pieces:{red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]},playerNames:{red:'You',green:'Match'},playerColors:{red:'#e74c3c',green:'#27ae60'}};
 var _bc=null,_bx=null;
 function initCanvas(){_bc=document.getElementById('ludoCanvas');if(!_bc)return false;_bx=_bc.getContext('2d');return true;}
-function drawBoard(){
-  var ctx=_bx,cv=_bc;if(!ctx)return;
-  var sz=cv.width,cs=sz/15;
-  ctx.clearRect(0,0,sz,sz);
-  for(var r=0;r<15;r++){
-    for(var cl=0;cl<15;cl++){
-      var ct=getCellType(r,cl);var x=cl*cs,y=r*cs;
-      if(ct.type==='home'){
-        if((r>=1&&r<=4&&cl>=1&&cl<=4)||(r>=1&&r<=4&&cl>=10&&cl<=13)||(r>=10&&r<=13&&cl>=1&&cl<=4)||(r>=10&&r<=13&&cl>=10&&cl<=13)){ctx.fillStyle=ct.light;}
-        else{ctx.fillStyle=ct.color;}
-        ctx.fillRect(x,y,cs,cs);
-        if(r===1&&cl===1)drawHomeBox(ctx,cs,cl,r,'red');
-        if(r===1&&cl===10)drawHomeBox(ctx,cs,cl,r,'green');
-        if(r===10&&cl===1)drawHomeBox(ctx,cs,cl,r,'yellow');
-        if(r===10&&cl===10)drawHomeBox(ctx,cs,cl,r,'blue');
-      } else if(ct.type==='center'){ctx.fillStyle='#fff';ctx.fillRect(x,y,cs,cs);}
-      else{ctx.fillStyle=ct.color||LC.white;ctx.fillRect(x,y,cs,cs);if(ct.border){ctx.strokeStyle=ct.border;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,cs-1,cs-1);}if(ct.star){ctx.fillStyle=LC.gold;ctx.font=cs*.5+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x+cs/2,y+cs/2);}}
-      ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=.4;ctx.strokeRect(x,y,cs,cs);
-    }
-  }
-  drawCenter(ctx,cs);
-  drawAllPieces(ctx,cs);
-}
+function drawBoard(){var ctx=_bx,cv=_bc;if(!ctx)return;var sz=cv.width,cs=sz/15;ctx.clearRect(0,0,sz,sz);for(var r=0;r<15;r++){for(var cl=0;cl<15;cl++){var ct=getCellType(r,cl);var x=cl*cs,y=r*cs;if(ct.type==='home'){if((r>=1&&r<=4&&cl>=1&&cl<=4)||(r>=1&&r<=4&&cl>=10&&cl<=13)||(r>=10&&r<=13&&cl>=1&&cl<=4)||(r>=10&&r<=13&&cl>=10&&cl<=13)){ctx.fillStyle=ct.light;}else{ctx.fillStyle=ct.color;}ctx.fillRect(x,y,cs,cs);if(r===1&&cl===1)drawHomeBox(ctx,cs,cl,r,'red');if(r===1&&cl===10)drawHomeBox(ctx,cs,cl,r,'green');if(r===10&&cl===1)drawHomeBox(ctx,cs,cl,r,'yellow');if(r===10&&cl===10)drawHomeBox(ctx,cs,cl,r,'blue');}else if(ct.type==='center'){ctx.fillStyle='#fff';ctx.fillRect(x,y,cs,cs);}else{ctx.fillStyle=ct.color||LC.white;ctx.fillRect(x,y,cs,cs);if(ct.border){ctx.strokeStyle=ct.border;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,cs-1,cs-1);}if(ct.star){ctx.fillStyle=LC.gold;ctx.font=cs*.5+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x+cs/2,y+cs/2);}}ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=.4;ctx.strokeRect(x,y,cs,cs);}}drawCenter(ctx,cs);drawAllPieces(ctx,cs);}
 function drawHomeBox(ctx,cs,startCol,startRow,color){var x=startCol*cs,y=startRow*cs,w=4*cs,h=4*cs;var clr={red:LC.red,green:LC.green,yellow:LC.yellow,blue:LC.blue}[color];ctx.strokeStyle=clr;ctx.lineWidth=2;ctx.strokeRect(x+2,y+2,w-4,h-4);ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(x+cs*.5+2,y+cs*.5+2,3*cs-4,3*cs-4);ctx.strokeStyle=clr;ctx.lineWidth=1.5;ctx.strokeRect(x+cs*.5+2,y+cs*.5+2,3*cs-4,3*cs-4);}
 function drawCenter(ctx,cs){var cx=7.5*cs,cy=7.5*cs,rv=1.5*cs;var colors=[LC.red,LC.green,LC.blue,LC.yellow];var angles=[Math.PI,Math.PI/2,0,-Math.PI/2];for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rv,angles[i],angles[i]+Math.PI/2);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();}ctx.fillStyle='#fff';ctx.font='bold '+(cs*.9)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx,cy);}
 function getPiecePos(color,idx,cs){var piece=LG.pieces[color][idx];var path=color==='red'?RED_PATH:GREEN_PATH;if(piece.pos===0){var hy=HOME_YARDS[color];if(!hy)return null;var hp=hy[idx];return{x:(hp[1]+.5)*cs,y:(hp[0]+.5)*cs};}if(piece.pos>=57){var offsets=[[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]];var ofs=offsets[idx];return{x:(7.5+ofs[0])*cs,y:(7.5+ofs[1])*cs};}var pi=Math.min(piece.pos-1,path.length-1);var cell=path[pi];if(!cell)return null;var off=[[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]];var op=off[idx%4];return{x:(cell[1]+.5+op[0])*cs,y:(cell[0]+.5+op[1])*cs};}
@@ -3172,96 +2771,32 @@ var DDOTS={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],
 function drawDice(val){var cv=document.getElementById('diceCanvas');if(!cv)return;var ctx=cv.getContext('2d');var s=cv.width;ctx.clearRect(0,0,s,s);if(!val||val<1)return;var dots=DDOTS[val]||[];var ds=s/5;dots.forEach(function(d){var x=(d[1]+.75)*ds+d[1]*ds*.5;var y=(d[0]+.75)*ds+d[0]*ds*.5;ctx.beginPath();ctx.arc(x+2,y+2,ds*.38,0,Math.PI*2);ctx.fillStyle='#2c3e50';ctx.fill();});}
 function canMove(color,idx,dv){var p=LG.pieces[color][idx];if(p.pos>=57)return false;if(p.pos===0&&dv!==6)return false;return true;}
 function hasAnyMove(color,dv){return LG.pieces[color].some(function(p,i){return canMove(color,i,dv);});}
-function rollDice(){
-  if(LG.diceRolled){toast('Move a piece first!',1800,'err');return;}
-  if(LG.currentTurn!=='red'){toast('Not your turn!',1800,'err');return;}
-  var btn=document.getElementById('ludoDice');
-  if(btn)btn.style.transform='scale(.88) rotate(180deg)';
-  setTimeout(function(){
-    if(btn)btn.style.transform='';
-    LG.diceValue=Math.floor(Math.random()*6)+1;LG.diceRolled=true;
-    drawDice(LG.diceValue);
-    var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');
-    if(res)res.textContent='Rolled: '+LG.diceValue+(LG.diceValue===6?' 🎉':'');
-    updateTI('Rolled '+LG.diceValue+' — tap a piece!');
-    if(!hasAnyMove('red',LG.diceValue)){if(hint)hint.textContent='No moves. Passing...';setTimeout(endTurn,1100);}
-    else{if(hint)hint.textContent='Tap glowing piece to move';document.getElementById('skipTurnBtn').style.display='inline-block';}
-    drawBoard();
-  },320);
-}
-function movePiece(color,idx){
-  if(color==='red'){if(!LG.diceRolled){toast('Roll first!',1500,'err');return;}if(LG.currentTurn!=='red'){toast('Not your turn!',1500,'err');return;}}
-  var piece=LG.pieces[color][idx];var dv=LG.diceValue;
-  if(!canMove(color,idx,dv)){if(color==='red')toast('Cannot move this piece.',1500,'err');return;}
-  if(piece.pos===0){piece.pos=1;if(color==='red')toast('Piece '+(idx+1)+' entered!',1200);}
-  else{var path=color==='red'?RED_PATH:GREEN_PATH;var np=piece.pos+dv;if(np>=path.length){piece.pos=57;}else{piece.pos=np;}if(piece.pos>=57){var done=LG.pieces[color].filter(function(p){return p.pos>=57;}).length;if(color==='red')toast('Piece home! '+done+'/4',1500);if(done>=4){showWinner(color);return;}}}
-  document.getElementById('skipTurnBtn').style.display='none';
-  drawBoard();updateScores();
-  if(dv===6){LG.diceRolled=false;drawDice(0);updateTI('Rolled 6 — roll again!');document.getElementById('diceResult').textContent='Tap to roll again!';}
-  else endTurn();
-}
-function endTurn(){
-  LG.diceRolled=false;LG.diceValue=0;drawDice(0);
-  document.getElementById('skipTurnBtn').style.display='none';
-  var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');
-  if(LG.currentTurn==='red'){LG.currentTurn='green';document.getElementById('lp-you').classList.remove('active-turn');document.getElementById('lp-them').classList.add('active-turn');updateTI(LG.playerNames.green+"'s turn...");if(res)res.textContent='Waiting...';if(hint)hint.textContent='AI thinking...';LG.aiTimer=setTimeout(aiTurn,1400);}
-  else{LG.currentTurn='red';document.getElementById('lp-them').classList.remove('active-turn');document.getElementById('lp-you').classList.add('active-turn');updateTI('Your turn — Roll!');if(res)res.textContent='Tap dice to roll';if(hint)hint.textContent='Roll a 6 to enter play';}
-}
-function aiTurn(){
-  if(LG.currentTurn!=='green'||!LG.active)return;
-  var dv=Math.floor(Math.random()*6)+1;LG.diceValue=dv;LG.diceRolled=true;drawDice(dv);
-  document.getElementById('diceResult').textContent=LG.playerNames.green+' rolled: '+dv;
-  updateTI(LG.playerNames.green+' rolled '+dv+'...');
-  setTimeout(function(){
-    if(LG.currentTurn!=='green'||!LG.active)return;
-    var best=-1,bestPos=-1;
-    LG.pieces.green.forEach(function(p,i){if(canMove('green',i,dv)&&p.pos>bestPos){bestPos=p.pos;best=i;}});
-    if(best>=0)movePiece('green',best);
-    else{if(dv===6){LG.diceRolled=false;drawDice(0);setTimeout(aiTurn,800);}else endTurn();}
-  },700);
-}
+function rollDice(){if(LG.diceRolled){toast('Move a piece first!',1800,'err');return;}if(LG.currentTurn!=='red'){toast('Not your turn!',1800,'err');return;}var btn=document.getElementById('ludoDice');if(btn)btn.style.transform='scale(.88) rotate(180deg)';setTimeout(function(){if(btn)btn.style.transform='';LG.diceValue=Math.floor(Math.random()*6)+1;LG.diceRolled=true;drawDice(LG.diceValue);var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');if(res)res.textContent='Rolled: '+LG.diceValue+(LG.diceValue===6?' 🎉':'');updateTI('Rolled '+LG.diceValue+' — tap a piece!');if(!hasAnyMove('red',LG.diceValue)){if(hint)hint.textContent='No moves. Passing...';setTimeout(endTurn,1100);}else{if(hint)hint.textContent='Tap glowing piece to move';document.getElementById('skipTurnBtn').style.display='inline-block';}drawBoard();},320);}
+function movePiece(color,idx){if(color==='red'){if(!LG.diceRolled){toast('Roll first!',1500,'err');return;}if(LG.currentTurn!=='red'){toast('Not your turn!',1500,'err');return;}}var piece=LG.pieces[color][idx];var dv=LG.diceValue;if(!canMove(color,idx,dv)){if(color==='red')toast('Cannot move this piece.',1500,'err');return;}if(piece.pos===0){piece.pos=1;if(color==='red')toast('Piece '+(idx+1)+' entered!',1200);}else{var path=color==='red'?RED_PATH:GREEN_PATH;var np=piece.pos+dv;if(np>=path.length){piece.pos=57;}else{piece.pos=np;}if(piece.pos>=57){var done=LG.pieces[color].filter(function(p){return p.pos>=57;}).length;if(color==='red')toast('Piece home! '+done+'/4',1500);if(done>=4){showWinner(color);return;}}}document.getElementById('skipTurnBtn').style.display='none';drawBoard();updateScores();if(dv===6){LG.diceRolled=false;drawDice(0);updateTI('Rolled 6 — roll again!');document.getElementById('diceResult').textContent='Tap to roll again!';}else endTurn();}
+function endTurn(){LG.diceRolled=false;LG.diceValue=0;drawDice(0);document.getElementById('skipTurnBtn').style.display='none';var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');if(LG.currentTurn==='red'){LG.currentTurn='green';document.getElementById('lp-you').classList.remove('active-turn');document.getElementById('lp-them').classList.add('active-turn');updateTI(LG.playerNames.green+"'s turn...");if(res)res.textContent='Waiting...';if(hint)hint.textContent='AI thinking...';LG.aiTimer=setTimeout(aiTurn,1400);}else{LG.currentTurn='red';document.getElementById('lp-them').classList.remove('active-turn');document.getElementById('lp-you').classList.add('active-turn');updateTI('Your turn — Roll!');if(res)res.textContent='Tap dice to roll';if(hint)hint.textContent='Roll a 6 to enter play';}}
+function aiTurn(){if(LG.currentTurn!=='green'||!LG.active)return;var dv=Math.floor(Math.random()*6)+1;LG.diceValue=dv;LG.diceRolled=true;drawDice(dv);document.getElementById('diceResult').textContent=LG.playerNames.green+' rolled: '+dv;updateTI(LG.playerNames.green+' rolled '+dv+'...');setTimeout(function(){if(LG.currentTurn!=='green'||!LG.active)return;var best=-1,bestPos=-1;LG.pieces.green.forEach(function(p,i){if(canMove('green',i,dv)&&p.pos>bestPos){bestPos=p.pos;best=i;}});if(best>=0)movePiece('green',best);else{if(dv===6){LG.diceRolled=false;drawDice(0);setTimeout(aiTurn,800);}else endTurn();}},700);}
 function updateTI(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
 function updateScores(){var rD=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gD=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rH=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gH=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rH+' · ✓×'+rD;if(ts)ts.textContent='🏠×'+gH+' · ✓×'+gD;}
 function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var b=document.getElementById('ludoWinBanner');var w=document.getElementById('winnerText');if(b)b.style.display='flex';if(w)w.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
-function toggleCamera(){if(LG.camOn)stopCamera();else startCamera();}
+function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/week)':'Get Premium to Host ($10/week)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
+function startLudo(){if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}MC('m-ludo-invite');LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;clearTimeout(LG.aiTimer);LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};var mn='Friend';LG.playerNames={red:'You',green:mn};document.getElementById('lp-you-name').textContent='You (Red)';document.getElementById('lp-them-name').textContent=mn+' (Green)';document.getElementById('lp-you').classList.add('active-turn');document.getElementById('lp-them').classList.remove('active-turn');LG.micOn=true;LG.vidOn=true;var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');if(mic){mic.textContent='🎙️';mic.classList.remove('off');}if(vid){vid.textContent='🎥';vid.classList.remove('off');}var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';G('s-ludo');setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);toast('🎲 Ludo started!',2200);}
+function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);G('s-chat');toast('Game ended.',1800);}
 async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera live!',2000);}catch(err){toast('Camera access denied.',3000,'err');LG.camOn=false;}}
 function stopCamera(){if(LG.camStream){LG.camStream.getTracks().forEach(function(t){t.stop();});LG.camStream=null;}LG.camOn=false;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=null;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='none';var btn=document.getElementById('ludo-cam-btn');if(btn){btn.textContent='📵';btn.style.background='';}}
+function toggleCamera(){if(LG.camOn)stopCamera();else startCamera();}
 async function togglePiP(){var vid=document.getElementById('camVideo');if(!vid||!document.pictureInPictureEnabled)return;try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else await vid.requestPictureInPicture();}catch(e){toast('PiP not supported.',2000,'err');}}
 function toggleLudoAV(type){if(type==='mic'){LG.micOn=!LG.micOn;var btn=document.getElementById('ludo-mic');if(btn){btn.textContent=LG.micOn?'🎙️':'🔇';btn.classList.toggle('off',!LG.micOn);}toast(LG.micOn?'Mic on':'Mic muted',1200);}else{LG.vidOn=!LG.vidOn;var btn=document.getElementById('ludo-vid');if(btn){btn.textContent=LG.vidOn?'🎥':'📷';btn.classList.toggle('off',!LG.vidOn);}toast(LG.vidOn?'Video on':'Video off',1200);}}
-function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/week)':'Get Premium to Host ($10/week)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
-function startLudo(){
-  if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}
-  MC('m-ludo-invite');
-  LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;
-  clearTimeout(LG.aiTimer);
-  LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};
-  var mn=(DB.users.find(function(u){return u.id===S.chatPartnerId;})||{name:'Member',firstName:'Member',lastName:'',verified:false,online:false})?(DB.users.find(function(u){return u.id===S.chatPartnerId;})||{name:'Member',firstName:'Member',lastName:'',verified:false,online:false}).name.split(' ')[0]:'Friend';
-  LG.playerNames={red:'You',green:mn};
-  document.getElementById('lp-you-name').textContent='You (Red)';
-  document.getElementById('lp-them-name').textContent=mn+' (Green)';
-  document.getElementById('lp-you').classList.add('active-turn');
-  document.getElementById('lp-them').classList.remove('active-turn');
-  LG.micOn=true;LG.vidOn=true;
-  var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');
-  if(mic){mic.textContent='🎙️';mic.classList.remove('off');}
-  if(vid){vid.textContent='🎥';vid.classList.remove('off');}
-  var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';
-  if(Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId].push({id:'ludo-'+Date.now(),f:'me',t:'🎲 Ludo invite sent! Join me — audio and video are on. In sha Allah 😊',ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
-  G('s-ludo');
-  setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);
-  toast('🎲 Ludo started!',2200);
-}
-function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);stopCamera();G('s-chat');toast('Game ended.',1800);}
 
-/* ══ INIT ══ */
-document.addEventListener('DOMContentLoaded',function(){
+/* ══ INIT ══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
   initSwipe();
   renderConvList();
-  var ci=document.getElementById('chatInp');
-  if(ci)ci.addEventListener('keydown',function(e){
-    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+  var ci = document.getElementById('chatInp');
+  if (ci) ci.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
   });
 });
+
 </script>
 </body>
 </html>
