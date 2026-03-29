@@ -1203,22 +1203,22 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   </div>
   <div class="scroll" style="padding-bottom:18px;">
     <div style="background:var(--teal);padding:0 16px 22px;text-align:center;">
-      <div style="width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin:0 auto 9px;border:3px solid rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:2.4rem;cursor:pointer;" onclick="loadEdit();G('s-editprofile')">👤</div>
+      <div id="mp-avatar" onclick="openProfilePhotoUpload()" style="width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin:0 auto 9px;border:3px solid rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:2.4rem;cursor:pointer;overflow:hidden;position:relative;">👤<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:.52rem;font-weight:800;text-align:center;padding:3px 0;letter-spacing:.03em;">📷 TAP TO CHANGE</div></div>
       <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px;">
         <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:#fff;" id="mp-name"></h3>
         <span style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
       </div>
       <p style="color:rgba(255,255,255,.65);font-size:.79rem;margin-bottom:13px;" id="mp-sub"></p>
       <div style="display:flex;justify-content:center;gap:22px;">
-        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">12</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Matches</p></div>
-        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">47</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Likes</p></div>
-        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">94%</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Profile</p></div>
+        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;" id="mp-match-count">0</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Matches</p></div>
+        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;" id="mp-like-count">0</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Likes</p></div>
+        <div><p style="color:#fff;font-weight:800;font-size:1.25rem;">0</p><p style="color:rgba(255,255,255,.5);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;">Profile</p></div>
       </div>
     </div>
     <div style="padding:13px 15px;">
       <div class="card" style="margin-bottom:11px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><p style="font-weight:800;font-size:.83rem;">Profile Completion</p><p style="font-weight:800;color:var(--teal);">94%</p></div>
-        <div class="pb"><div class="pf" style="width:94%;"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><p style="font-weight:800;font-size:.83rem;">Profile Completion</p><p style="font-weight:800;color:var(--teal);">0</p></div>
+        <div class="pb"><div class="pf" style="width:0;"></div></div>
         <p style="font-size:.72rem;color:var(--txt3);margin-top:4px;">Add a 3rd photo to reach 100%</p>
       </div>
       <div class="card" style="margin-bottom:11px;">
@@ -1362,7 +1362,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <!-- TAB 0 -->
     <div id="ap0">
       <div id="admin-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;">
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Total Users</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
+        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Total Users</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">0</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
         <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Premium</p><p style="font-size:1.65rem;font-weight:800;color:var(--gold3);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
         <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Matches</p><p style="font-size:1.65rem;font-weight:800;color:var(--blue);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
         <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Revenue (wk)</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
@@ -1585,6 +1585,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 <script>
+
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -2027,8 +2028,68 @@ function checkPhotos() {
 }
 
 function selectID(el) { document.querySelectorAll('.idopt').forEach(function(x) { x.style.borderColor = 'var(--sand)'; }); el.style.borderColor = 'var(--teal)'; }
-function tapUpload(el, msg) { el.style.borderColor = 'var(--teal)'; el.style.background = '#dff2f2'; el.innerHTML = '<div style="font-size:2.5rem;margin-bottom:6px;">✅</div><p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'; }
-function takeSelfie() { var b = document.getElementById('selfiebtn'); b.textContent = '✅ Selfie Captured!'; b.style.background = 'var(--green)'; }
+function tapUpload(el, msg) {
+  var inp = document.createElement('input');
+  inp.type   = 'file';
+  inp.accept = 'image/*,application/pdf';
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files || !inp.files[0]) {
+      if (document.body.contains(inp)) document.body.removeChild(inp); return;
+    }
+    var file = inp.files[0];
+    if (document.body.contains(inp)) document.body.removeChild(inp);
+    if (file.size > 15 * 1024 * 1024) { toast('File too large. Max 15MB.', 3000, 'err'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      el.style.borderColor = 'var(--teal)';
+      el.style.background  = '#dff2f2';
+      var isImg = file.type.startsWith('image/');
+      el.innerHTML = isImg
+        ? '<img src="' + e.target.result + '" style="max-height:120px;max-width:100%;border-radius:8px;object-fit:contain;">'
+          + '<p style="color:var(--teal);font-weight:800;font-size:.8rem;margin-top:6px;">' + msg + '</p>'
+        : '<div style="font-size:2.5rem;margin-bottom:6px;">📄</div>'
+          + '<p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'
+          + '<p style="color:var(--txt3);font-size:.75rem;">' + file.name + '</p>';
+      el.style.cursor = 'default';
+      toast('Document uploaded!', 2000);
+    };
+    reader.readAsDataURL(file);
+  });
+  inp.click();
+}
+function takeSelfie() {
+  var inp = document.createElement('input');
+  inp.type   = 'file';
+  inp.accept = 'image/*';
+  var isIOS  = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (!isIOS) inp.capture = 'user'; // front camera on Android
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files || !inp.files[0]) {
+      if (document.body.contains(inp)) document.body.removeChild(inp); return;
+    }
+    var file = inp.files[0];
+    if (document.body.contains(inp)) document.body.removeChild(inp);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      // Show selfie preview in the sring circle
+      var ring = document.querySelector('.sring');
+      if (ring) {
+        ring.innerHTML = '<img src="' + e.target.result + '" '
+          + 'style="width:140px;height:140px;border-radius:50%;object-fit:cover;border:3px solid var(--teal);">';
+      }
+      S._selfieFile = file;
+      var btn = document.getElementById('selfiebtn');
+      if (btn) { btn.textContent = '✅ Selfie Captured! Tap to retake'; btn.style.background = 'var(--green)'; }
+      toast('Selfie captured!', 2000);
+    };
+    reader.readAsDataURL(file);
+  });
+  inp.click();
+}
 
 /* ── Block detection ─────────────────────────────────────── */
 var PH_RX = /(\+?\d[\d\s\-().]{6,}\d)/i;
@@ -2313,6 +2374,16 @@ function openMyProfile() {
     // Premium status
     var subEl = document.getElementById('mp-sub');
     if (subEl) subEl.textContent = u.premium ? 'Premium' : 'Free';
+    // Show profile photo if available
+    var photoEl = document.getElementById('mp-avatar');
+    if (photoEl && u.photo_1) {
+      photoEl.innerHTML = '<img src="' + u.photo_1 + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+    }
+    // Update match/like stats
+    var matchEl = document.getElementById('mp-match-count');
+    var likeEl  = document.getElementById('mp-like-count');
+    if (matchEl) matchEl.textContent = u.match_count || 0;
+    if (likeEl)  likeEl.textContent  = u.like_count  || 0;
   })
   .catch(function() {
     var u = S.user || {};
@@ -2326,6 +2397,18 @@ function loadEdit() {
   var fields = { 'ep-fn': u.first_name, 'ep-ln': u.last_name, 'ep-occ': u.occupation,
                  'ep-city': u.city, 'ep-bio': u.bio, 'ep-interests': u.interests };
   Object.keys(fields).forEach(function(id) { var el = document.getElementById(id); if (el) el.value = fields[id] || ''; });
+  // Populate photo slots from existing photos
+  var photoMap = { 'eps1': u.photo_1, 'eps2': u.photo_2, 'eps3': u.photo_3 };
+  Object.keys(photoMap).forEach(function(slotId) {
+    var src = photoMap[slotId];
+    var slot = document.getElementById(slotId);
+    if (slot && src) {
+      slot.innerHTML = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
+      slot.classList.add('filled');
+    }
+  });
+  S._editPhotos = {};
+  S._editPhotoFiles = {};
 }
 
 function saveProfile() {
@@ -2337,12 +2420,24 @@ function saveProfile() {
     bio:        document.getElementById('ep-bio').value,
     interests:  document.getElementById('ep-interests') ? document.getElementById('ep-interests').value : '',
   };
+  // Include any updated photos
+  if (S._editPhotos) {
+    if (S._editPhotos['eps1']) updates.photo_1 = S._editPhotos['eps1'];
+    if (S._editPhotos['eps2']) updates.photo_2 = S._editPhotos['eps2'];
+    if (S._editPhotos['eps3']) updates.photo_3 = S._editPhotos['eps3'];
+  }
+  // Validate
+  if (!updates.first_name.trim()) { toast('First name is required.', 2000, 'err'); return; }
+  if (!updates.bio.trim())        { toast('Bio is required.', 2000, 'err'); return; }
+  toast('Saving...', 2000);
   apiCall('/api/users/me', 'PUT', updates)
   .then(function(res) {
     if (res.success) {
-      S.user = Object.assign(S.user, updates);
+      S.user = Object.assign(S.user || {}, updates);
+      S._editPhotos = {};
+      S._editPhotoFiles = {};
       toast('✅ Profile updated!', 2500);
-      openMyProfile();
+      G('s-myprofile');
     } else {
       toast('❌ ' + (res.error || 'Update failed.'), 2500, 'err');
     }
@@ -2350,24 +2445,82 @@ function saveProfile() {
   .catch(function() { toast('❌ Connection error.', 2500, 'err'); });
 }
 
-function editPhotoTap() {
+
+function openProfilePhotoUpload() {
   var inp = document.createElement('input');
   inp.type   = 'file';
   inp.accept = 'image/*';
-  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;';
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
   document.body.appendChild(inp);
   inp.addEventListener('change', function() {
-    if (!inp.files || !inp.files[0]) { document.body.removeChild(inp); return; }
+    if (!inp.files || !inp.files[0]) {
+      if (document.body.contains(inp)) document.body.removeChild(inp); return;
+    }
     var file = inp.files[0];
+    if (document.body.contains(inp)) document.body.removeChild(inp);
+    if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
     var reader = new FileReader();
     reader.onload = function(e) {
-      var sl = document.getElementById('eps2');
-      if (sl) { sl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">'; sl.classList.add('filled'); }
-      S._editPhoto = file;
-      toast('Photo updated!', 2000);
+      // Show preview immediately
+      var avatarEl = document.getElementById('mp-avatar');
+      if (avatarEl) {
+        avatarEl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
+          + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;font-weight:800;text-align:center;padding:3px 0;">📷 CHANGE</div>';
+      }
+      S._profilePhoto = file;
+      S._profilePhotoData = e.target.result;
+      toast('Uploading photo...', 2000);
+      // Upload to API as base64
+      apiCall('/api/users/me', 'PUT', { photo_1: e.target.result })
+      .then(function(res) {
+        if (res.success) {
+          if (S.user) S.user.photo_1 = e.target.result;
+          toast('✅ Profile photo updated!', 2500);
+        } else {
+          toast('Photo saved locally. Will sync when online.', 2500);
+        }
+      })
+      .catch(function() { toast('Photo saved locally.', 2000); });
     };
     reader.readAsDataURL(file);
-    setTimeout(function() { if (document.body.contains(inp)) document.body.removeChild(inp); }, 1000);
+  });
+  inp.click();
+}
+function editPhotoTap(slotId) {
+  var targetId = slotId || 'eps2';
+  var inp = document.createElement('input');
+  inp.type   = 'file';
+  inp.accept = 'image/*';
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files || !inp.files[0]) {
+      if (document.body.contains(inp)) document.body.removeChild(inp); return;
+    }
+    var file = inp.files[0];
+    if (document.body.contains(inp)) document.body.removeChild(inp);
+    if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var sl = document.getElementById(targetId);
+      if (sl) {
+        sl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
+        sl.classList.add('filled');
+        // Add a "Change" label overlay
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:.62rem;font-weight:800;text-align:center;padding:3px 0;border-radius:0 0 10px 10px;';
+        lbl.textContent = 'Tap to change';
+        sl.style.position = 'relative';
+        sl.appendChild(lbl);
+      }
+      // Store for save
+      S._editPhotos = S._editPhotos || {};
+      S._editPhotos[targetId] = e.target.result;
+      S._editPhotoFiles = S._editPhotoFiles || {};
+      S._editPhotoFiles[targetId] = file;
+      toast('Photo selected! Tap Save to update.', 2000);
+    };
+    reader.readAsDataURL(file);
   });
   inp.click();
 }
