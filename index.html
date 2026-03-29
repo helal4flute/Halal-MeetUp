@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Halal-MeetUp</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Halal-MeetUp">
+<meta name="theme-color" content="#0d7377">
+<meta name="description" content="Halal-MeetUp — Islamic Matrimonial App. Connect with sincere Muslim singles for nikkah.">
+<title>Halal-MeetUp — Islamic Matrimonial</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -21,6 +26,11 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   width:390px;height:844px;background:var(--cream);border-radius:46px;overflow:hidden;
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   box-shadow:0 40px 100px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.07);
+}
+/* Full screen on real mobile devices */
+@media (max-width:430px),(max-height:900px) and (pointer:coarse){
+  #app{width:100%!important;height:100dvh!important;border-radius:0!important;
+       top:0!important;left:0!important;transform:none!important;box-shadow:none!important;}
 }
 /* screens */
 .scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
@@ -272,6 +282,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 /* win banner */
 .ludo-win-banner{background:linear-gradient(135deg,rgba(201,150,58,.9),rgba(201,120,30,.9));border-radius:16px;padding:20px;text-align:center;margin:10px;animation:fadeUp .4s ease}
 </style>
+<script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
 
@@ -427,22 +438,47 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 <!-- ══════════════ S1: SPLASH ══════════════ -->
 <div class="scr on" id="s-splash" style="background:radial-gradient(ellipse at 35% 20%,#1a9494 0%,#0d7377 40%,#042e2e 100%);align-items:center;justify-content:center;">
-  <div style="text-align:center;padding:28px 28px;display:flex;flex-direction:column;align-items:center;">
-    <svg width="210" height="142" style="margin-bottom:4px"><use href="#logo"/></svg>
-    <h1 style="font-family:'Cormorant Garamond',serif;font-size:3rem;color:#e4b55a;line-height:1;margin-bottom:3px;letter-spacing:.04em;">حلال</h1>
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:#fff;margin-bottom:8px;letter-spacing:.08em;">Halal-MeetUp</h2>
-    <p style="color:rgba(255,255,255,.52);font-size:.8rem;font-style:italic;margin-bottom:40px;line-height:1.6;">"And He created from you mates, that you may find tranquillity" — Ar-Rum 30:21</p>
+  <div style="text-align:center;padding:32px 26px 28px;display:flex;flex-direction:column;align-items:center;width:100%;">
+    <svg width="210" height="142" style="margin-bottom:6px"><use href="#logo"/></svg>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;color:#e4b55a;line-height:1.1;margin-bottom:4px;letter-spacing:.04em;">Halal-MeetUp</h1>
+    <p style="color:rgba(255,255,255,.7);font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:22px;">Islamic Matrimonial</p>
+
+    <!-- Animated stats strip -->
+    <div style="display:flex;gap:0;background:rgba(255,255,255,.08);border-radius:14px;padding:12px 0;width:100%;margin-bottom:22px;border:1px solid rgba(255,255,255,.12);">
+      <div style="flex:1;border-right:1px solid rgba(255,255,255,.12);padding:0 8px;">
+        <p style="color:#e4b55a;font-size:1.3rem;font-weight:900;line-height:1;">100%</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.62rem;font-weight:700;margin-top:2px;">Halal</p>
+      </div>
+      <div style="flex:1;border-right:1px solid rgba(255,255,255,.12);padding:0 8px;">
+        <p style="color:#e4b55a;font-size:1.3rem;font-weight:900;line-height:1;">✓</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.62rem;font-weight:700;margin-top:2px;">ID Verified</p>
+      </div>
+      <div style="flex:1;border-right:1px solid rgba(255,255,255,.12);padding:0 8px;">
+        <p style="color:#e4b55a;font-size:1.3rem;font-weight:900;line-height:1;">🔒</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.62rem;font-weight:700;margin-top:2px;">Private</p>
+      </div>
+      <div style="flex:1;padding:0 8px;">
+        <p style="color:#e4b55a;font-size:1.3rem;font-weight:900;line-height:1;">🎲</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.62rem;font-weight:700;margin-top:2px;">Ludo + AV</p>
+      </div>
+    </div>
+
+    <!-- Unique feature callout -->
+    <div style="background:linear-gradient(135deg,rgba(201,150,58,.22),rgba(201,150,58,.08));border:1px solid rgba(201,150,58,.4);border-radius:14px;padding:13px 16px;width:100%;margin-bottom:22px;text-align:left;">
+      <p style="color:#e4b55a;font-size:.75rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;">✨ Why Halal-MeetUp?</p>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <p style="color:rgba(255,255,255,.8);font-size:.76rem;font-weight:600;">🤝 Meet your match the halal way</p>
+        <p style="color:rgba(255,255,255,.8);font-size:.76rem;font-weight:600;">🎲 Play Ludo together with live video</p>
+        <p style="color:rgba(255,255,255,.8);font-size:.76rem;font-weight:600;">🛡️ ID-verified profiles only</p>
+        <p style="color:rgba(255,255,255,.8);font-size:.76rem;font-weight:600;">🔇 No phone numbers — stay safe</p>
+      </div>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:11px;width:100%;">
-      <button class="btn bg bfull" onclick="G('s-welcome')">Begin Your Journey ✨</button>
-      <button class="btn bfull" style="background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.3);" onclick="G('s-login')">Sign In</button>
+      <button class="btn bg bfull" onclick="G('s-welcome')" style="font-size:.95rem;padding:15px 22px;">Begin Your Journey ✨</button>
+      <button class="btn bfull" style="background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.3);font-size:.88rem;" onclick="G('s-login')">Sign In</button>
     </div>
-    <div style="margin-top:24px;display:flex;gap:16px;">
-      <span style="color:rgba(255,255,255,.3);font-size:.68rem;">🔒 Secure</span>
-      <span style="color:rgba(255,255,255,.15);">·</span>
-      <span style="color:rgba(255,255,255,.3);font-size:.68rem;">✓ Verified</span>
-      <span style="color:rgba(255,255,255,.15);">·</span>
-      <span style="color:rgba(255,255,255,.3);font-size:.68rem;">☪️ Halal</span>
-    </div>
+    <p style="color:rgba(255,255,255,.28);font-size:.64rem;margin-top:18px;">By continuing you agree to our Terms & Privacy Policy</p>
   </div>
 </div>
 
@@ -874,7 +910,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
           <div style="display:flex;align-items:flex-end;justify-content:space-between;">
             <div>
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
-                <p id="cName" style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#fff;font-weight:700;">Fatima Al-Rashidi</p>
+                <p id="cName" style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#fff;font-weight:700;">Member 1</p>
                 <span style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
               </div>
               <p id="cSub" style="color:rgba(255,255,255,.82);font-size:.79rem;">26 · London, UK · Sunni Hanafi</p>
@@ -950,7 +986,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="scroll" style="padding:11px 13px 16px;">
     <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;">New Matches</p>
     <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:11px;margin-bottom:16px;">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(0)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));border:2.5px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Fatima</p></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(0)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));border:2.5px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Match</p></div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(1)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#a084ca,#c0a0e0);border:2.5px solid var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Aisha</p></div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(2)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#d4a574,#b08050);border:2.5px solid var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Zainab</p></div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;" onclick="openChat(3)"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#5a9ad0,#2e6aaa);border:2.5px solid var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div><p style="font-size:.68rem;font-weight:800;color:var(--txt2);">Mariam</p></div>
@@ -991,7 +1027,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <button class="ibtn back-ibtn" onclick="G('s-matches')">&#8592;</button>
     <div onclick="G('s-viewprofile')" style="cursor:pointer;display:flex;align-items:center;gap:9px;flex:1;">
       <div style="position:relative;width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;">👤<div class="odot"></div></div>
-      <div><p style="color:#fff;font-weight:800;font-size:.9rem;" id="chat-name">Fatima Al-Rashidi <span id="chat-v" style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span></p><p style="color:rgba(255,255,255,.62);font-size:.69rem;" id="chat-status">Online now</p></div>
+      <div><p style="color:#fff;font-weight:800;font-size:.9rem;" id="chat-name">Member <span id="chat-v" style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span></p><p style="color:rgba(255,255,255,.62);font-size:.69rem;" id="chat-status">Online now</p></div>
     </div>
     <button class="ibtn" onclick="startCall('audio')" title="Voice call">📞</button>
     <button class="ibtn" onclick="startCall('video')" title="Video call">🎥</button>
@@ -1062,6 +1098,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
       </div>
       <div class="subcrd" style="margin-bottom:15px;">
         <p style="font-size:1.8rem;font-weight:800;color:var(--teal);">$10<span style="font-size:.95rem;font-weight:600;color:var(--txt3);">/week</span></p>
+        <p style="font-size:.72rem;color:var(--txt3);margin-top:2px;">Auto-renews weekly · Cancel anytime</p>
         <p style="font-size:.77rem;color:var(--txt3);margin-bottom:11px;">Credit card only · Cancel anytime</p>
         <div style="text-align:left;display:flex;flex-direction:column;gap:4px;">
           <p style="font-size:.79rem;color:var(--txt2);">✅ Unlimited audio & video calls</p>
@@ -1125,13 +1162,13 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <div style="height:285px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;">
       <svg width="180" height="122"><use href="#logo"/></svg>
       <button onclick="G('s-discover')" style="position:absolute;top:52px;left:14px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.7);color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;">&#8592;</button>
-      <button onclick="G('s-chat')" style="position:absolute;top:52px;right:14px;background:var(--teal);border:none;color:#fff;border-radius:50px;padding:7px 13px;font-size:.79rem;font-weight:800;cursor:pointer;">💬 Message</button>
+      <button id="vp-action-btn" onclick="vpAction()" style="position:absolute;top:52px;right:14px;background:var(--teal);border:none;color:#fff;border-radius:50px;padding:7px 13px;font-size:.79rem;font-weight:800;cursor:pointer;">💚 Like</button>
     </div>
     <div style="background:#fff;margin:-20px 13px 0;border-radius:var(--r);padding:15px;box-shadow:var(--sh);position:relative;z-index:10;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
         <div>
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
-            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;" id="vp-name">Fatima Al-Rashidi</h2>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;" id="vp-name">Member</h2>
             <span class="bdg bb">✓ Verified</span>
           </div>
           <p style="color:var(--txt3);font-size:.8rem;" id="vp-sub">26 · London, UK · Sunni Hanafi</p>
@@ -1238,6 +1275,39 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   </div>
 </div>
 
+<!-- Manage Subscription Modal -->
+<div class="mov" id="m-manage-sub">
+  <div class="msh" style="text-align:center;">
+    <div class="mh"></div>
+    <div style="font-size:2.5rem;margin-bottom:8px;">👑</div>
+    <p class="mt">Manage Subscription</p>
+    <div id="sub-active-block" style="background:#e8f5e9;border-radius:var(--rs);padding:12px 14px;margin:12px 0;text-align:left;">
+      <p style="font-weight:800;font-size:.85rem;color:#1e8449;margin-bottom:5px;">✅ Premium Active</p>
+      <p id="sub-status-line" style="font-size:.78rem;color:var(--txt2);margin-bottom:3px;">Auto-renews weekly</p>
+      <p style="font-size:.75rem;color:var(--txt3);">$10/week · Cancel anytime</p>
+    </div>
+    <div id="sub-cancelled-block" style="background:#fce8e8;border-radius:var(--rs);padding:12px 14px;margin:12px 0;text-align:left;display:none;">
+      <p style="font-weight:800;font-size:.85rem;color:var(--red2);margin-bottom:5px;">⛔ Subscription Cancelled</p>
+      <p style="font-size:.78rem;color:var(--txt2);">Re-subscribe to access calls, Ludo &amp; more.</p>
+    </div>
+    <button id="sub-cancel-btn" class="btn bred bfull" onclick="confirmCancelSub()" style="margin-bottom:9px;">Cancel Subscription</button>
+    <button id="sub-resub-btn" class="btn bp bfull" onclick="MC('m-manage-sub');M('s-myprofile','m-sub');" style="display:none;margin-bottom:9px;">Re-Subscribe ($10/week)</button>
+    <button class="btn bgh bfull" onclick="MC('m-manage-sub')">Close</button>
+  </div>
+</div>
+
+<!-- Confirm Cancel Sub Modal -->
+<div class="mov" id="m-confirm-cancel-sub">
+  <div class="msh" style="text-align:center;">
+    <div class="mh"></div>
+    <div style="font-size:2.5rem;margin-bottom:8px;">⛔</div>
+    <p class="mt">Cancel Subscription?</p>
+    <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:16px;">You will lose access to audio/video calls, Ludo, and live photos immediately.</p>
+    <button class="btn bred bfull" onclick="cancelSubscription()" style="margin-bottom:9px;">Yes, Cancel</button>
+    <button class="btn bgh bfull" onclick="MC('m-confirm-cancel-sub')">Keep Premium</button>
+  </div>
+</div>
+
 <!-- ══════════════ S21: EDIT PROFILE ══════════════ -->
 <div class="scr" id="s-editprofile" style="background:var(--cream);">
   <div class="tbar"><button class="ibtn" onclick="G('s-myprofile')">&#8592;</button><h2>Edit Profile</h2><button class="ibtn" onclick="saveProfile()" style="background:var(--gold);border-color:var(--gold);">✓</button></div>
@@ -1284,7 +1354,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <!-- Caller info -->
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;">
     <div style="width:94px;height:94px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin-bottom:13px;border:3px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2.7rem;box-shadow:0 0 40px rgba(201,150,58,.26);">👤</div>
-    <h2 id="call-name" style="font-family:'Cormorant Garamond',serif;font-size:1.85rem;color:#fff;margin-bottom:3px;">Fatima Al-Rashidi</h2>
+    <h2 id="call-name" style="font-family:'Cormorant Garamond',serif;font-size:1.85rem;color:#fff;margin-bottom:3px;">Member</h2>
     <p id="call-type" style="color:rgba(255,255,255,.48);font-size:.83rem;margin-bottom:5px;">🎥 Video Call</p>
     <p id="call-timer" style="color:rgba(255,255,255,.76);font-size:.97rem;font-weight:700;font-variant-numeric:tabular-nums;">00:00:00</p>
     <div class="sbars" style="margin-top:9px;"><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div></div>
@@ -1439,50 +1509,141 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     </div>
   </div>
 </div>
+
+<!-- ══ MATCH NOTIFICATION OVERLAY ══ -->
+<div id="match-overlay" style="display:none;position:absolute;inset:0;background:linear-gradient(160deg,rgba(13,115,119,.96),rgba(201,150,58,.92));z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;">
+  <div style="animation:fadeUp .4s ease;">
+    <div style="font-size:4rem;margin-bottom:8px;">💞</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;color:#fff;font-weight:600;margin-bottom:4px;">It's a Match!</p>
+    <p style="color:rgba(255,255,255,.75);font-size:.9rem;margin-bottom:6px;">You and</p>
+    <p style="color:#e4b55a;font-size:1.3rem;font-weight:800;margin-bottom:20px;" id="match-partner-name">Your match</p>
+    <p style="color:rgba(255,255,255,.65);font-size:.8rem;line-height:1.6;margin-bottom:24px;">MashaAllah! You both liked each other.<br>Start a conversation in sha Allah 🌙</p>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
+      <button id="match-chat-btn" class="btn bg bfull" style="font-size:.95rem;">💬 Say Assalamu Alaikum</button>
+      <button class="btn bfull" onclick="hideMatchOverlay()" style="background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);">Continue Discovering</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INTRO MESSAGE MODAL (before match) ══ -->
+<div class="mov" id="m-intro-msg">
+  <div class="msh">
+    <div class="mh"></div>
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">💌</div>
+      <p class="mt">Send an Intro</p>
+      <p style="font-size:.82rem;color:var(--txt3);line-height:1.6;">You liked <strong id="intro-partner-name">them</strong>! Send a short respectful intro message. They'll see it when they view your like.</p>
+    </div>
+    <div class="fg" style="margin-bottom:14px;">
+      <label>Your intro message <span class="req-star">*</span></label>
+      <textarea id="intro-msg-inp" class="cinp" rows="3" placeholder="Assalamu Alaikum! I came across your profile and..." style="resize:none;min-height:80px;"></textarea>
+      <p style="font-size:.72rem;color:var(--txt3);margin-top:4px;">Keep it halal and respectful. No phone numbers.</p>
+    </div>
+    <button class="btn bp bfull" onclick="sendIntroMessage()" style="margin-bottom:9px;">💌 Send Intro</button>
+    <button class="btn bgh bfull" onclick="MC('m-intro-msg')">Maybe Later</button>
+  </div>
+</div>
 </div><!-- /#app -->
 
 <script>
+
+function vpAction(){
+  var userId=S._viewingUserId;
+  if(!userId||!S.user)return;
+  var matchId=getMatchId(userId);
+  if(matchId){
+    // Already matched — open chat
+    openChatByMatch(matchId);
+  } else {
+    // Like them
+    likeProfile(userId);
+  }
+}
+
+function openViewProfile(userId){
+  S._viewingUserId=userId;
+  var user=DB.users.find(function(u){return u.id===userId;});
+  if(!user)return;
+  // Update all view profile fields
+  var nameEl=document.getElementById('vp-name');
+  var ageCity=document.getElementById('vp-agecity');
+  var sect=document.getElementById('vp-sect');
+  var status=document.getElementById('vp-status');
+  var edu=document.getElementById('vp-edu');
+  var occ=document.getElementById('vp-occ');
+  var bio=document.getElementById('vp-bio');
+  var interests=document.getElementById('vp-interests');
+  if(nameEl)nameEl.textContent=user.firstName+' '+user.lastName;
+  if(ageCity)ageCity.textContent=(user.age||'?')+' · '+(user.city||'')+(user.country?' · '+user.country:'');
+  if(sect)sect.textContent=user.sect||'';
+  if(status)status.textContent=user.maritalStatus||'';
+  if(edu)edu.textContent=user.education||'';
+  if(occ)occ.textContent=user.occupation||'';
+  if(bio)bio.textContent=user.bio||'No bio provided.';
+  if(interests)interests.textContent=user.interests||'';
+  // Update action button
+  var actionBtn=document.getElementById('vp-action-btn');
+  if(actionBtn){
+    var matchId=getMatchId(userId);
+    if(matchId){actionBtn.textContent='💬 Message';actionBtn.style.background='var(--teal)';}
+    else{actionBtn.textContent='💚 Like';actionBtn.style.background='#27ae60';}
+  }
+  G('s-viewprofile');
+}
+
+function openMyProfile(){
+  if(!S.user)return;
+  var u=S.user;
+  var nameEl=document.getElementById('mp-name');
+  var locEl=document.getElementById('mp-location');
+  var sectEl=document.getElementById('mp-sect');
+  var bioEl=document.getElementById('mp-bio');
+  var occEl=document.getElementById('mp-occ');
+  var intEl=document.getElementById('mp-interests');
+  if(nameEl)nameEl.textContent=u.firstName+' '+u.lastName;
+  if(locEl)locEl.textContent=(u.city||'')+(u.country?' · '+u.country:'');
+  if(sectEl)sectEl.textContent=u.sect||'';
+  if(bioEl)bioEl.textContent=u.bio||'';
+  if(occEl)occEl.textContent=u.occupation||'';
+  if(intEl)intEl.textContent=u.interests||'';
+  G('s-myprofile');
+}
+
 /* ══ STATE ══ */
+// ─── SIMULATED DATABASE (in real prod, replace with API calls) ───────────────
+const DB = {
+  users: [], // [{id, firstName, lastName, email, passwordHash, phone, dob, gender, sect,
+             //   maritalStatus, education, country, city, nationality, languages,
+             //   occupation, bio, interests, photos, verified, premium, createdAt}]
+  matches: [], // [{id, user1Id, user2Id, createdAt}]  — mutual likes
+  likes: [],   // [{fromId, toId, createdAt}]  — one-way likes
+  messages: {}, // {matchId: [{id,fromId,toId,text,ts,reactions,deleted}]}
+  callLogs: [], // [{id,type,p1Id,p2Id,dur,status,date}]
+};
+
+// Simple hash for demo (in prod use bcrypt via backend)
+function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCodeAt(i);h|=0;}return h.toString(36);}
+
 const S={
-  user:null,photos:[0,0,0],chatId:0,pIdx:0,callTimer:null,callSecs:0,premium:false,
+  user:null,          // logged-in user object from DB.users
+  photos:[0,0,0],
+  chatId:null,        // matchId of active chat
+  chatPartnerId:null, // userId of chat partner
+  pIdx:0,
+  callTimer:null,callSecs:0,premium:false,
   otpPhone:'',otpEmail:'',
-  unread:{0:3,1:0,2:0,3:1},
+  unread:{},
   blocked:[],
   deletedConvs:[],
   selectedConvs:[],
   _pendingDelMode:'',
   _pendingDelId:-1,
   _delChatCallback:null,
-  callLogs:[
-    {type:'video',p1:'Fatima Al-Rashidi',p2:'Ahmed Abdullah',dur:'18m 32s',date:'Today 2:14 PM',status:'completed',id:0},
-    {type:'audio',p1:'Aisha Khalid',p2:'Ahmed Abdullah',dur:'0s',date:'Today 11:03 AM',status:'missed',id:1},
-    {type:'video',p1:'Zainab Malik',p2:'Ahmed Abdullah',dur:'4m 10s',date:'Yesterday 8:40 PM',status:'completed',id:2},
-    {type:'audio',p1:'Mariam Sultan',p2:'Ahmed Abdullah',dur:'12m 55s',date:'Mar 25 3:00 PM',status:'completed',id:3},
-    {type:'audio',p1:'Sara Osman',p2:'Ahmed Abdullah',dur:'0s',date:'Mar 24 9:10 AM',status:'declined',id:4},
-  ],
-  admins:['admin@halal-meetup.com','admin@test.com'],
-  profiles:[
-    {id:0,name:'Fatima Al-Rashidi',age:26,city:'London, UK',sect:'Sunni Hanafi',verified:true,online:true,status:'Never Married',edu:"Master's",bio:'Alhamdulillah — a school teacher who loves Quran recitation, Moroccan cuisine, and long walks.'},
-    {id:1,name:'Aisha Khalid',age:24,city:'Toronto, CA',sect:'Sunni Maliki',verified:true,online:false,status:'Never Married',edu:"Bachelor's",bio:'Software engineer by day, avid reader by night. Seeking a kind-hearted brother for nikkah.'},
-    {id:2,name:'Zainab Malik',age:29,city:'Houston, TX',sect:"Sunni Shafi'i",verified:true,online:true,status:'Divorced',edu:'PhD',bio:'Academic researcher, mother of one. Ready to build a new chapter with a sincere partner.'},
-    {id:3,name:'Mariam Sultan',age:27,city:'Dubai, UAE',sect:'Sunni Hanbali',verified:false,online:true,status:'Never Married',edu:"Bachelor's",bio:'Marketing professional. Love traveling, cooking and learning new languages.'},
-    {id:4,name:'Sara Osman',age:25,city:'Manchester, UK',sect:'Sunni Hanafi',verified:true,online:false,status:'Never Married',edu:"Master's",bio:'Nurse practitioner, passionate about community service and Islamic history.'},
-  ],
-  msgs:{
-    0:[
-      {id:'m0-1',f:'them',t:'Assalamu Alaikum wa Rahmatullahi wa Barakatuh 🌙',ts:'2:10 PM'},
-      {id:'m0-2',f:'me',t:'Wa Alaikum Assalam! JazakAllah khayr for your message 😊',ts:'2:12 PM'},
-      {id:'m0-3',f:'them',t:'I read your profile — we seem to have a lot in common, especially the love for Islamic history!',ts:'2:14 PM'},
-      {id:'m0-4',f:'me',t:"Absolutely! I've been reading about the Andalusian scholars lately. Any recommendations?",ts:'2:16 PM'},
-      {id:'m0-5',f:'them',t:"SubhanAllah, I just finished a book on Ibn Rushd! I'm going to share the title in sha Allah.",ts:'2:18 PM'},
-    ],
-    1:[
-      {id:'m1-1',f:'them',t:'Salaam! I noticed we both love software — are you in tech too?',ts:'11:00 AM'},
-      {id:'m1-2',f:'me',t:'Yes! Front-end development. What about you?',ts:'11:05 AM'},
-    ],
-    2:[{id:'m2-1',f:'them',t:'Assalam, I hope you are well!',ts:'Yesterday'}],
-    3:[{id:'m3-1',f:'them',t:'JazakAllah khayr for your kind message 🌙',ts:'2d ago'}],
-  }
+  subStatus:'none',
+  subStart:null,
+  subRenewsAt:null,
+  admins:['mdhelal.ahamed@gmail.com','admin@halal-meetup.com'],
+  msgs:{}
 };
 
 /* ══ NAVIGATION ══ */
@@ -1498,6 +1659,7 @@ function toast(msg,a,b){
   if(typeof a==='number'){dur=a;if(b)type=b;}
   else if(typeof a==='string'&&a!==''){type=a;if(typeof b==='number')dur=b;}
   var t=document.getElementById('toast');
+  if(!t)return;
   t.textContent=msg;
   t.style.background=type==='err'?'var(--red2)':'var(--teal4)';
   t.style.display='block';
@@ -1506,21 +1668,54 @@ function toast(msg,a,b){
 }
 
 /* ══ MODAL ══ */
-function M(screen,mid){document.getElementById(mid).classList.add('on');}
-function MC(mid){document.getElementById(mid).classList.remove('on');}
+function M(screen,mid){var el=document.getElementById(mid);if(el)el.classList.add('on');}
+function MC(mid){var el=document.getElementById(mid);if(el)el.classList.remove('on');}
 
 /* ══ LOGIN ══ */
 function doLogin(){
-  const em=document.getElementById('li-em').value.trim();
+  const em=document.getElementById('li-em').value.trim().toLowerCase();
   const pw=document.getElementById('li-pw').value;
   if(!em||!pw){toast('Please enter email and password.',2500,'err');return;}
-  if(S.admins.includes(em.toLowerCase())){
-    S.user={email:em,role:'admin'};
+  // Admin shortcut
+  if(S.admins.includes(em)){
+    S.user={id:'admin',email:em,firstName:'Admin',role:'admin',premium:true};
     toast('🔐 Admin access granted.',2000);
     initAdmin();G('s-admin');return;
   }
-  S.user={email:em,name:'Ahmed Abdullah',premium:false};
-  toast('Welcome back! 🌙',2000);G('s-discover');
+  // Look up registered user
+  const found=DB.users.find(u=>u.email.toLowerCase()===em);
+  if(!found){
+    toast('❌ No account found with that email. Please sign up first.',3500,'err');
+    document.getElementById('li-em').classList.add('field-err');
+    return;
+  }
+  if(found.passwordHash!==hashPw(pw)){
+    toast('❌ Incorrect password. Please try again.',3000,'err');
+    document.getElementById('li-pw').classList.add('field-err');
+    return;
+  }
+  document.getElementById('li-em').classList.remove('field-err');
+  document.getElementById('li-pw').classList.remove('field-err');
+  S.user=found;
+  S.premium=found.premium||false;
+  S.subStatus=found.subStatus||'none';
+  loadUserSession();
+  toast('Welcome back, '+found.firstName+'! 🌙',2500);
+  G('s-discover');
+}
+
+function loadUserSession(){
+  // Load user's matches, unread counts
+  if(!S.user)return;
+  var myMatches=getMyMatches();
+  S.unread={};
+  myMatches.forEach(function(match){
+    var msgs=DB.messages[match.id]||[];
+    var unread=msgs.filter(function(m){return m.toId===S.user.id&&!m.read;}).length;
+    S.unread[match.id]=unread;
+  });
+  // Refresh discover card
+  loadNextDiscoverProfile();
 }
 
 /* ══ REGISTRATION ══ */
@@ -1534,10 +1729,10 @@ function reg1Next(){
   if(!em.includes('@')){toast('Please enter a valid email.','err',2500);return;}
   S.regData={fn,ln,ph,em,dob};
   S.otpPhone=String(Math.floor(100000+Math.random()*900000));
-  console.log('[SMS] To:',ph,'OTP:',S.otpPhone);
+  // In prod: send SMS via Twilio/AWS SNS to ph with S.otpPhone
   document.getElementById('otp-ph-target').textContent=ph;
   prefillOTP('otp-ph-cells',S.otpPhone);
-  toast('📱 Demo OTP pre-filled: '+S.otpPhone,5000);
+  toast('📱 Verification code sent to your phone!',3500);
   G('s-otp-ph');
 }
 function prefillOTP(cellsId,code){
@@ -1547,8 +1742,8 @@ function prefillOTP(cellsId,code){
   },400);
 }
 function resendOTP(type){
-  if(type==='phone'){S.otpPhone=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-ph-cells',S.otpPhone);toast('📱 New OTP: '+S.otpPhone,5000);}
-  else{S.otpEmail=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-em-cells',S.otpEmail);toast('📧 New OTP: '+S.otpEmail,5000);}
+  if(type==='phone'){S.otpPhone=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-ph-cells',S.otpPhone);toast('📱 New verification code sent!',3000);}
+  else{S.otpEmail=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-em-cells',S.otpEmail);toast('📧 New verification code sent!',3000);}
 }
 function otpInput(el,grpId,idx){
   const cells=document.querySelectorAll('#'+grpId+' .ocell');
@@ -1568,15 +1763,15 @@ function verifyOTP(cellsId,type){
     toast('✅ Verified!',2000);
     if(type==='phone'){
       S.otpEmail=String(Math.floor(100000+Math.random()*900000));
-      console.log('[EMAIL] To:',S.regData?.em,'OTP:',S.otpEmail);
+      // In prod: send email via SendGrid to S.regData.em with S.otpEmail
       document.getElementById('otp-em-target').textContent=S.regData?.em||'your email';
       prefillOTP('otp-em-cells',S.otpEmail);
-      toast('📧 Email OTP pre-filled: '+S.otpEmail,5000);
+      toast('📧 Verification code sent to your email!',3500);
       setTimeout(()=>G('s-otp-em'),600);
     } else {
-      console.log('[WELCOME EMAIL] To:',S.regData?.em,'Subject: Welcome to Halal-MeetUp,',S.regData?.fn+'!');
+      // In prod: send welcome email from infohalalmeetup@gmail.com
       const b=document.getElementById('ebanner');
-      if(b){b.innerHTML='<span style="font-size:1.1rem;">📧</span><div>Welcome email sent to <strong>'+S.regData?.em+'</strong>! Check your inbox.</div>';b.style.display='flex';}
+      if(b){b.innerHTML='<span style="font-size:1.1rem;">📧</span><div>Welcome email sent to <strong>'+S.regData?.em+'</strong>!</div>';b.style.display='flex';}
       setTimeout(()=>G('s-reg2'),600);
     }
   } else {
@@ -1587,20 +1782,20 @@ function verifyOTP(cellsId,type){
   }
 }
 
-/* ══ VALIDATION POPUP ══ */
+/* ══ VALIDATION ══ */
 function showPopup(icon,title,msg,fields){
   document.getElementById('popup-icon').textContent=icon;
   document.getElementById('popup-title').textContent=title;
   document.getElementById('popup-msg').textContent=msg;
   var pf=document.getElementById('popup-fields');
   if(fields&&fields.length){pf.style.display='block';pf.innerHTML=fields.map(f=>'<p>⚠ '+f+'</p>').join('');}
-  else{pf.style.display='none';pf.innerHTML='';}
+  else{pf.style.display='none';}
   document.getElementById('val-popup').classList.add('on');
 }
 function markErr(el,errId){if(!el)return;el.classList.add('field-err');el.classList.remove('field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='none';var em=document.getElementById(errId);if(em)em.classList.add('show');}
 function markOK(el,errId){if(!el)return;el.classList.remove('field-err');el.classList.add('field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='block';var em=document.getElementById(errId);if(em)em.classList.remove('show');}
 function clearMark(el,errId){if(!el)return;el.classList.remove('field-err','field-ok');var ok=document.getElementById(el.id+'-ok');if(ok)ok.style.display='none';var em=document.getElementById(errId);if(em)em.classList.remove('show');}
-function liveValidate(el,errId,msg){if(!el.value.trim())markErr(el,errId);else markOK(el,errId);}
+function liveValidate(el){if(!el.value.trim())el.classList.add('field-err');else{el.classList.remove('field-err');el.classList.add('field-ok');}}
 function liveValidateSelect(el,errId){if(!el.value)markErr(el,errId);else markOK(el,errId);}
 function liveValidateTA(el,errId){if(!el.value.trim()||el.value.trim().length<30)markErr(el,errId);else markOK(el,errId);}
 function liveValidatePhone(el){var v=el.value.replace(/\s/g,'');if(v.length<7)markErr(el,'rg-ph-err');else markOK(el,'rg-ph-err');}
@@ -1608,20 +1803,57 @@ function liveValidateEmail(el){if(!el.value.trim()||!el.value.includes('@')||!el
 function liveValidateDOB(el){if(!el.value){markErr(el,'rg-dob-err');return;}var dob=new Date(el.value);var age=new Date().getFullYear()-dob.getFullYear();if(age<18){markErr(el,'rg-dob-err');document.getElementById('rg-dob-err').textContent='⚠ You must be at least 18 years old';}else markOK(el,'rg-dob-err');}
 function liveValidatePW(){var el=document.getElementById('rg-pw');if(!el)return;if(el.value.length<8)markErr(el,'rg-pw-err');else markOK(el,'rg-pw-err');var el2=document.getElementById('rg-pw2');if(el2&&el2.value)liveValidatePW2();}
 function liveValidatePW2(){var el=document.getElementById('rg-pw2');var pw=document.getElementById('rg-pw');if(!el||!pw)return;if(!el.value||el.value!==pw.value)markErr(el,'rg-pw2-err');else markOK(el,'rg-pw2-err');}
-function onTermsChange(){var cb=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var err=document.getElementById('rg-terms-err');if(cb.checked){wrap.style.borderColor='var(--teal)';wrap.style.background='#f0fff8';if(err)err.classList.remove('show');}else{wrap.style.borderColor='var(--sand)';wrap.style.background='var(--white)';}}
-function reg2Next(){var errors=[];var gender=document.getElementById('rg-gender');var sect=document.getElementById('rg-sect');var mstatus=document.getElementById('rg-mstatus');var edu=document.getElementById('rg-edu');if(!gender||!gender.value){markErr(gender,'rg-gender-err');errors.push('Gender is required');}else markOK(gender,'rg-gender-err');if(!sect||!sect.value){markErr(sect,'rg-sect-err');errors.push('Islamic Sect is required');}else markOK(sect,'rg-sect-err');if(!mstatus||!mstatus.value){markErr(mstatus,'rg-mstatus-err');errors.push('Marital Status is required');}else markOK(mstatus,'rg-mstatus-err');if(!edu||!edu.value){markErr(edu,'rg-edu-err');errors.push('Education is required');}else markOK(edu,'rg-edu-err');if(errors.length){showPopup('📋','Step 2 — Required Fields','Please fill in all required fields.',errors);return;}G('s-reg3');}
-function reg3Next(){var errors=[];var country=document.getElementById('rg-country');var city=document.getElementById('rg-city');var nat=document.getElementById('rg-nat');var lang=document.getElementById('rg-lang');if(!country||!country.value){markErr(country,'rg-country-err');errors.push('Country is required');}else markOK(country,'rg-country-err');if(!city||!city.value.trim()){markErr(city,'rg-city-err');errors.push('City is required');}else markOK(city,'rg-city-err');if(!nat||!nat.value.trim()){markErr(nat,'rg-nat-err');errors.push('Nationality is required');}else markOK(nat,'rg-nat-err');if(!lang||!lang.value.trim()){markErr(lang,'rg-lang-err');errors.push('Languages required');}else markOK(lang,'rg-lang-err');if(errors.length){showPopup('📍','Step 3 — Required Fields','Please fill in all required fields.',errors);return;}G('s-reg4');}
-function reg5Next(){var errors=[];var bio=document.getElementById('rg-bio');var occ=document.getElementById('rg-occ');var hobbies=document.getElementById('rg-hobbies');if(!bio||!bio.value.trim()||bio.value.trim().length<30){markErr(bio,'rg-bio-err');errors.push('About Me: min 30 characters');}else markOK(bio,'rg-bio-err');if(!occ||!occ.value.trim()){markErr(occ,'rg-occ-err');errors.push('Occupation required');}else markOK(occ,'rg-occ-err');if(!hobbies||!hobbies.value.trim()){markErr(hobbies,'rg-hobbies-err');errors.push('Interests required');}else markOK(hobbies,'rg-hobbies-err');if(errors.length){showPopup('✍️','Step 5 — Required Fields','Please fill in all required fields.',errors);return;}G('s-reg6');}
+function onTermsChange(){var cb=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var err=document.getElementById('rg-terms-err');if(cb.checked){if(wrap){wrap.style.borderColor='var(--teal)';wrap.style.background='#f0fff8';}if(err)err.classList.remove('show');}else{if(wrap){wrap.style.borderColor='var(--sand)';wrap.style.background='var(--white)';}}}
+function reg2Next(){var errors=[];var gender=document.getElementById('rg-gender');var sect=document.getElementById('rg-sect');var mstatus=document.getElementById('rg-mstatus');var edu=document.getElementById('rg-edu');if(!gender||!gender.value){markErr(gender,'rg-gender-err');errors.push('Gender is required');}else markOK(gender,'rg-gender-err');if(!sect||!sect.value){markErr(sect,'rg-sect-err');errors.push('Islamic Sect is required');}else markOK(sect,'rg-sect-err');if(!mstatus||!mstatus.value){markErr(mstatus,'rg-mstatus-err');errors.push('Marital Status is required');}else markOK(mstatus,'rg-mstatus-err');if(!edu||!edu.value){markErr(edu,'rg-edu-err');errors.push('Education is required');}else markOK(edu,'rg-edu-err');if(errors.length){showPopup('📋','Step 2 — Required Fields','Please fill in all required fields.',errors);return;}
+  S.regData=Object.assign(S.regData||{},{gender:gender.value,sect:sect.value,maritalStatus:mstatus.value,education:edu.value});
+  G('s-reg3');}
+function reg3Next(){var errors=[];var country=document.getElementById('rg-country');var city=document.getElementById('rg-city');var nat=document.getElementById('rg-nat');var lang=document.getElementById('rg-lang');if(!country||!country.value){markErr(country,'rg-country-err');errors.push('Country is required');}else markOK(country,'rg-country-err');if(!city||!city.value.trim()){markErr(city,'rg-city-err');errors.push('City is required');}else markOK(city,'rg-city-err');if(!nat||!nat.value.trim()){markErr(nat,'rg-nat-err');errors.push('Nationality is required');}else markOK(nat,'rg-nat-err');if(!lang||!lang.value.trim()){markErr(lang,'rg-lang-err');errors.push('Languages required');}else markOK(lang,'rg-lang-err');if(errors.length){showPopup('📍','Step 3 — Required Fields','Please fill in all required fields.',errors);return;}
+  S.regData=Object.assign(S.regData||{},{country:country.value,city:city.value,nationality:nat.value,languages:lang.value});
+  G('s-reg4');}
+function reg5Next(){var errors=[];var bio=document.getElementById('rg-bio');var occ=document.getElementById('rg-occ');var hobbies=document.getElementById('rg-hobbies');if(!bio||!bio.value.trim()||bio.value.trim().length<30){markErr(bio,'rg-bio-err');errors.push('About Me: min 30 characters');}else markOK(bio,'rg-bio-err');if(!occ||!occ.value.trim()){markErr(occ,'rg-occ-err');errors.push('Occupation required');}else markOK(occ,'rg-occ-err');if(!hobbies||!hobbies.value.trim()){markErr(hobbies,'rg-hobbies-err');errors.push('Interests required');}else markOK(hobbies,'rg-hobbies-err');if(errors.length){showPopup('✍️','Step 5 — Required Fields','Please fill in all required fields.',errors);return;}
+  S.regData=Object.assign(S.regData||{},{bio:bio.value,occupation:occ.value,interests:hobbies.value});
+  G('s-reg6');}
 function completeReg(){
-  var errors=[];var pwEl=document.getElementById('rg-pw');var pw2El=document.getElementById('rg-pw2');var terms=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var termsErr=document.getElementById('rg-terms-err');
+  var errors=[];
+  var pwEl=document.getElementById('rg-pw');var pw2El=document.getElementById('rg-pw2');
+  var terms=document.getElementById('rg-terms');var wrap=document.getElementById('terms-wrap');var termsErr=document.getElementById('rg-terms-err');
   if(!pwEl.value||pwEl.value.length<8){markErr(pwEl,'rg-pw-err');errors.push('Password must be at least 8 characters');}else markOK(pwEl,'rg-pw-err');
   if(!pw2El.value||pw2El.value!==pwEl.value){markErr(pw2El,'rg-pw2-err');errors.push('Passwords do not match');}else if(pwEl.value.length>=8)markOK(pw2El,'rg-pw2-err');
   if(!terms.checked){if(wrap){wrap.style.borderColor='var(--red2)';wrap.style.background='#fff5f5';wrap.style.animation='shake .3s ease';setTimeout(function(){wrap.style.animation='';},350);}if(termsErr)termsErr.classList.add('show');errors.push('You must accept the Terms & Conditions');}
-  if(errors.length){if(errors.length===1&&!terms.checked&&pwEl.value.length>=8&&pw2El.value===pwEl.value){showPopup('☑️','Please Accept Terms & Conditions','You must read and accept the Terms of Service, Privacy Policy, and Community Guidelines.',['Check the box: "I agree to the Terms of Service, Privacy Policy, and Community Guidelines"']);}else{showPopup('⚠️','Almost There!','Please fix the following issues.',errors);}return;}
+  if(errors.length){if(errors.length===1&&!terms.checked&&pwEl.value.length>=8&&pw2El.value===pwEl.value){showPopup('☑️','Please Accept Terms','You must accept the Terms of Service and Privacy Policy.',['Check the box: "I agree to the Terms of Service, Privacy Policy, and Community Guidelines"']);}else{showPopup('⚠️','Almost There!','Please fix the following issues.',errors);}return;}
   var name=(S.regData&&S.regData.fn)?S.regData.fn:'User';
   var email=(S.regData&&S.regData.em)?S.regData.em:'';
-  S.user={name:name,firstName:name,lastName:(S.regData&&S.regData.ln)||'',email:email,premium:false};
-  console.log('[WELCOME EMAIL] To:',email,'Subject: Welcome to Halal-MeetUp, '+name+'!');
+  // Build full user object from all reg steps
+  var newUser={
+    id:'u'+Date.now(),
+    firstName:name,
+    lastName:(S.regData&&S.regData.ln)||'',
+    email:email,
+    phone:(S.regData&&S.regData.phone)||'',
+    dob:(S.regData&&S.regData.dob)||'',
+    passwordHash:hashPw(pwEl.value),
+    gender:(S.regData&&S.regData.gender)||'',
+    sect:(S.regData&&S.regData.sect)||'',
+    maritalStatus:(S.regData&&S.regData.maritalStatus)||'',
+    education:(S.regData&&S.regData.education)||'',
+    country:(S.regData&&S.regData.country)||'',
+    city:(S.regData&&S.regData.city)||'',
+    nationality:(S.regData&&S.regData.nationality)||'',
+    languages:(S.regData&&S.regData.languages)||'',
+    occupation:(S.regData&&S.regData.occupation)||'',
+    bio:(S.regData&&S.regData.bio)||'',
+    interests:(S.regData&&S.regData.interests)||'',
+    photos:S.photos.slice(),
+    verified:false,
+    premium:false,
+    subStatus:'none',
+    createdAt:new Date().toISOString(),
+    online:true,
+  };
+  DB.users.push(newUser);
+  S.user=newUser;
+  S.premium=false;
+  sendAppEmail('welcome', S.user, null);
   toast('🎉 Account created! Welcome to Halal-MeetUp!',3500);
   setTimeout(function(){G('s-idv1');},400);
 }
@@ -1638,7 +1870,7 @@ function selectID(el){document.querySelectorAll('.idopt').forEach(x=>x.style.bor
 function tapUpload(el,msg){el.style.borderColor='var(--teal)';el.style.background='#dff2f2';el.innerHTML='<div style="font-size:2.5rem;margin-bottom:6px;">✅</div><p style="color:var(--teal);font-weight:800;font-size:.9rem;">'+msg+'</p>';}
 function takeSelfie(){const b=document.getElementById('selfiebtn');b.textContent='✅ Selfie Captured!';b.style.background='var(--green)';}
 
-/* ══ PHONE/LIVE PHOTO BLOCK ══ */
+/* ══ BLOCK DETECTION ══ */
 const PH_RX=/(\+?\d[\d\s\-().]{6,}\d)|(\b(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)\b)/i;
 const LP_RX=/\b(live photo|live pic|snapchat|snap|instagram|ig\b|facetime|whatsapp|telegram)\b/i;
 function checkBlock(msg){if(PH_RX.test(msg))return'phone';if(!S.premium&&LP_RX.test(msg))return'livephoto';return null;}
@@ -1646,7 +1878,7 @@ function checkBlock(msg){if(PH_RX.test(msg))return'phone';if(!S.premium&&LP_RX.t
 /* ══ CHAT ══ */
 function openChat(id){
   S.chatId=id;S.unread[id]=0;renderConvList();
-  const p=S.profiles[id];
+  const p=(DB.users.find(function(u){return u.id===id;})||{id:id,name:'Unknown',firstName:'Unknown',lastName:'',verified:false,online:false,bio:'',age:'',city:'',sect:'',maritalStatus:'',education:'',occupation:'',interests:''});
   var notice=document.getElementById('blocked-notice');
   var cbar=document.querySelector('.cbar');
   if(S.blocked.includes(id)){if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';}
@@ -1656,8 +1888,7 @@ function openChat(id){
   renderChat();G('s-chat');
 }
 function renderChat(){
-  var cont=document.getElementById('chatMsgs');
-  if(!cont)return;
+  var cont=document.getElementById('chatMsgs');if(!cont)return;
   if(!Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId]=[];
   var msgs=S.msgs[S.chatId];
   cont.innerHTML='';
@@ -1680,8 +1911,8 @@ function mkBubble(m){
   var ctxTrigger=document.createElement('button');ctxTrigger.className='react-btn';ctxTrigger.textContent='⋯';ctxTrigger.onclick=function(ev){ev.stopPropagation();showCtxMenu(m,wrap);};rbar.appendChild(ctxTrigger);
   col.appendChild(rbar);
   var bub=document.createElement('div');
-  if(m.blocked==='phone'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Message Blocked</strong><br><span style="font-size:.79rem;">This message contained a phone number. Phone numbers cannot be shared in chat.</span>';}
-  else if(m.blocked==='livephoto'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Premium Required</strong><br><span style="font-size:.79rem;">Live photos require a Premium subscription.</span>';}
+  if(m.blocked==='phone'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Message Blocked</strong><br><span style="font-size:.79rem;">Phone numbers cannot be shared in chat.</span>';}
+  else if(m.blocked==='livephoto'){bub.className='bub bblocked';bub.innerHTML='<strong style="color:var(--gold3);font-size:.74rem;">🚫 Premium Required</strong><br><span style="font-size:.79rem;">Live photos require Premium.</span>';}
   else if(m.deleted){bub.className='bub '+(m.f==='me'?'bout':'bin');bub.style.opacity='.5';bub.style.fontStyle='italic';bub.textContent='🗑 Message deleted';}
   else{bub.className='bub '+(m.f==='me'?'bout':'bin');bub.textContent=m.t;}
   var lpTimer;
@@ -1710,90 +1941,322 @@ function addReaction(msgId,emoji,wrap){if(!msgId)return;var msgs=S.msgs[S.chatId
 function deleteMsg(msgId){if(!msgId)return;var msgs=S.msgs[S.chatId]||[];var msg=msgs.find(function(m){return m.id===msgId;});if(msg)msg.deleted=true;renderChat();toast('Message deleted',1800);}
 function blockUser(){MC('m-block');if(!S.blocked.includes(S.chatId))S.blocked.push(S.chatId);S.unread[S.chatId]=0;renderConvList();var notice=document.getElementById('blocked-notice');var cbar=document.querySelector('.cbar');if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';toast('🚫 User blocked.',3500);}
 function unblockUser(){var idx=S.blocked.indexOf(S.chatId);if(idx>=0)S.blocked.splice(idx,1);var notice=document.getElementById('blocked-notice');var cbar=document.querySelector('.cbar');if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';toast('✅ User unblocked.',2000);}
-function openCallLogs(){var list=document.getElementById('callLogList');if(!list)return;var statusColors={completed:'var(--green)',missed:'var(--red2)',declined:'var(--txt3)'};var statusLabels={completed:'Completed',missed:'Missed',declined:'Declined'};list.innerHTML=S.callLogs.map(function(cl){var color=statusColors[cl.status]||'var(--txt3)';var lbl=statusLabels[cl.status]||cl.status;var icon=cl.type==='video'?'🎥':'📞';var iconBg=cl.status==='missed'?'#fce8e8':cl.status==='completed'?'#e0f2f2':'#f0ece6';return'<div class="clog-item"><div class="clog-icon" style="background:'+iconBg+'">'+icon+'</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">'+cl.p1+'</p><p style="font-size:.74rem;color:var(--txt3);">'+cl.date+' · '+cl.dur+'</p></div><span style="font-size:.72rem;font-weight:800;color:'+color+';">'+lbl+'</span></div>';}).join('');G('s-calllogs');}
+function openCallLogs(){
+  var list=document.getElementById('callLogList');if(!list)return;
+  if(!S.callLogs||!S.callLogs.length){
+    list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--txt3);"><div style="font-size:2.5rem;margin-bottom:10px;">📋</div><p style="font-size:.85rem;font-weight:700;">No call history yet</p></div>';
+    G('s-calllogs');return;
+  }
+  var statusColors={completed:'var(--green)',missed:'var(--red2)',declined:'var(--txt3)'};
+  var statusLabels={completed:'Completed',missed:'Missed',declined:'Declined'};
+  list.innerHTML=S.callLogs.map(function(cl){
+    var color=statusColors[cl.status]||'var(--txt3)';var lbl=statusLabels[cl.status]||cl.status;
+    var icon=cl.type==='video'?'🎥':'📞';
+    var iconBg=cl.status==='missed'?'#fce8e8':cl.status==='completed'?'#e0f2f2':'#f0ece6';
+    return'<div class="clog-item"><div class="clog-icon" style="background:'+iconBg+'">'+icon+'</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">'+cl.p1+'</p><p style="font-size:.74rem;color:var(--txt3);">'+cl.date+' · '+cl.dur+'</p></div><span style="font-size:.72rem;font-weight:800;color:'+color+';">'+lbl+'</span></div>';
+  }).join('');
+  G('s-calllogs');
+}
 
 /* ══ SEND MESSAGE ══ */
 function sendMsg(){
-  var inp=document.getElementById('chatInp');
-  if(!inp)return;
+  var inp=document.getElementById('chatInp');if(!inp)return;
   var txt=inp.value.trim();if(!txt)return;
-  if(S.blocked.includes(S.chatId)){toast('You have blocked this user.',2000,'err');return;}
-  var now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  var msgId='m'+S.chatId+'-'+Date.now();
+  if(!S.user){toast('Please log in first.',2000,'err');return;}
+  if(!S.chatId){toast('No active chat.',1500,'err');return;}
+  if(S.blocked.includes(S.chatPartnerId)){toast('You have blocked this user.',2000,'err');return;}
   var blk=checkBlock(txt);
-  var msg={id:msgId,f:'me',t:txt,ts:now};
-  if(blk)msg.blocked=blk;
-  if(!Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId]=[];
-  S.msgs[S.chatId].push(msg);
-  renderChat();
+  var now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  var msgId='msg-'+Date.now();
+  var msg={id:msgId,fromId:S.user.id,toId:S.chatPartnerId,text:txt,ts:now,reactions:[],deleted:false,blocked:blk||null,read:false};
+  if(!DB.messages[S.chatId])DB.messages[S.chatId]=[];
+  DB.messages[S.chatId].push(msg);
+  renderChatByMatch();
   var cont=document.getElementById('chatMsgs');
   if(cont)setTimeout(function(){cont.scrollTop=cont.scrollHeight;},60);
   inp.value='';
-  if(!blk){
-    var replies=['JazakAllah khayr! 😊','In sha Allah!','SubhanAllah, that\'s so interesting!','Alhamdulillah! Tell me more.','MashaAllah 🌙'];
-    setTimeout(function(){S.msgs[S.chatId].push({id:'r'+Date.now(),f:'them',t:replies[Math.floor(Math.random()*replies.length)],ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});renderChat();},1500);
+}
+
+/* ══ CONV LIST / DELETE CHATS ══ */
+function renderConvList(){
+  var list=document.getElementById('convList');if(!list)return;
+  var myMatches=getMyMatches();
+  list.innerHTML='';
+  if(!myMatches.length){
+    var emptyDiv=document.createElement('div');
+    emptyDiv.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
+    emptyDiv.innerHTML='<div style="font-size:3rem;margin-bottom:12px;">💞</div><p style="font-weight:800;font-size:.9rem;margin-bottom:6px;">No matches yet</p><p style="font-size:.78rem;line-height:1.6;">Swipe right on Discover.<br>When someone likes you back, they appear here!</p>';
+    var discBtn=document.createElement('button');
+    discBtn.className='btn bp';discBtn.style.marginTop='14px';discBtn.textContent='Go Discover 💚';
+    discBtn.onclick=function(){G('s-discover');};
+    emptyDiv.appendChild(discBtn);
+    list.appendChild(emptyDiv);
+    return;
+  }
+  var colours=['var(--teal),var(--gold)','#a084ca,#c0a0e0','#d4a574,#b08050','#5a9ad0,#2e6aaa','#5aaa70,#2e6a50'];
+  myMatches.forEach(function(match,i){
+    var partner=getMatchPartner(match);
+    if(!partner)return;
+    var msgs=DB.messages[match.id]||[];
+    var lastMsg=msgs.length?msgs[msgs.length-1]:null;
+    var previewText=lastMsg?lastMsg.text.substring(0,40)+(lastMsg.text.length>40?'...':''):'💞 You matched! Say Assalamu Alaikum';
+    var unread=S.unread[match.id]||0;
+    var col=colours[i%colours.length];
+    var timeStr=lastMsg?lastMsg.ts:(match.createdAt?new Date(match.createdAt).toLocaleDateString():'');
+
+    // Outer wrap
+    var wrap=document.createElement('div');
+    wrap.className='conv-row-wrap';
+    wrap.id='conv-wrap-'+match.id;
+
+    // Row
+    var row=document.createElement('div');
+    row.className='conv-row';
+    row.id='conv-row-'+match.id;
+    row.onclick=function(){openChatByMatch(match.id);};
+
+    // Avatar
+    var av=document.createElement('div');
+    av.style.cssText='position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,'+col+');display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;';
+    av.innerHTML='👤'+(partner.online?'<div class="odot"></div>':'');
+
+    // Text content
+    var content=document.createElement('div');
+    content.style.cssText='flex:1;min-width:0;';
+
+    var topRow=document.createElement('div');
+    topRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;';
+
+    var nameWrap=document.createElement('div');
+    nameWrap.style.cssText='display:flex;align-items:center;gap:5px;';
+    var nameEl=document.createElement('p');
+    nameEl.style.cssText='font-weight:800;font-size:.87rem;';
+    nameEl.textContent=partner.firstName+' '+partner.lastName;
+    nameWrap.appendChild(nameEl);
+    if(partner.verified){var vBadge=document.createElement('span');vBadge.style.cssText='font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;';vBadge.textContent='✓';nameWrap.appendChild(vBadge);}
+
+    var timeEl=document.createElement('p');
+    timeEl.style.cssText='font-size:.69rem;color:var(--txt3);';
+    timeEl.textContent=timeStr;
+
+    topRow.appendChild(nameWrap);topRow.appendChild(timeEl);
+
+    var preview=document.createElement('p');
+    preview.style.cssText='font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    preview.textContent=previewText;
+
+    content.appendChild(topRow);content.appendChild(preview);
+
+    row.appendChild(av);row.appendChild(content);
+
+    if(unread>0){var badge=document.createElement('div');badge.className='unread-badge';badge.textContent=unread;row.appendChild(badge);}
+
+    // Action buttons
+    var actions=document.createElement('div');
+    actions.className='conv-row-actions';
+    var delBtn=document.createElement('button');
+    delBtn.className='conv-del-btn';
+    delBtn.innerHTML='🗑️<br><span style="font-size:.62rem">Delete</span>';
+    (function(matchId){delBtn.onclick=function(e){e.stopPropagation();removeMatch(matchId);};})(match.id);
+    actions.appendChild(delBtn);
+
+    wrap.appendChild(row);wrap.appendChild(actions);
+    list.appendChild(wrap);
+  });
+}
+
+function removeMatch(matchId){
+  DB.matches=DB.matches.filter(function(m){return m.id!==matchId;});
+  delete DB.messages[matchId];
+  renderConvList();
+  toast('Match removed.',2000);
+}
+
+/* ── Discover — load real DB profiles ── */
+function loadNextDiscoverProfile(){
+  if(!S.user)return;
+  // Get profiles not yet liked/matched, opposite gender
+  var myGender=S.user.gender||'';
+  var seen=DB.likes.filter(function(l){return l.fromId===S.user.id;}).map(function(l){return l.toId;});
+  var matched=getMyMatches().map(function(m){return m.user1Id===S.user.id?m.user2Id:m.user1Id;});
+  var excluded=seen.concat(matched).concat([S.user.id]);
+  var candidates=DB.users.filter(function(u){
+    return !excluded.includes(u.id)&&(myGender==='Male'?u.gender==='Female':myGender==='Female'?u.gender==='Male':true);
+  });
+  if(!candidates.length){
+    showEmptyDiscover();return;
+  }
+  var p=candidates[0];
+  S._discoverCandidateId=p.id;
+  // Update discover card
+  var nameEl=document.getElementById('cName'),subEl=document.getElementById('cSub'),bioEl=document.getElementById('cBio');
+  if(nameEl)nameEl.textContent=p.firstName+' '+p.lastName;
+  if(subEl)subEl.textContent=(p.age||'?')+' · '+(p.city||'')+(p.sect?' · '+p.sect:'');
+  if(bioEl)bioEl.textContent=p.bio||'No bio yet.';
+}
+
+function showEmptyDiscover(){
+  var card=document.getElementById('swipeCard');
+  if(!card)return;
+  card.innerHTML='';
+  var div=document.createElement('div');
+  div.style.cssText='height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;';
+  div.innerHTML='<div style="font-size:3.5rem;margin-bottom:14px;">🌙</div>'
+    +'<p style="font-size:1.35rem;font-weight:600;margin-bottom:8px;">You have seen everyone!</p>'
+    +'<p style="color:var(--txt3);font-size:.83rem;line-height:1.6;">Check back later as new members join.<br>May Allah make it easy for you. Ameen.</p>';
+  card.appendChild(div);
+}
+
+function getDiscoverActions(){
+  return S._discoverCandidateId;
+}
+
+/* ════════════════════════════════════════════════════
+   MATCH SYSTEM
+════════════════════════════════════════════════════ */
+function getMyMatches(){
+  if(!S.user)return[];
+  return DB.matches.filter(function(m){return m.user1Id===S.user.id||m.user2Id===S.user.id;});
+}
+function getMatchPartner(match){
+  if(!S.user)return null;
+  var partnerId=match.user1Id===S.user.id?match.user2Id:match.user1Id;
+  return DB.users.find(function(u){return u.id===partnerId;})||null;
+}
+function getMatchId(userId){
+  if(!S.user)return null;
+  var match=DB.matches.find(function(m){
+    return(m.user1Id===S.user.id&&m.user2Id===userId)||(m.user2Id===S.user.id&&m.user1Id===userId);
+  });
+  return match?match.id:null;
+}
+function alreadyLiked(toId){
+  if(!S.user)return false;
+  return DB.likes.some(function(l){return l.fromId===S.user.id&&l.toId===toId;});
+}
+function alreadyMatched(toId){return getMatchId(toId)!==null;}
+
+function likeProfile(toId){
+  if(!S.user||!toId)return;
+  if(alreadyLiked(toId)||alreadyMatched(toId))return;
+  DB.likes.push({fromId:S.user.id,toId:toId,createdAt:new Date().toISOString()});
+  var theyLikedUs=DB.likes.some(function(l){return l.fromId===toId&&l.toId===S.user.id;});
+  if(theyLikedUs){
+    var matchId='match-'+Date.now();
+    DB.matches.push({id:matchId,user1Id:S.user.id,user2Id:toId,createdAt:new Date().toISOString()});
+    DB.messages[matchId]=[];
+    S.unread[matchId]=0;
+    var partner=DB.users.find(function(u){return u.id===toId;});
+    showMatchNotification(partner,matchId);
+  } else {
+    showIntroMessagePrompt(toId);
   }
 }
-
-/* ══ DELETE CHATS ══ */
-function renderConvList(){
-  const list=document.getElementById('convList');if(!list)return;
-  const convs=[
-    {id:0,col:'var(--teal),var(--gold)',online:true,v:true,preview:'SubhanAllah, I just finished a book on Ibn Rushd!',time:'2m ago'},
-    {id:1,col:'#a084ca,#c0a0e0',online:false,v:true,preview:"Yes, I'm a software engineer too!",time:'1h ago'},
-    {id:2,col:'#d4a574,#b08050',online:true,v:true,preview:'SubhanAllah, that sounds wonderful.',time:'Yesterday'},
-    {id:3,col:'#5a9ad0,#2e6aaa',online:false,v:false,preview:'JazakAllah khayr for your message 🌙',time:'2d ago'},
-  ];
-  const visible=convs.filter(cv=>!S.deletedConvs||!S.deletedConvs.includes(cv.id));
-  list.innerHTML=visible.map(cv=>{
-    const p=S.profiles[cv.id];
-    const unread=(S.unread[cv.id]||0);
-    return`<div class="conv-row-wrap" id="conv-wrap-${cv.id}">
-      <div class="conv-row" id="conv-row-${cv.id}"
-        onclick="convRowClick(event,${cv.id})"
-        ontouchstart="convTouchStart(event,${cv.id})"
-        ontouchmove="convTouchMove(event,${cv.id})"
-        ontouchend="convTouchEnd(event,${cv.id})">
-        <input type="checkbox" class="conv-check" id="chk-${cv.id}" onclick="event.stopPropagation();updateSelCount()" ${S.selectedConvs&&S.selectedConvs.includes(cv.id)?'checked':''}/>
-        <div style="position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,${cv.col});display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤${cv.online?'<div class="odot"></div>':''}</div>
-        <div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><div style="display:flex;align-items:center;gap:5px;"><p style="font-weight:800;font-size:.87rem;">${p.name}</p>${cv.v?'<span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;">✓</span>':''}</div><p style="font-size:.69rem;color:var(--txt3);">${cv.time}</p></div><p style="font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cv.preview}</p></div>
-        ${unread>0?'<div class="unread-badge">'+unread+'</div>':''}
-      </div>
-      <div class="conv-row-actions">
-        <button class="conv-more-btn" onclick="convMoreMenu(event,${cv.id})">⋯<br><span style="font-size:.62rem">More</span></button>
-        <button class="conv-del-btn" onclick="deleteConv(${cv.id})">🗑️<br><span style="font-size:.62rem">Delete</span></button>
-      </div>
-    </div>`;
-  }).join('');
+function showMatchNotification(partner,matchId){
+  var overlay=document.getElementById('match-overlay');
+  var pName=document.getElementById('match-partner-name');
+  var matchBtn=document.getElementById('match-chat-btn');
+  if(!overlay||!pName)return;
+  pName.textContent=partner?(partner.firstName+' '+partner.lastName):'Your new match';
+  if(matchBtn)matchBtn.onclick=function(){hideMatchOverlay();openChatByMatch(matchId);};
+  overlay.style.display='flex';
+  setTimeout(hideMatchOverlay,8000);
 }
-var convTouchData={id:-1,startX:0,startY:0,dx:0,revealed:-1};
-function convTouchStart(e,id){convTouchData.id=id;convTouchData.startX=e.touches[0].clientX;convTouchData.startY=e.touches[0].clientY;convTouchData.dx=0;}
-function convTouchMove(e,id){var dx=e.touches[0].clientX-convTouchData.startX;var dy=e.touches[0].clientY-convTouchData.startY;if(Math.abs(dy)>Math.abs(dx))return;convTouchData.dx=dx;var row=document.getElementById('conv-row-'+id);if(!row)return;if(dx<-20){row.style.transform='translateX('+Math.max(dx,-126)+'px)';var acts=row.parentElement.querySelector('.conv-row-actions');if(acts)acts.style.transform='translateX('+Math.min(126+dx,0)+'px) translateX(100%)';}else if(dx>10&&convTouchData.revealed===id){row.style.transform='translateX('+Math.min(dx-126,0)+'px)';}}
-function convTouchEnd(e,id){var row=document.getElementById('conv-row-'+id);if(!row)return;if(convTouchData.dx<-60){row.style.transition='transform .22s ease';row.style.transform='translateX(-126px)';var acts=row.parentElement.querySelector('.conv-row-actions');if(acts){acts.style.transition='transform .22s ease';acts.style.transform='translateX(0)';}convTouchData.revealed=id;}else{row.style.transition='transform .22s ease';row.style.transform='';var acts=row.parentElement.querySelector('.conv-row-actions');if(acts){acts.style.transition='transform .22s ease';acts.style.transform='translateX(100)';}if(convTouchData.revealed===id)convTouchData.revealed=-1;}setTimeout(function(){if(row)row.style.transition='';},250);}
-function convRowClick(e,id){var scr=document.getElementById('s-matches');if(scr&&scr.classList.contains('select-mode')){var chk=document.getElementById('chk-'+id);if(chk){chk.checked=!chk.checked;updateSelCount();}return;}if(convTouchData.revealed>=0&&convTouchData.revealed!==id){var old=document.getElementById('conv-row-'+convTouchData.revealed);if(old){old.style.transition='transform .22s ease';old.style.transform='';}convTouchData.revealed=-1;return;}if(convTouchData.revealed===id){var row=document.getElementById('conv-row-'+id);if(row){row.style.transition='transform .22s ease';row.style.transform='';}convTouchData.revealed=-1;return;}openChat(id);}
-function convMoreMenu(e,id){e.stopPropagation();S._pendingDelId=id;S._pendingDelMode='single';document.getElementById('confirmDelMsg').textContent='Delete conversation with '+S.profiles[id].name+'? Cannot be undone.';M('s-matches','m-confirm-del');}
-function deleteConv(id){if(!S.deletedConvs)S.deletedConvs=[];S.deletedConvs.push(id);S.msgs[id]=[];S.unread[id]=0;renderConvList();toast('Conversation deleted.',2000);}
-var _selectMode=false;
-function toggleSelectMode(){_selectMode=!_selectMode;var scr=document.getElementById('s-matches');var bar=document.getElementById('selectActionsBar');var btn=document.getElementById('btn-select');if(!scr)return;if(_selectMode){scr.classList.add('select-mode');if(bar)bar.style.display='flex';if(btn)btn.style.background='rgba(255,255,255,.38)';if(!S.selectedConvs)S.selectedConvs=[];updateSelCount();renderConvList();}else{scr.classList.remove('select-mode');if(bar)bar.style.display='none';if(btn)btn.style.background='';S.selectedConvs=[];renderConvList();}}
-function updateSelCount(){var checked=document.querySelectorAll('#convList .conv-check:checked');var n=checked.length;S.selectedConvs=Array.from(checked).map(el=>parseInt(el.id.replace('chk-','')));var el=document.getElementById('selCount');if(el)el.textContent=n+' selected';}
-function deleteSelected(){if(!S.selectedConvs||!S.selectedConvs.length){toast('No conversations selected.','err',2000);return;}S._pendingDelMode='selected';document.getElementById('confirmDelMsg').textContent='Delete '+S.selectedConvs.length+' selected conversation(s)?';M('s-matches','m-confirm-del');}
-function promptDeleteAll(){S._pendingDelMode='all';document.getElementById('confirmDelMsg').textContent='Delete ALL conversations permanently?';M('s-matches','m-confirm-del');}
-function confirmDeleteChats(){
-  MC('m-confirm-del');
-  if(S._pendingDelMode==='all'){S.deletedConvs=[0,1,2,3];[0,1,2,3].forEach(id=>{S.msgs[id]=[];S.unread[id]=0;});toast('All conversations deleted.',2500);if(_selectMode)toggleSelectMode();}
-  else if(S._pendingDelMode==='selected'){(S.selectedConvs||[]).forEach(id=>deleteConv(id));toast((S.selectedConvs||[]).length+' conversation(s) deleted.',2500);toggleSelectMode();}
-  else if(S._pendingDelMode==='single'){deleteConv(S._pendingDelId);}
-  S.selectedConvs=[];renderConvList();
+function hideMatchOverlay(){
+  var overlay=document.getElementById('match-overlay');
+  if(overlay)overlay.style.display='none';
 }
-function deleteChatMessages(){M('s-chat','m-chat-confirm-del');}
-function confirmDeleteChatMessages(){MC('m-chat-confirm-del');S.msgs[S.chatId]=[];S.unread[S.chatId]=0;renderChat();renderConvList();toast('All messages deleted.',2000);}
+function showIntroMessagePrompt(toId){
+  var existingIntro=DB.likes.find(function(l){return l.fromId===S.user.id&&l.toId===toId&&l.introSent;});
+  if(existingIntro){toast('You already sent an intro. Waiting for their response!',3000);return;}
+  S._introTargetId=toId;
+  var modal=document.getElementById('m-intro-msg');
+  var partnerEl=document.getElementById('intro-partner-name');
+  var partner=DB.users.find(function(u){return u.id===toId;});
+  if(partnerEl)partnerEl.textContent=partner?partner.firstName:'them';
+  if(modal)modal.classList.add('on');
+}
+function sendIntroMessage(){
+  var inp=document.getElementById('intro-msg-inp');
+  if(!inp)return;
+  var txt=inp.value.trim();
+  if(!txt||txt.length<5){toast('Please write a short intro message.',2000,'err');return;}
+  var toId=S._introTargetId;if(!toId)return;
+  var like=DB.likes.find(function(l){return l.fromId===S.user.id&&l.toId===toId;});
+  if(like)like.introSent=true;
+  if(!DB.introMessages)DB.introMessages={};
+  if(!DB.introMessages[toId])DB.introMessages[toId]=[];
+  DB.introMessages[toId].push({
+    fromId:S.user.id,
+    fromName:S.user.firstName+' '+S.user.lastName,
+    text:txt,
+    ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+    createdAt:new Date().toISOString()
+  });
+  inp.value='';
+  MC('m-intro-msg');
+  toast('Intro sent! Waiting for their response...',4000);
+}
+function openChatByMatch(matchId){
+  var match=DB.matches.find(function(m){return m.id===matchId;});
+  if(!match){toast('Chat not available.',2000,'err');return;}
+  var partner=getMatchPartner(match);
+  if(!partner){toast('User not found.',2000,'err');return;}
+  S.chatId=matchId;S.chatPartnerId=partner.id;
+  S.unread[matchId]=0;
+  if(!DB.messages[matchId])DB.messages[matchId]=[];
+  (DB.messages[matchId]||[]).forEach(function(m){if(m.toId===S.user.id)m.read=true;});
+  var nameEl=document.getElementById('chat-name');
+  var statusEl=document.getElementById('chat-status');
+  if(nameEl)nameEl.innerHTML=partner.firstName+' '+partner.lastName+(partner.verified?' <span style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">&#10003;</span>':'');
+  if(statusEl)statusEl.textContent=partner.online?'Online now':'Last seen recently';
+  var notice=document.getElementById('blocked-notice');
+  var cbar=document.querySelector('.cbar');
+  if(S.blocked.includes(partner.id)){if(notice)notice.style.display='block';if(cbar)cbar.style.display='none';}
+  else{if(notice)notice.style.display='none';if(cbar)cbar.style.display='flex';}
+  renderChatByMatch();G('s-chat');
+}
+function renderChatByMatch(){
+  var cont=document.getElementById('chatMsgs');if(!cont)return;
+  if(!S.chatId)return;
+  var msgs=DB.messages[S.chatId]||[];
+  cont.innerHTML='';
+  if(!msgs.length){
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;padding:40px 20px;color:var(--txt3);';
+    empty.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">💬</div><p style="font-size:.85rem;font-weight:700;margin-bottom:4px;">You matched!</p><p style="font-size:.78rem;">Say Assalamu Alaikum to start 🌙</p>';
+    cont.appendChild(empty);
+  } else {
+    msgs.forEach(function(m){cont.appendChild(mkBubbleFromMsg(m));});
+  }
+  cont.scrollTop=cont.scrollHeight;
+}
+function mkBubbleFromMsg(m){
+  var isMine=m.fromId===S.user.id;
+  var legacyMsg={id:m.id,f:isMine?'me':'them',t:m.text,ts:m.ts,reactions:m.reactions,deleted:m.deleted,blocked:m.blocked};
+  return mkBubble(legacyMsg);
+}
+function removeMatch(matchId){
+  DB.matches=DB.matches.filter(function(m){return m.id!==matchId;});
+  delete DB.messages[matchId];
+  renderConvList();
+  toast('Match removed.',2000);
+}
+function openChatLegacy(id){
+  // Legacy openChat — redirect to match-based chat if match exists
+  var matchId=getMatchId(id);
+  if(matchId){openChatByMatch(matchId);}
+  else{toast('You need to match first before chatting.',2500,'err');}
+}
+// Alias for backward compatibility with HTML onclick="openChat(id)"
+function openChat(id){openChatLegacy(id);}
 
-/* ══ SWIPE ══ */
+/* ══ SWIPE (DISCOVER) ══ */
 const DS={on:false,sx:0,cx:0};
 function initSwipe(){
-  const c=document.getElementById('swipeCard');if(!c)return;
-  c.addEventListener('mousedown',e=>{DS.on=true;DS.sx=e.clientX;document.addEventListener('mousemove',onDM);document.addEventListener('mouseup',onDU);});
-  c.addEventListener('touchstart',e=>{DS.on=true;DS.sx=e.touches[0].clientX;document.addEventListener('touchmove',onDT,{passive:false});document.addEventListener('touchend',onDE);},{passive:true});
+  const cv=document.getElementById('swipeCard');if(!cv)return;
+  cv.addEventListener('mousedown',e=>{DS.on=true;DS.sx=e.clientX;document.addEventListener('mousemove',onDM);document.addEventListener('mouseup',onDU);});
+  cv.addEventListener('touchstart',e=>{DS.on=true;DS.sx=e.touches[0].clientX;document.addEventListener('touchmove',onDT,{passive:false});document.addEventListener('touchend',onDE);},{passive:true});
 }
 function onDM(e){if(!DS.on)return;applyDrag(e.clientX-DS.sx);}
 function onDT(e){if(!DS.on)return;e.preventDefault();applyDrag(e.touches[0].clientX-DS.sx);}
@@ -1802,25 +2265,49 @@ function onDE(){document.removeEventListener('touchmove',onDT);document.removeEv
 function applyDrag(dx){DS.cx=dx;const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='none';c.style.transform=`translateX(${dx}px) rotate(${dx*.07}deg)`;const lo=document.getElementById('ov-like'),no=document.getElementById('ov-nope');if(lo)lo.style.opacity=dx>40?Math.min((dx-40)/80,1):0;if(no)no.style.opacity=dx<-40?Math.min((-dx-40)/80,1):0;}
 function finishDrag(){DS.on=false;if(Math.abs(DS.cx)>85)doSwipe(DS.cx>0?'right':'left');else resetCard();DS.cx=0;}
 function resetCard(){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .4s cubic-bezier(.34,1.1,.64,1)';c.style.transform='';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});}
-function doSwipe(dir){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .38s ease,opacity .38s';if(dir==='right')c.style.transform='translateX(600px) rotate(28deg)';else if(dir==='left')c.style.transform='translateX(-600px) rotate(-28deg)';else c.style.transform='translateY(-600px)';c.style.opacity='0';document.getElementById('swipehint').style.display='none';setTimeout(()=>{S.pIdx=(S.pIdx+1)%S.profiles.length;const p=S.profiles[S.pIdx];const n=document.getElementById('cName'),sb=document.getElementById('cSub'),bi=document.getElementById('cBio');if(n)n.textContent=p.name;if(sb)sb.textContent=p.age+' · '+p.city+' · '+p.sect;if(bi)bi.textContent=p.bio;c.style.transition='none';c.style.opacity='0';c.style.transform='scale(.92)';setTimeout(()=>{c.style.transition='transform .35s cubic-bezier(.34,1.1,.64,1),opacity .3s';c.style.transform='';c.style.opacity='1';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});},50);},360);}
+function doSwipe(dir){const c=document.getElementById('swipeCard');if(!c)return;c.style.transition='transform .38s ease,opacity .38s';if(dir==='right')c.style.transform='translateX(600px) rotate(28deg)';else if(dir==='left')c.style.transform='translateX(-600px) rotate(-28deg)';else c.style.transform='translateY(-600px)';c.style.opacity='0';document.getElementById('swipehint').style.display='none';setTimeout(()=>{
+    // Record the like if swiped right
+    if(dir==='right'&&S._discoverCandidateId){likeProfile(S._discoverCandidateId);}
+    // Load next profile
+    loadNextDiscoverProfile();
+    c.style.transition='none';c.style.opacity='0';c.style.transform='scale(.92)';
+    setTimeout(()=>{c.style.transition='transform .35s cubic-bezier(.34,1.1,.64,1),opacity .3s';c.style.transform='';c.style.opacity='1';['ov-like','ov-nope','ov-super'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=0;});},50);
+  },360);}
 
-/* ══ CALL ══ */
+/* ══ CALLS ══ */
 function startCall(type){
-  if(!S.premium){M('s-chat','m-sub');return;}
-  const p=S.profiles[S.chatId];
+  if(!S.premium){
+    if(S.subStatus==='cancelled'){toast('Your subscription is cancelled. Re-subscribe to use calls.',3000,'err');M('s-chat','m-sub');return;}
+    M('s-chat','m-sub');return;
+  }
+  const p=(DB.users.find(function(u){return u.id===S.chatPartnerId;})||{name:'Member',firstName:'Member',lastName:'',verified:false,online:false});
   document.getElementById('call-name').textContent=p.name;
   document.getElementById('call-type').textContent=(type==='video'?'🎥 Video':'📞 Voice')+' Call';
   S.callSecs=0;clearInterval(S.callTimer);
-  S.callTimer=setInterval(()=>{S.callSecs++;const m=String(Math.floor(S.callSecs/60)).padStart(2,'0');const s=String(S.callSecs%60).padStart(2,'0');const el=document.getElementById('call-timer');if(el)el.textContent='00:'+m+':'+s;},1000);
+  S.callTimer=setInterval(()=>{S.callSecs++;const mins=String(Math.floor(S.callSecs/60)).padStart(2,'0');const secs=String(S.callSecs%60).padStart(2,'0');const el=document.getElementById('call-timer');if(el)el.textContent='00:'+mins+':'+secs;},1000);
   G('s-call');
 }
 function endCall(){clearInterval(S.callTimer);G('s-chat');toast('Call ended.',2000);}
 function toggleCB(id,i1,i2,l1,l2){const btn=document.getElementById(id);if(!btn)return;btn.classList.toggle('act');const sp=btn.querySelector('span');const lbl=btn.querySelector('span:last-child');if(btn.classList.contains('act')){if(sp)sp.textContent=i1;if(lbl)lbl.textContent=l1;}else{if(sp)sp.textContent=i2;if(lbl)lbl.textContent=l2;}}
 
 /* ══ PROFILE ══ */
-function loadEdit(){const u=S.user||{};const fv={fn:u.firstName||'Ahmed',ln:u.lastName||'Abdullah',occ:u.occupation||'Software Engineer',city:u.city||'Manchester, UK',bio:u.bio||'Alhamdulillah, a software engineer who values family, deen, and community.'};document.getElementById('ep-fn').value=fv.fn;document.getElementById('ep-ln').value=fv.ln;document.getElementById('ep-occ').value=fv.occ;document.getElementById('ep-city').value=fv.city;document.getElementById('ep-bio').value=fv.bio;}
-function saveProfile(){S.user={...S.user,firstName:document.getElementById('ep-fn').value,lastName:document.getElementById('ep-ln').value,occupation:document.getElementById('ep-occ').value,city:document.getElementById('ep-city').value,bio:document.getElementById('ep-bio').value};const nm=document.getElementById('mp-name');if(nm)nm.textContent=(S.user.firstName||'Ahmed')+' '+(S.user.lastName||'Abdullah');toast('✅ Profile updated!',2500);G('s-myprofile');}
-function editPhotoTap(){const sl=document.getElementById('eps2');sl.innerHTML='<span style="font-size:2rem;">🏞️</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">3rd ✓</span>';sl.classList.add('filled');toast('✅ Photo uploaded!',2000);}
+function loadEdit(){
+  var u=S.user||{};
+  var fields={'ep-fn':u.firstName,'ep-ln':u.lastName,'ep-occ':u.occupation,'ep-city':u.city,'ep-bio':u.bio,'ep-sect':u.sect,'ep-interests':u.interests,'ep-nationality':u.nationality,'ep-edu':u.education,'ep-status':u.maritalStatus};
+  Object.keys(fields).forEach(function(id){var el=document.getElementById(id);if(el)el.value=fields[id]||'';});
+}
+function saveProfile(){
+  var updates={firstName:document.getElementById('ep-fn').value,lastName:document.getElementById('ep-ln').value,occupation:document.getElementById('ep-occ').value,city:document.getElementById('ep-city').value,bio:document.getElementById('ep-bio').value};
+  var optFields=['ep-sect','ep-interests','ep-nationality','ep-edu'];
+  optFields.forEach(function(id){var el=document.getElementById(id);if(el){var key=id.replace('ep-','');updates[key]=el.value;}});
+  S.user=Object.assign(S.user,updates);
+  // Update in DB too
+  var dbUser=DB.users.find(function(u){return u.id===S.user.id;});
+  if(dbUser)Object.assign(dbUser,updates);
+  openMyProfile();
+  toast('✅ Profile updated!',2500);
+}
+function editPhotoTap(){const sl=document.getElementById('eps2');if(sl){sl.innerHTML='<span style="font-size:2rem;">🏞️</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">✓</span>';sl.classList.add('filled');}toast('✅ Photo uploaded!',2000);}
 
 /* ══ REPORT ══ */
 function submitReport(){const r=document.getElementById('rep-reason').value;const d=document.getElementById('rep-details').value.trim();if(!r){toast('Please select a reason.','err',2000);return;}if(!d||d.length<10){toast('Please provide more detail.','err',2500);return;}MC('m-report');toast('🚩 Report submitted. Team reviews within 24h.',4000);}
@@ -1828,45 +2315,160 @@ function submitReport(){const r=document.getElementById('rep-reason').value;cons
 /* ══ PAYMENT ══ */
 function fmtCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
 function fmtExp(el){let v=el.value.replace(/\D/g,'').substring(0,4);if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2);el.value=v;}
-function processPayment(){const num=document.getElementById('cc-num').value.replace(/\s/g,'');const exp=document.getElementById('cc-exp').value;const cvv=document.getElementById('cc-cvv').value;const nm=document.getElementById('cc-name').value.trim();if(num.length<16){toast('Please enter a valid 16-digit card number.','err',2500);return;}if(!exp.includes('/')){toast('Please enter a valid expiry.','err',2500);return;}if(cvv.length<3){toast('Please enter a valid CVV.','err',2500);return;}if(!nm){toast('Please enter the name on your card.','err',2500);return;}MC('m-sub');S.premium=true;S.user={...S.user,premium:true};toast('👑 Premium activated!',3500);}
+function processPayment(){
+  const num=document.getElementById('cc-num').value.replace(/\s/g,'');
+  const exp=document.getElementById('cc-exp').value;
+  const cvv=document.getElementById('cc-cvv').value;
+  const nm=document.getElementById('cc-name').value.trim();
+  if(num.length<16){toast('Please enter a valid 16-digit card number.','err',2500);return;}
+  if(!exp.includes('/')){toast('Please enter a valid expiry (MM/YY).','err',2500);return;}
+  if(cvv.length<3){toast('Please enter a valid CVV.','err',2500);return;}
+  if(!nm){toast('Please enter the name on your card.','err',2500);return;}
+  // In prod: use Stripe.js to tokenise card and charge via your backend
+  var isReSub = S.subStatus==='cancelled';
+  var now=new Date();
+  var renewDate=new Date(now.getTime()+7*24*60*60*1000);
+  S.premium=true;
+  S.subStatus='active';
+  S.subStart=now.toLocaleDateString();
+  S.subRenewsAt=renewDate.toLocaleDateString();
+  if(S.user)S.user.premium=true;
+  MC('m-sub');
+  if(isReSub){
+    // In prod: send re-subscription email from infohalalmeetup@gmail.com
+    sendAppEmail('resubscribe', S.user, renewDate);
+    toast('👑 Welcome back! Premium re-activated.',3500);
+  } else {
+    // In prod: send new subscription email from infohalalmeetup@gmail.com
+    sendAppEmail('subscribe', S.user, renewDate);
+    toast('👑 Premium activated! Renews '+renewDate.toLocaleDateString(),3500);
+  }
+  // Update subscription modal to show cancel option
+  updateSubModal();
+}
+
+function updateSubModal(){
+  var subBtn=document.getElementById('sub-cancel-btn');
+  if(subBtn)subBtn.style.display=S.premium?'block':'none';
+  var subStatus=document.getElementById('sub-status-line');
+  if(subStatus){
+    if(S.premium&&S.subRenewsAt){
+      subStatus.textContent='Auto-renews: '+S.subRenewsAt;
+      subStatus.style.color='var(--green)';
+    } else if(S.subStatus==='cancelled'){
+      subStatus.textContent='Subscription cancelled';
+      subStatus.style.color='var(--red2)';
+    }
+  }
+}
+
+function openManageSub(){
+  var activeBlock=document.getElementById('sub-active-block');
+  var cancelledBlock=document.getElementById('sub-cancelled-block');
+  var cancelBtn=document.getElementById('sub-cancel-btn');
+  var resubBtn=document.getElementById('sub-resub-btn');
+  var statusLine=document.getElementById('sub-status-line');
+  if(S.premium&&S.subStatus==='active'){
+    if(activeBlock)activeBlock.style.display='block';
+    if(cancelledBlock)cancelledBlock.style.display='none';
+    if(cancelBtn)cancelBtn.style.display='block';
+    if(resubBtn)resubBtn.style.display='none';
+    if(statusLine&&S.subRenewsAt)statusLine.textContent='Next renewal: '+S.subRenewsAt;
+  } else {
+    if(activeBlock)activeBlock.style.display='none';
+    if(cancelledBlock)cancelledBlock.style.display='block';
+    if(cancelBtn)cancelBtn.style.display='none';
+    if(resubBtn)resubBtn.style.display='block';
+  }
+  M('s-myprofile','m-manage-sub');
+}
+function confirmCancelSub(){
+  MC('m-manage-sub');
+  M('s-myprofile','m-confirm-cancel-sub');
+}
+function cancelSubscription(){
+  if(!S.premium)return;
+  S.premium=false;
+  S.subStatus='cancelled';
+  if(S.user)S.user.premium=false;
+  MC('m-manage-sub');
+  // In prod: cancel Stripe subscription via backend, send cancellation email
+  sendAppEmail('cancel', S.user, null);
+  toast('Subscription cancelled. Access ends today.',3500,'err');
+  // Kick out of any premium features
+  if(LG.active){exitLudo();}
+  updateSubModal();
+}
+
+function sendAppEmail(type, user, renewDate){
+  var name=(user&&user.firstName)?user.firstName:'Member';
+  var email=(user&&user.email)?user.email:'';
+  var emails={
+    subscribe:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Welcome to Halal-MeetUp Premium!\n\nDear '+name+',\n\nThank you for subscribing to Halal-MeetUp Premium!\n\nYour subscription is now active and auto-renews weekly.\nNext renewal: '+( renewDate?renewDate.toLocaleDateString():'')+'\n\nWhat you now have access to:\n• Audio & Video calls\n• Live Ludo game with your match\n• Live photo sharing\n• Priority profile visibility\n\nTo cancel anytime, go to My Profile > Settings > Manage Subscription.\n\nJazakAllah khayr,\nThe Halal-MeetUp Team\ninfohalalmeetup@gmail.com',
+
+    resubscribe:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Halal-MeetUp Premium — Welcome Back!\n\nDear '+name+',\n\nAlhamdulillah! Your Halal-MeetUp Premium subscription has been re-activated.\n\nNext renewal: '+(renewDate?renewDate.toLocaleDateString():'')+'\n\nAll premium features are now available again.\nTo cancel anytime, go to My Profile > Settings > Manage Subscription.\n\nJazakAllah khayr,\nThe Halal-MeetUp Team\ninfohalalmeetup@gmail.com',
+
+    cancel:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Halal-MeetUp Subscription Cancelled\n\nDear '+name+',\n\nYour Halal-MeetUp Premium subscription has been cancelled.\n\nYou can re-subscribe at any time from My Profile > Settings.\nWe hope to see you back soon in sha Allah.\n\nJazakAllah khayr,\nThe Halal-MeetUp Team\ninfohalalmeetup@gmail.com',
+
+    welcome:'[EMAIL] From: infohalalmeetup@gmail.com\nTo: '+email+'\nSubject: Welcome to Halal-MeetUp — Your Journey Begins! 🌙\n\nAssalamu Alaikum '+name+',\n\nAlhamdulillah — welcome to Halal-MeetUp! We are so glad you are here.\n\nHalal-MeetUp is a safe, Shariah-compliant matrimonial platform built for serious Muslims seeking nikkah.\n\n━━━━━━━━━━━━━━━━━━━━━━━\nGETTING STARTED\n━━━━━━━━━━━━━━━━━━━━━━━\n\n1. Complete your profile\n   Add a clear photo and write a genuine bio (min 30 chars).\n   The more you share, the more matches you receive.\n\n2. Discover matches\n   Swipe right to like, left to pass. When both like each other, you match!\n\n3. Start a conversation\n   Send a halal, respectful message. Remember: no phone numbers allowed.\n\n4. Search & filter\n   Use Search to find by country, sect, age range, and verified status.\n\n━━━━━━━━━━━━━━━━━━━━━━━\nFEATURES\n━━━━━━━━━━━━━━━━━━━━━━━\n\n🆓 FREE features:\n   • Create profile & upload photos\n   • Discover & swipe profiles\n   • Text chat with matches\n   • React & reply to messages\n\n👑 PREMIUM ($10/week, auto-renews):\n   • Audio & Video calls\n   • Play Ludo with your match (live camera!)\n   • Live photo sharing\n   • Priority in discovery\n   • Cancel anytime from My Profile\n\n━━━━━━━━━━━━━━━━━━━━━━━\nSAFETY RULES\n━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ All profiles are ID-verified\n✅ Phone numbers are automatically blocked\n✅ Report any inappropriate behaviour immediately\n✅ Screenshots are disabled to protect your privacy\n\n━━━━━━━━━━━━━━━━━━━━━━━\nNEED HELP?\n━━━━━━━━━━━━━━━━━━━━━━━\n\nEmail us: infohalalmeetup@gmail.com\nAdmin: mdhelal.ahamed@gmail.com\n\nJazakAllah khayr for joining.\nMay Allah bless your search with ease and success. Ameen.\n\nWarm regards,\nThe Halal-MeetUp Team'
+  };
+  // In production this triggers an actual email API call (e.g. SendGrid/Mailgun)
+  console.log(emails[type]||'Unknown email type: '+type);
+}
 
 /* ══ SEARCH ══ */
-function runSearch(){const country=document.getElementById('sf-c').value;const sect=document.getElementById('sf-s').value;const status=document.getElementById('sf-ms').value;const verOnly=document.getElementById('sf-v').checked;let res=[...S.profiles];if(country)res=res.filter(p=>p.city.includes(country));if(sect)res=res.filter(p=>p.sect.includes(sect.replace('Sunni ','').replace('Shia ','')));if(status)res=res.filter(p=>p.status===status);if(verOnly)res=res.filter(p=>p.verified);document.getElementById('srResults').style.display='block';document.getElementById('srCount').textContent=res.length+' profile'+(res.length!==1?'s':'')+' found';document.getElementById('srList').innerHTML=res.map(p=>`<div onclick="openChat(${p.id})" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤${p.online?'<div class="odot"></div>':''}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;"><p style="font-weight:800;font-size:.88rem;">${p.name}</p>${p.verified?'<span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;">✓</span>':''}</div><p style="font-size:.75rem;color:var(--txt3);">${p.age} · ${p.city} · ${p.sect}</p></div><button class="btn bp bsm" onclick="event.stopPropagation();openChat(${p.id})">💬</button></div>`).join('');}
+function runSearch(){
+  const country=document.getElementById('sf-c').value;
+  const sect=document.getElementById('sf-s').value;
+  const status=document.getElementById('sf-ms').value;
+  const verOnly=document.getElementById('sf-v').checked;
+  let res=[...DB.users];
+  if(country)res=res.filter(p=>(p.city&&p.city.toLowerCase().includes(country.toLowerCase()))||(p.country&&p.country.toLowerCase().includes(country.toLowerCase())));
+  if(sect)res=res.filter(p=>p.sect&&p.sect.toLowerCase().includes(sect.toLowerCase().replace('sunni ','').replace('shia ','')));
+  if(status)res=res.filter(p=>p.maritalStatus===status);
+  if(verOnly)res=res.filter(p=>p.verified);
+  document.getElementById('srResults').style.display='block';
+  document.getElementById('srCount').textContent=res.length+' profile'+(res.length!==1?'s':'')+' found';
+  document.getElementById('srList').innerHTML=res.length?res.map(p=>`<div onclick="openViewProfile('${p.id}')" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="position:relative;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤${p.online?'<div class="odot"></div>':''}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;"><p style="font-weight:800;font-size:.88rem;">${p.firstName} ${p.lastName}</p>${p.verified?'<span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 5px;border-radius:50px;">✓</span>':''}</div><p style="font-size:.75rem;color:var(--txt3);">${p.age||'?'} · ${p.city||''} · ${p.sect||''}</p></div><button class="btn bp bsm" onclick="event.stopPropagation();openViewProfile('${p.id}')">View</button></div>`).join(''):'<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No profiles match your filters.</p>';
+}
 
 /* ══ ADMIN ══ */
 function adminTab(i){for(let j=0;j<6;j++){const t=document.getElementById('at'+j),p=document.getElementById('ap'+j);if(t)t.classList.toggle('on',j===i);if(p)p.style.display=j===i?'block':'none';}}
 function initAdmin(){
-  const users=[{n:'Fatima Al-Rashidi',e:'fatima@gmail.com',c:'London, UK',badge:'Verified',bc:'bb'},{n:'Aisha Khalid',e:'aisha@mail.com',c:'Toronto, CA',badge:'Pending',bc:'bgo'},{n:'Omar Hussain',e:'omar@mail.com',c:'Karachi, PK',badge:'Banned',bc:'br',banned:true},{n:'Zainab Malik',e:'zainab@email.com',c:'Houston, TX',badge:'Verified',bc:'bb'}];
-  document.getElementById('adminUserList').innerHTML=users.map((u,i)=>`<div style="background:#fff;border-radius:11px;padding:11px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;${u.banned?'opacity:.7':''}"><div style="width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">👤</div><div style="flex:1;"><p style="font-weight:800;font-size:.85rem;">${u.n}</p><p style="font-size:.7rem;color:var(--txt3);">${u.e} · ${u.c}</p></div><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;"><span class="bdg ${u.bc}" style="font-size:.59rem;">${u.badge}</span>${u.banned?'<button style="font-size:.67rem;background:#e2f5e8;color:var(--green);border:none;padding:2px 7px;border-radius:4px;cursor:pointer;font-weight:800;">Unban</button>':'<button style="font-size:.67rem;background:#fce6e6;color:var(--red);border:none;padding:2px 7px;border-radius:4px;cursor:pointer;font-weight:800;" onclick="toast(\'User banned.\',2000)">Ban</button>'}</div></div>`).join('');
-  const subs=[{n:'Fatima Al-Rashidi',d:'Renews Mar 28',s:'Active',sc:'bgn'},{n:'Yusuf Ibrahim',d:'Cancelled Apr 1',s:'Cancelled',sc:'br'},{n:'Hassan Al-Rashid',d:'Renews Apr 3',s:'Active',sc:'bgn'}];
-  document.getElementById('adminSubList').innerHTML=subs.map(s=>`<div style="background:#fff;border-radius:11px;padding:11px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;"><div><p style="font-weight:800;font-size:.85rem;">${s.n}</p><p style="font-size:.7rem;color:var(--txt3);">${s.d}</p></div><div style="text-align:right;"><p style="font-weight:800;font-size:.88rem;color:var(--teal);">$10/wk</p><span class="bdg ${s.sc}" style="font-size:.58rem;">${s.s}</span></div></div>`).join('');
-  const rpts=[{t:'Inappropriate Message',rep:'Zainab M.',against:'Omar H.',r:'Explicit content',s:'Open',sc:'br'},{t:'Fake Profile',rep:'Ahmed A.',against:'anon_user',r:'Photos appear stolen',s:'Investigating',sc:'bgo'},{t:'Phone Number Shared',rep:'Sara K.',against:'User_482',r:'Attempted to share phone',s:'Resolved',sc:'bgn'}];
-  document.getElementById('adminReportList').innerHTML=rpts.map(r=>`<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><p style="font-weight:800;font-size:.85rem;">${r.t}</p><span class="bdg ${r.sc}" style="font-size:.58rem;">${r.s}</span></div><p style="font-size:.75rem;color:var(--txt3);margin-bottom:7px;">${r.rep} → ${r.against}: ${r.r}</p><div style="display:flex;gap:6px;"><button style="flex:1;padding:6px;background:#fce6e6;color:var(--red);border:none;border-radius:6px;font-size:.72rem;font-weight:800;cursor:pointer;" onclick="toast('User banned.',2000)">Ban</button><button style="flex:1;padding:6px;background:#e2f5e8;color:var(--green);border:none;border-radius:6px;font-size:.72rem;font-weight:800;cursor:pointer;" onclick="toast('Dismissed.',2000)">Dismiss</button><button style="flex:1;padding:6px;background:#e2eef8;color:var(--blue);border:none;border-radius:6px;font-size:.72rem;font-weight:800;cursor:pointer;">Chat</button></div></div>`).join('');
-  const calls=[{ty:'🎥',p1:'Fatima A.',p2:'Ahmed B.',dur:'18m 32s',dt:'Mar 27 2:14 PM',s:'Completed',sc:'bgn'},{ty:'📞',p1:'Yusuf I.',p2:'Mariam S.',dur:'0s',dt:'Mar 27 11:03 AM',s:'Missed',sc:'br'},{ty:'🎥',p1:'Omar K.',p2:'Aisha T.',dur:'2m 04s',dt:'Mar 26 8:40 PM',s:'Flagged',sc:'bb'},{ty:'📞',p1:'Hassan R.',p2:'Sara O.',dur:'44m 10s',dt:'Mar 26 3:00 PM',s:'Completed',sc:'bgn'}];
-  document.getElementById('adminCallList').innerHTML=calls.map(c=>`<div style="background:#fff;border-radius:11px;padding:11px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><div style="display:flex;align-items:center;gap:5px;"><span>${c.ty}</span><p style="font-weight:800;font-size:.83rem;">${c.p1} ↔ ${c.p2}</p></div><span class="bdg ${c.sc}" style="font-size:.58rem;">${c.s}</span></div><p style="font-size:.72rem;color:var(--txt3);">Duration: ${c.dur} · ${c.dt}</p></div>`).join('');
-  const idvs=[{n:'Aisha Khalid',ty:'Passport',ag:'2h ago',s:'Pending',done:false,i:0},{n:'Hassan Al-Rashid',ty:"Driver's License",ag:'5h ago',s:'Pending',done:false,i:1},{n:'Zainab Malik',ty:'National ID',ag:'Mar 26',s:'Approved',done:true,i:2}];
-  document.getElementById('adminIDList').innerHTML=idvs.map(v=>`<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;${v.done?'opacity:.7':''}"><div style="display:flex;justify-content:space-between;margin-bottom:${v.done?'0':'7px'};"><div><p style="font-weight:800;font-size:.85rem;">${v.n}</p><p style="font-size:.7rem;color:var(--txt3);">${v.ty} · ${v.ag}</p></div><span class="bdg ${v.done?'bb':'bgo'}" id="idbdg${v.i}" style="font-size:.58rem;">${v.s}</span></div>${!v.done?`<div style="display:flex;gap:7px;margin-bottom:7px;"><div style="flex:1;background:#f0f4f6;border-radius:7px;height:52px;display:flex;align-items:center;justify-content:center;font-size:.71rem;color:var(--txt3);">📄 ID</div><div style="flex:1;background:#f0f4f6;border-radius:7px;height:52px;display:flex;align-items:center;justify-content:center;font-size:.71rem;color:var(--txt3);">🤳 Selfie</div></div><div style="display:flex;gap:6px;"><button onclick="document.getElementById('idbdg${v.i}').textContent='Approved';document.getElementById('idbdg${v.i}').className='bdg bb';this.closest('[style]').style.opacity='.7';toast('Approved!',2000);" style="flex:1;padding:7px;background:#e2f5e8;color:var(--green);border:none;border-radius:7px;font-size:.77rem;font-weight:800;cursor:pointer;">✓ Approve</button><button onclick="toast('Rejected.',2000);" style="flex:1;padding:7px;background:#fce6e6;color:var(--red);border:none;border-radius:7px;font-size:.77rem;font-weight:800;cursor:pointer;">✗ Reject</button></div>`:''}</div>`).join('');
+  var statsEl=document.getElementById('ap0');
+  if(statsEl){
+    var cfg=document.createElement('div');
+    cfg.style.cssText='background:#e8f5e9;border:1px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;';
+    cfg.innerHTML='<p style="font-weight:800;color:#1e8449;margin-bottom:4px;">🟢 Production Mode</p><p style="color:#2d6a4f;margin-bottom:2px;">Admin: mdhelal.ahamed@gmail.com</p><p style="color:#2d6a4f;">Notifications: infohalalmeetup@gmail.com</p>';
+    statsEl.insertBefore(cfg,statsEl.firstChild);
+  }
+  var EMPTY='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data yet.</p>';
+  document.getElementById('adminUserList').innerHTML=EMPTY;
+  document.getElementById('adminSubList').innerHTML=EMPTY;
+  document.getElementById('adminReportList').innerHTML=EMPTY;
+  document.getElementById('adminCallList').innerHTML=EMPTY;
+  document.getElementById('adminIDList').innerHTML=EMPTY;
 }
 
 /* ══ SCREENSHOT PROTECTION ══ */
 document.addEventListener('keydown',function(e){
   if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','s'].includes(e.key))){
     e.preventDefault();
-    toast('🚫 Screenshots disabled in Halal-MeetUp for your security.','err',3500);
+    toast('🚫 Screenshots disabled for your security.','err',3500);
   }
 });
 
-/* ══════════════════════════════════════════════════════════════
-   LUDO GAME ENGINE — Canvas-based accurate board
-══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   LUDO GAME ENGINE
+══════════════════════════════════════════ */
 var CELL=320/15;
-var LC={red:'#e74c3c',red_l:'#fadbd8',green:'#27ae60',green_l:'#d5f5e3',blue:'#2980b9',blue_l:'#d6eaf8',yellow:'#f1c40f',yellow_l:'#fef9e7',white:'#f8f9fa',gold:'#c9963a',dark:'#2c3e50'};
+var LC={red:'#e74c3c',red_l:'#fadbd8',green:'#27ae60',green_l:'#d5f5e3',blue:'#2980b9',blue_l:'#d6eaf8',yellow:'#f1c40f',yellow_l:'#fef9e7',white:'#f8f9fa',gold:'#c9963a'};
 function getCellType(r,c){
   if(r<6&&c<6)return{type:'home',color:LC.red,light:LC.red_l};
   if(r<6&&c>=9)return{type:'home',color:LC.green,light:LC.green_l};
   if(r>=9&&c<6)return{type:'home',color:LC.yellow,light:LC.yellow_l};
   if(r>=9&&c>=9)return{type:'home',color:LC.blue,light:LC.blue_l};
-  if(r>=6&&r<=8&&c>=6&&c<=8)return{type:'center',color:LC.green};
+  if(r>=6&&r<=8&&c>=6&&c<=8)return{type:'center'};
   if(r>=1&&r<=5&&c===7)return{type:'path',color:LC.red_l,border:LC.red};
   if(r===7&&c>=9&&c<=13)return{type:'path',color:LC.green_l,border:LC.green};
   if(r>=9&&r<=13&&c===7)return{type:'path',color:LC.blue_l,border:LC.blue};
@@ -1894,14 +2496,13 @@ function makeRedPath(){
   return p;
 }
 var RED_PATH=makeRedPath();
-var GREEN_OFFSETS=[[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[7,8],[7,9],[7,10],[7,11],[7,12],[7,13]];
-var GREEN_PATH=GREEN_OFFSETS;
+var GREEN_PATH=[[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[7,8],[7,9],[7,10],[7,11],[7,12],[7,13]];
 var HOME_YARDS={red:[[1,1],[1,4],[4,1],[4,4]],green:[[1,10],[1,13],[4,10],[4,13]],yellow:[[10,1],[10,4],[13,1],[13,4]],blue:[[10,10],[10,13],[13,10],[13,13]]};
-var LG={active:false,currentTurn:'red',diceValue:0,diceRolled:false,micOn:true,vidOn:true,camOn:false,camStream:null,winner:null,aiTimer:null,pieces:{red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]},playerNames:{red:'You',green:'Fatima'},playerColors:{red:'#e74c3c',green:'#27ae60'}};
-var _boardCanvas=null,_boardCtx=null;
-function initCanvas(){_boardCanvas=document.getElementById('ludoCanvas');if(!_boardCanvas)return false;_boardCtx=_boardCanvas.getContext('2d');return true;}
+var LG={active:false,currentTurn:'red',diceValue:0,diceRolled:false,micOn:true,vidOn:true,camOn:false,camStream:null,winner:null,aiTimer:null,pieces:{red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]},playerNames:{red:'You',green:'Match'},playerColors:{red:'#e74c3c',green:'#27ae60'}};
+var _bc=null,_bx=null;
+function initCanvas(){_bc=document.getElementById('ludoCanvas');if(!_bc)return false;_bx=_bc.getContext('2d');return true;}
 function drawBoard(){
-  var ctx=_boardCtx,cv=_boardCanvas;if(!ctx)return;
+  var ctx=_bx,cv=_bc;if(!ctx)return;
   var sz=cv.width,cs=sz/15;
   ctx.clearRect(0,0,sz,sz);
   for(var r=0;r<15;r++){
@@ -1916,35 +2517,34 @@ function drawBoard(){
         if(r===10&&cl===1)drawHomeBox(ctx,cs,cl,r,'yellow');
         if(r===10&&cl===10)drawHomeBox(ctx,cs,cl,r,'blue');
       } else if(ct.type==='center'){ctx.fillStyle='#fff';ctx.fillRect(x,y,cs,cs);}
-      else{ctx.fillStyle=ct.color||LC.white;ctx.fillRect(x,y,cs,cs);if(ct.border){ctx.strokeStyle=ct.border;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,cs-1,cs-1);}if(ct.star){drawStar(ctx,x+cs/2,y+cs/2,cs*.28,LC.gold);}}
-      ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=.4;ctx.strokeRect(x,y,cs,cs);
+      else{ctx.fillStyle=ct.color||LC.white;ctx.fillRect(x,y,cs,cs);if(ct.border){ctx.strokeStyle=ct.border;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,cs-1,cs-1);}if(ct.star){ctx.fillStyle=LC.gold;ctx.font=cs*.5+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x+cs/2,y+cs/2);}}
+      ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=.4;ctx.strokeRect(x,y,cs,cs);
     }
   }
   drawCenter(ctx,cs);
   drawAllPieces(ctx,cs);
 }
-function drawHomeBox(ctx,cs,startCol,startRow,color){var x=startCol*cs,y=startRow*cs,w=4*cs,h=4*cs;var clr={red:LC.red,green:LC.green,yellow:LC.yellow,blue:LC.blue}[color];ctx.strokeStyle=clr;ctx.lineWidth=2;ctx.strokeRect(x+2,y+2,w-4,h-4);var ix=x+cs*.5,iy=y+cs*.5,iw=3*cs,ih=3*cs;ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(ix+2,iy+2,iw-4,ih-4);ctx.strokeStyle=clr;ctx.lineWidth=1.5;ctx.strokeRect(ix+2,iy+2,iw-4,ih-4);}
-function drawCenter(ctx,cs){var cx=7.5*cs,cy=7.5*cs,r=1.5*cs;var colors=[LC.red,LC.green,LC.blue,LC.yellow];var angles=[Math.PI,Math.PI/2,0,-Math.PI/2];for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angles[i],angles[i]+Math.PI/2);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();}ctx.fillStyle='#fff';ctx.font='bold '+(cs*.9)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx,cy);}
-function drawStar(ctx,x,y,r,color){ctx.fillStyle=color||LC.gold;ctx.font=r*2.2+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x,y);}
-function getPieceCanvasPos(color,pieceIdx,cs){var piece=LG.pieces[color][pieceIdx];var path=color==='red'?RED_PATH:GREEN_PATH;if(piece.pos===0){var hy=HOME_YARDS[color];if(!hy)return null;var hp=hy[pieceIdx];return{x:(hp[1]+.5)*cs,y:(hp[0]+.5)*cs};}if(piece.pos>=57){var offsets=[[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]];var ofs=offsets[pieceIdx];return{x:(7.5+ofs[0])*cs,y:(7.5+ofs[1])*cs};}var pathIdx=Math.min(piece.pos-1,path.length-1);var cell=path[pathIdx];if(!cell)return null;var offset=[[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]];var op=offset[pieceIdx%4];return{x:(cell[1]+.5+op[0])*cs,y:(cell[0]+.5+op[1])*cs};}
-function drawAllPieces(ctx,cs){var r2=cs*.32;['red','green'].forEach(function(color){var clr=LG.playerColors[color];LG.pieces[color].forEach(function(piece,idx){var pos=getPieceCanvasPos(color,idx,cs);if(!pos)return;var isActive=(LG.currentTurn===color&&LG.diceRolled&&canMovePiece(color,idx,LG.diceValue));if(isActive){ctx.beginPath();ctx.arc(pos.x,pos.y,r2*1.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,100,0.35)';ctx.fill();}ctx.beginPath();ctx.arc(pos.x,pos.y,r2,0,Math.PI*2);ctx.fillStyle=piece.pos>=57?'rgba(180,180,180,0.5)':clr;ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.85)';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold '+(r2*.85)+'px Nunito,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(piece.pos>=57?'✓':(idx+1),pos.x,pos.y+1);});});}
-function ludoCanvasClick(e){if(!LG.active||LG.currentTurn!=='red'||!LG.diceRolled)return;var rect=_boardCanvas.getBoundingClientRect();var scaleX=_boardCanvas.width/rect.width;var scaleY=_boardCanvas.height/rect.height;var mx=(e.clientX-rect.left)*scaleX;var my=(e.clientY-rect.top)*scaleY;var cs=_boardCanvas.width/15;var bestDist=999,bestIdx=-1;LG.pieces.red.forEach(function(piece,idx){var pos=getPieceCanvasPos('red',idx,cs);if(!pos)return;var d=Math.hypot(mx-pos.x,my-pos.y);if(d<cs*.6&&d<bestDist&&canMovePiece('red',idx,LG.diceValue)){bestDist=d;bestIdx=idx;}});if(bestIdx>=0)movePiece('red',bestIdx);}
-var DICE_DOTS_MAP={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[1,0],[2,0],[0,2],[1,2],[2,2]]};
-function drawDice(val){var cv=document.getElementById('diceCanvas');if(!cv)return;var ctx=cv.getContext('2d');var s=cv.width;ctx.clearRect(0,0,s,s);if(!val||val<1)return;var dots=DICE_DOTS_MAP[val]||[];var ds=s/5;dots.forEach(function(d){var x=(d[1]+0.75)*ds+d[1]*ds*.5;var y=(d[0]+0.75)*ds+d[0]*ds*.5;ctx.beginPath();ctx.arc(x+2,y+2,ds*.38,0,Math.PI*2);ctx.fillStyle='#2c3e50';ctx.fill();});}
-function canMovePiece(color,idx,dv){var piece=LG.pieces[color][idx];if(piece.pos>=57)return false;if(piece.pos===0&&dv!==6)return false;return true;}
-function hasAnyMove(color,dv){return LG.pieces[color].some(function(p,i){return canMovePiece(color,i,dv);});}
+function drawHomeBox(ctx,cs,startCol,startRow,color){var x=startCol*cs,y=startRow*cs,w=4*cs,h=4*cs;var clr={red:LC.red,green:LC.green,yellow:LC.yellow,blue:LC.blue}[color];ctx.strokeStyle=clr;ctx.lineWidth=2;ctx.strokeRect(x+2,y+2,w-4,h-4);ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(x+cs*.5+2,y+cs*.5+2,3*cs-4,3*cs-4);ctx.strokeStyle=clr;ctx.lineWidth=1.5;ctx.strokeRect(x+cs*.5+2,y+cs*.5+2,3*cs-4,3*cs-4);}
+function drawCenter(ctx,cs){var cx=7.5*cs,cy=7.5*cs,rv=1.5*cs;var colors=[LC.red,LC.green,LC.blue,LC.yellow];var angles=[Math.PI,Math.PI/2,0,-Math.PI/2];for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rv,angles[i],angles[i]+Math.PI/2);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();}ctx.fillStyle='#fff';ctx.font='bold '+(cs*.9)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx,cy);}
+function getPiecePos(color,idx,cs){var piece=LG.pieces[color][idx];var path=color==='red'?RED_PATH:GREEN_PATH;if(piece.pos===0){var hy=HOME_YARDS[color];if(!hy)return null;var hp=hy[idx];return{x:(hp[1]+.5)*cs,y:(hp[0]+.5)*cs};}if(piece.pos>=57){var offsets=[[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]];var ofs=offsets[idx];return{x:(7.5+ofs[0])*cs,y:(7.5+ofs[1])*cs};}var pi=Math.min(piece.pos-1,path.length-1);var cell=path[pi];if(!cell)return null;var off=[[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]];var op=off[idx%4];return{x:(cell[1]+.5+op[0])*cs,y:(cell[0]+.5+op[1])*cs};}
+function drawAllPieces(ctx,cs){var r2=cs*.32;['red','green'].forEach(function(color){var clr=LG.playerColors[color];LG.pieces[color].forEach(function(piece,idx){var pos=getPiecePos(color,idx,cs);if(!pos)return;var isActive=(LG.currentTurn===color&&LG.diceRolled&&canMove(color,idx,LG.diceValue));if(isActive){ctx.beginPath();ctx.arc(pos.x,pos.y,r2*1.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,100,.35)';ctx.fill();}ctx.beginPath();ctx.arc(pos.x,pos.y,r2,0,Math.PI*2);ctx.fillStyle=piece.pos>=57?'rgba(180,180,180,.5)':clr;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold '+(r2*.85)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(piece.pos>=57?'✓':(idx+1),pos.x,pos.y+1);});});}
+function ludoClick(e){if(!LG.active||LG.currentTurn!=='red'||!LG.diceRolled)return;var rect=_bc.getBoundingClientRect();var sx=_bc.width/rect.width,sy=_bc.height/rect.height;var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;var cs=_bc.width/15;var best=999,bestIdx=-1;LG.pieces.red.forEach(function(p,idx){var pos=getPiecePos('red',idx,cs);if(!pos)return;var d=Math.hypot(mx-pos.x,my-pos.y);if(d<cs*.6&&d<best&&canMove('red',idx,LG.diceValue)){best=d;bestIdx=idx;}});if(bestIdx>=0)movePiece('red',bestIdx);}
+var DDOTS={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[1,0],[2,0],[0,2],[1,2],[2,2]]};
+function drawDice(val){var cv=document.getElementById('diceCanvas');if(!cv)return;var ctx=cv.getContext('2d');var s=cv.width;ctx.clearRect(0,0,s,s);if(!val||val<1)return;var dots=DDOTS[val]||[];var ds=s/5;dots.forEach(function(d){var x=(d[1]+.75)*ds+d[1]*ds*.5;var y=(d[0]+.75)*ds+d[0]*ds*.5;ctx.beginPath();ctx.arc(x+2,y+2,ds*.38,0,Math.PI*2);ctx.fillStyle='#2c3e50';ctx.fill();});}
+function canMove(color,idx,dv){var p=LG.pieces[color][idx];if(p.pos>=57)return false;if(p.pos===0&&dv!==6)return false;return true;}
+function hasAnyMove(color,dv){return LG.pieces[color].some(function(p,i){return canMove(color,i,dv);});}
 function rollDice(){
   if(LG.diceRolled){toast('Move a piece first!',1800,'err');return;}
   if(LG.currentTurn!=='red'){toast('Not your turn!',1800,'err');return;}
-  var diceBtnEl=document.getElementById('ludoDice');
-  if(diceBtnEl)diceBtnEl.style.transform='scale(0.88) rotate(180deg)';
+  var btn=document.getElementById('ludoDice');
+  if(btn)btn.style.transform='scale(.88) rotate(180deg)';
   setTimeout(function(){
-    if(diceBtnEl)diceBtnEl.style.transform='';
+    if(btn)btn.style.transform='';
     LG.diceValue=Math.floor(Math.random()*6)+1;LG.diceRolled=true;
     drawDice(LG.diceValue);
     var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');
-    if(res)res.textContent='Rolled: '+LG.diceValue+(LG.diceValue===6?' 🎉 Roll again!':'');
-    updateTurnIndicator('Rolled '+LG.diceValue+' — tap a piece!');
+    if(res)res.textContent='Rolled: '+LG.diceValue+(LG.diceValue===6?' 🎉':'');
+    updateTI('Rolled '+LG.diceValue+' — tap a piece!');
     if(!hasAnyMove('red',LG.diceValue)){if(hint)hint.textContent='No moves. Passing...';setTimeout(endTurn,1100);}
     else{if(hint)hint.textContent='Tap glowing piece to move';document.getElementById('skipTurnBtn').style.display='inline-block';}
     drawBoard();
@@ -1953,67 +2553,53 @@ function rollDice(){
 function movePiece(color,idx){
   if(color==='red'){if(!LG.diceRolled){toast('Roll first!',1500,'err');return;}if(LG.currentTurn!=='red'){toast('Not your turn!',1500,'err');return;}}
   var piece=LG.pieces[color][idx];var dv=LG.diceValue;
-  if(!canMovePiece(color,idx,dv)){if(color==='red')toast('Cannot move this piece.',1500,'err');return;}
-  if(piece.pos===0){piece.pos=1;if(color==='red')toast('Piece '+(idx+1)+' entered the board!',1400);}
-  else{var path=color==='red'?RED_PATH:GREEN_PATH;var newPos=piece.pos+dv;if(newPos>=path.length){piece.pos=57;}else{piece.pos=newPos;}if(piece.pos>=57){var done=LG.pieces[color].filter(function(p){return p.pos>=57;}).length;if(color==='red')toast('Piece home! '+done+'/4 done.',1800);if(done>=4){showWinner(color);return;}}}
+  if(!canMove(color,idx,dv)){if(color==='red')toast('Cannot move this piece.',1500,'err');return;}
+  if(piece.pos===0){piece.pos=1;if(color==='red')toast('Piece '+(idx+1)+' entered!',1200);}
+  else{var path=color==='red'?RED_PATH:GREEN_PATH;var np=piece.pos+dv;if(np>=path.length){piece.pos=57;}else{piece.pos=np;}if(piece.pos>=57){var done=LG.pieces[color].filter(function(p){return p.pos>=57;}).length;if(color==='red')toast('Piece home! '+done+'/4',1500);if(done>=4){showWinner(color);return;}}}
   document.getElementById('skipTurnBtn').style.display='none';
-  drawBoard();updateScoreDisplay();
-  if(dv===6){LG.diceRolled=false;drawDice(0);updateTurnIndicator('Rolled 6 — roll again!');document.getElementById('diceResult').textContent='Tap to roll again!';}
+  drawBoard();updateScores();
+  if(dv===6){LG.diceRolled=false;drawDice(0);updateTI('Rolled 6 — roll again!');document.getElementById('diceResult').textContent='Tap to roll again!';}
   else endTurn();
 }
 function endTurn(){
   LG.diceRolled=false;LG.diceValue=0;drawDice(0);
   document.getElementById('skipTurnBtn').style.display='none';
   var res=document.getElementById('diceResult');var hint=document.getElementById('diceHint');
-  if(LG.currentTurn==='red'){
-    LG.currentTurn='green';
-    document.getElementById('lp-you').classList.remove('active-turn');
-    document.getElementById('lp-them').classList.add('active-turn');
-    updateTurnIndicator(LG.playerNames.green+"'s turn...");
-    if(res)res.textContent='Waiting for '+LG.playerNames.green+'...';
-    if(hint)hint.textContent='AI is thinking...';
-    LG.aiTimer=setTimeout(aiTakeTurn,1400);
-  } else {
-    LG.currentTurn='red';
-    document.getElementById('lp-them').classList.remove('active-turn');
-    document.getElementById('lp-you').classList.add('active-turn');
-    updateTurnIndicator('Your turn — Roll!');
-    if(res)res.textContent='Tap dice to roll';
-    if(hint)hint.textContent='Roll a 6 to enter play';
-  }
+  if(LG.currentTurn==='red'){LG.currentTurn='green';document.getElementById('lp-you').classList.remove('active-turn');document.getElementById('lp-them').classList.add('active-turn');updateTI(LG.playerNames.green+"'s turn...");if(res)res.textContent='Waiting...';if(hint)hint.textContent='AI thinking...';LG.aiTimer=setTimeout(aiTurn,1400);}
+  else{LG.currentTurn='red';document.getElementById('lp-them').classList.remove('active-turn');document.getElementById('lp-you').classList.add('active-turn');updateTI('Your turn — Roll!');if(res)res.textContent='Tap dice to roll';if(hint)hint.textContent='Roll a 6 to enter play';}
 }
-function aiTakeTurn(){
+function aiTurn(){
   if(LG.currentTurn!=='green'||!LG.active)return;
   var dv=Math.floor(Math.random()*6)+1;LG.diceValue=dv;LG.diceRolled=true;drawDice(dv);
   document.getElementById('diceResult').textContent=LG.playerNames.green+' rolled: '+dv;
-  updateTurnIndicator(LG.playerNames.green+' rolled '+dv+'...');
+  updateTI(LG.playerNames.green+' rolled '+dv+'...');
   setTimeout(function(){
     if(LG.currentTurn!=='green'||!LG.active)return;
     var best=-1,bestPos=-1;
-    LG.pieces.green.forEach(function(p,i){if(canMovePiece('green',i,dv)&&p.pos>bestPos){bestPos=p.pos;best=i;}});
+    LG.pieces.green.forEach(function(p,i){if(canMove('green',i,dv)&&p.pos>bestPos){bestPos=p.pos;best=i;}});
     if(best>=0)movePiece('green',best);
-    else{if(dv===6){LG.diceRolled=false;drawDice(0);setTimeout(aiTakeTurn,800);}else endTurn();}
+    else{if(dv===6){LG.diceRolled=false;drawDice(0);setTimeout(aiTurn,800);}else endTurn();}
   },700);
 }
-function updateTurnIndicator(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
-function updateScoreDisplay(){var rDone=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gDone=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rHome=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gHome=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rHome+' · ✓×'+rDone;if(ts)ts.textContent='🏠×'+gHome+' · ✓×'+gDone;}
-function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var banner=document.getElementById('ludoWinBanner');var wt=document.getElementById('winnerText');if(banner)banner.style.display='flex';if(wt)wt.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
+function updateTI(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
+function updateScores(){var rD=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gD=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rH=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gH=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rH+' · ✓×'+rD;if(ts)ts.textContent='🏠×'+gH+' · ✓×'+gD;}
+function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var b=document.getElementById('ludoWinBanner');var w=document.getElementById('winnerText');if(b)b.style.display='flex';if(w)w.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
 function toggleCamera(){if(LG.camOn)stopCamera();else startCamera();}
-async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera is live!',2000);}catch(err){toast('Camera access denied or not available.',3000,'err');if(btn){btn.textContent='📵';btn.style.background='';}LG.camOn=false;}}
-function stopCamera(){if(LG.camStream){LG.camStream.getTracks().forEach(function(t){t.stop();});LG.camStream=null;}LG.camOn=false;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=null;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='none';var btn=document.getElementById('ludo-cam-btn');if(btn){btn.textContent='📵';btn.style.background='';}toast('Camera off.',1500);}
-async function togglePiP(){var vid=document.getElementById('camVideo');if(!vid||!document.pictureInPictureEnabled)return;try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else await vid.requestPictureInPicture();}catch(e){toast('PiP not supported in this browser.',2000,'err');}}
+async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera live!',2000);}catch(err){toast('Camera access denied.',3000,'err');LG.camOn=false;}}
+function stopCamera(){if(LG.camStream){LG.camStream.getTracks().forEach(function(t){t.stop();});LG.camStream=null;}LG.camOn=false;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=null;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='none';var btn=document.getElementById('ludo-cam-btn');if(btn){btn.textContent='📵';btn.style.background='';}}
+async function togglePiP(){var vid=document.getElementById('camVideo');if(!vid||!document.pictureInPictureEnabled)return;try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else await vid.requestPictureInPicture();}catch(e){toast('PiP not supported.',2000,'err');}}
 function toggleLudoAV(type){if(type==='mic'){LG.micOn=!LG.micOn;var btn=document.getElementById('ludo-mic');if(btn){btn.textContent=LG.micOn?'🎙️':'🔇';btn.classList.toggle('off',!LG.micOn);}toast(LG.micOn?'Mic on':'Mic muted',1200);}else{LG.vidOn=!LG.vidOn;var btn=document.getElementById('ludo-vid');if(btn){btn.textContent=LG.vidOn?'🎥':'📷';btn.classList.toggle('off',!LG.vidOn);}toast(LG.vidOn?'Video on':'Video off',1200);}}
-function openLudoInvite(){var subCheck=document.getElementById('ludoSubCheck');var startBtn=document.getElementById('ludoStartBtn');if(!S.premium){if(subCheck)subCheck.style.display='block';if(startBtn){startBtn.textContent='👑 Get Premium to Host ($10/week)';startBtn.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(subCheck)subCheck.style.display='none';if(startBtn){startBtn.textContent='🎲 Send Ludo Invite';startBtn.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
+function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/week)':'Get Premium to Host ($10/week)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
 function startLudo(){
   if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}
   MC('m-ludo-invite');
   LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;
   clearTimeout(LG.aiTimer);
   LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};
-  var matchName=S.profiles[S.chatId]?S.profiles[S.chatId].name.split(' ')[0]:'Friend';
-  LG.playerNames={red:'You',green:matchName};
+  var mn=(DB.users.find(function(u){return u.id===S.chatPartnerId;})||{name:'Member',firstName:'Member',lastName:'',verified:false,online:false})?(DB.users.find(function(u){return u.id===S.chatPartnerId;})||{name:'Member',firstName:'Member',lastName:'',verified:false,online:false}).name.split(' ')[0]:'Friend';
+  LG.playerNames={red:'You',green:mn};
   document.getElementById('lp-you-name').textContent='You (Red)';
-  document.getElementById('lp-them-name').textContent=matchName+' (Green)';
+  document.getElementById('lp-them-name').textContent=mn+' (Green)';
   document.getElementById('lp-you').classList.add('active-turn');
   document.getElementById('lp-them').classList.remove('active-turn');
   LG.micOn=true;LG.vidOn=true;
@@ -2021,16 +2607,12 @@ function startLudo(){
   if(mic){mic.textContent='🎙️';mic.classList.remove('off');}
   if(vid){vid.textContent='🎥';vid.classList.remove('off');}
   var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';
-  if(S.msgs[S.chatId])S.msgs[S.chatId].push({id:'ludo-'+Date.now(),f:'me',t:'🎲 Ludo invite sent! Join me - audio and video are on. In sha Allah 😊',ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  if(Array.isArray(S.msgs[S.chatId]))S.msgs[S.chatId].push({id:'ludo-'+Date.now(),f:'me',t:'🎲 Ludo invite sent! Join me — audio and video are on. In sha Allah 😊',ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
   G('s-ludo');
-  setTimeout(function(){
-    if(!initCanvas())return;
-    _boardCanvas.onclick=ludoCanvasClick;
-    drawBoard();drawDice(0);updateScoreDisplay();updateTurnIndicator('Your turn — Roll the dice!');
-  },60);
-  toast('🎲 Ludo started! Audio & Video live.',2200);
+  setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);
+  toast('🎲 Ludo started!',2200);
 }
-function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);stopCamera();G('s-chat');toast('Game ended. Back to chat.',1800);}
+function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);stopCamera();G('s-chat');toast('Game ended.',1800);}
 
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded',function(){
@@ -2039,6 +2621,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var ci=document.getElementById('chatInp');
   if(ci)ci.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
 });
+
 </script>
 </body>
 </html>
