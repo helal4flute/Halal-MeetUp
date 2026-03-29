@@ -879,8 +879,9 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   </div>
   <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px 14px;position:relative;">
     <div class="scard" id="swipeCard" style="width:100%;max-height:490px;">
-      <div style="height:318px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;position:relative;">
-        <svg width="170" height="115"><use href="#logo"/></svg>
+      <div id="cPhotoArea" style="height:318px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+        <div id="cPhotoImg" style="position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center;background-repeat:no-repeat;"></div>
+        <div id="cPhotoFallback" style="font-size:5rem;z-index:1;">👤</div>
         <div class="sov" id="ov-like">LIKE 💚</div>
         <div class="sov" id="ov-nope">NOPE ✕</div>
         <div class="sov" id="ov-super">SUPER ⭐</div>
@@ -888,12 +889,12 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
           <div style="display:flex;align-items:flex-end;justify-content:space-between;">
             <div>
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
-                <p id="cName" style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#fff;font-weight:700;">Member 1</p>
-                <span style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
+                <p id="cName" style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#fff;font-weight:700;"></p>
+                <span id="cVerBadge" style="background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;display:none;">✓</span>
               </div>
-              <p id="cSub" style="color:rgba(255,255,255,.82);font-size:.79rem;">26 · London, UK · Sunni Hanafi</p>
+              <p id="cSub" style="color:rgba(255,255,255,.82);font-size:.79rem;"></p>
             </div>
-            <div style="width:9px;height:9px;background:#2ecc71;border-radius:50%;border:2px solid rgba(255,255,255,.5);margin-bottom:3px;"></div>
+            <div id="cOnlineDot" style="width:9px;height:9px;background:#95a5a6;border-radius:50%;border:2px solid rgba(255,255,255,.5);margin-bottom:3px;"></div>
           </div>
         </div>
       </div>
@@ -910,7 +911,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <button onclick="doSwipe('left')" style="width:54px;height:54px;border-radius:50%;background:#fff;border:2px solid #f0d0ce;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 14px rgba(184,48,48,.16);display:flex;align-items:center;justify-content:center;">✕</button>
     <button onclick="doSwipe('super')" style="width:43px;height:43px;border-radius:50%;background:#fff;border:2px solid #d0e8f4;font-size:1.15rem;cursor:pointer;box-shadow:0 3px 12px rgba(30,96,144,.14);display:flex;align-items:center;justify-content:center;">⭐</button>
     <button onclick="doSwipe('right')" style="width:54px;height:54px;border-radius:50%;background:#fff;border:2px solid #c0e8d0;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 14px rgba(13,115,119,.16);display:flex;align-items:center;justify-content:center;">💚</button>
-    <button onclick="G('s-viewprofile')" style="width:43px;height:43px;border-radius:50%;background:#fff;border:2px solid var(--sand);font-size:1.05rem;cursor:pointer;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;">👤</button>
+    <button onclick="if(S._discoverCandidateId)openViewProfile(S._discoverCandidateId)" style="width:43px;height:43px;border-radius:50%;background:#fff;border:2px solid var(--sand);font-size:1.05rem;cursor:pointer;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;">👤</button>
   </div>
   <nav class="bnav">
     <button class="nb on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Discover</button>
@@ -926,7 +927,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="scroll" style="padding:13px 15px 18px;">
     <div style="background:#fff;border-radius:50px;padding:9px 15px;display:flex;align-items:center;gap:9px;margin-bottom:13px;box-shadow:var(--sh);">
       <span style="color:var(--txt3);">🔍</span>
-      <input type="text" id="srq" placeholder="Search by name..." style="flex:1;border:none;outline:none;font-family:'Nunito',sans-serif;font-size:.87rem;background:none;"/>
+      <input type="text" id="srq" placeholder="Search by name..." onkeydown="if(event.key==='Enter')runSearch()" style="flex:1;border:none;outline:none;font-family:'Nunito',sans-serif;font-size:.87rem;background:none;"/>
     </div>
     <div class="card" style="margin-bottom:11px;">
       <p style="font-size:.71rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:11px;">Filters</p>
@@ -1619,6 +1620,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 <script>
 
 
+
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -1666,6 +1668,7 @@ function G(id) {
   if (t) {
     t.classList.add('on');
     if (id === 's-matches') renderConvList();
+    if (id === 's-discover') { if (S.user && S.token) fetchDiscoverProfiles(); }
     if (id === 's-chat')    renderChatByMatch();
     if (id === 's-myprofile') openMyProfile();
     if (id === 's-admin')   initAdmin();
@@ -2322,21 +2325,74 @@ function renderConvList() {
 
 /* ── Discover ─────────────────────────────────────────────── */
 function loadNextDiscoverProfile() {
-  if (!S.user || !S.token) return;
-  apiCall('/api/discover?page=' + (S._discoverPage || 0), 'GET')
+  if (!S.user || !S.token) { showEmptyDiscover(); return; }
+  // Use queued profiles first
+  if (S._discoverQueue && S._discoverQueue.length > 1) {
+    S._discoverQueue.shift(); // remove shown profile
+    renderDiscoverCard(S._discoverQueue[0]);
+    // Pre-fetch more when queue is low
+    if (S._discoverQueue.length < 3) fetchDiscoverProfiles();
+    return;
+  }
+  fetchDiscoverProfiles();
+}
+
+function fetchDiscoverProfiles() {
+  apiCall('/api/discover?page=' + (S._discoverPage || 0) + '&page_size=10', 'GET')
   .then(function(res) {
-    if (!res.success || !res.data.length) { showEmptyDiscover(); return; }
-    var p = res.data[0];
-    S._discoverCandidateId = p.id;
+    if (!res.success || !res.data || !res.data.length) { showEmptyDiscover(); return; }
     S._discoverQueue = res.data;
-    var nameEl = document.getElementById('cName');
-    var subEl  = document.getElementById('cSub');
-    var bioEl  = document.getElementById('cBio');
-    if (nameEl) nameEl.textContent = (p.first_name || '') + ' ' + (p.last_name || '');
-    if (subEl)  subEl.textContent  = (p.age || '?') + ' · ' + (p.city || '') + (p.sect ? ' · ' + p.sect : '');
-    if (bioEl)  bioEl.textContent  = p.bio || 'No bio yet.';
+    S._discoverPage  = (S._discoverPage || 0) + 1;
+    renderDiscoverCard(res.data[0]);
   })
-  .catch(function() { showEmptyDiscover(); });
+  .catch(function(e) { console.error('Discover error:', e); showEmptyDiscover(); });
+}
+
+function renderDiscoverCard(p) {
+  if (!p) { showEmptyDiscover(); return; }
+  S._discoverCandidateId = p.id;
+
+  // Update photo area
+  var photoImg      = document.getElementById('cPhotoImg');
+  var photoFallback = document.getElementById('cPhotoFallback');
+  if (photoImg) {
+    if (p.photo_1) {
+      photoImg.style.backgroundImage = 'url(' + JSON.stringify(p.photo_1) + ')';
+      photoImg.style.display = 'block';
+      if (photoFallback) photoFallback.style.display = 'none';
+    } else {
+      photoImg.style.backgroundImage = '';
+      photoImg.style.display = 'none';
+      if (photoFallback) photoFallback.style.display = 'block';
+    }
+  }
+
+  // Update name + sub info
+  var nameEl = document.getElementById('cName');
+  var subEl  = document.getElementById('cSub');
+  var bioEl  = document.getElementById('cBio');
+  if (nameEl) nameEl.textContent = (p.first_name || '') + (p.last_name ? ' ' + p.last_name[0] + '.' : '');
+  if (subEl)  subEl.textContent  = (p.age || '?') + ' · ' + (p.city || p.country || 'Somewhere') + (p.sect ? ' · ' + p.sect : '');
+  if (bioEl)  bioEl.textContent  = p.bio || '';
+
+  // Verified badge
+  var badge = document.getElementById('cVerBadge');
+  if (badge) badge.style.display = p.id_verified ? 'inline-block' : 'none';
+
+  // Online dot
+  var dot = document.getElementById('cOnlineDot');
+  if (dot) dot.style.background = p.online ? '#2ecc71' : '#95a5a6';
+
+  // Reset card position
+  var card = document.getElementById('swipeCard');
+  if (card) {
+    card.style.transition = 'none';
+    card.style.transform  = '';
+    card.style.opacity    = '1';
+    ['ov-like','ov-nope','ov-super'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.style.opacity = 0;
+    });
+  }
 }
 function showEmptyDiscover() {
   var card = document.getElementById('swipeCard');
@@ -2681,30 +2737,98 @@ function confirmCancelSub() { MC('m-manage-sub'); M('s-myprofile', 'm-confirm-ca
 
 /* ── Search ──────────────────────────────────────────────── */
 function runSearch() {
-  var country  = document.getElementById('sf-c').value;
-  var sect     = document.getElementById('sf-s').value;
-  var ms       = document.getElementById('sf-ms').value;
-  var verOnly  = document.getElementById('sf-v').checked;
   if (!S.token) { toast('Please sign in to search.', 2500, 'err'); return; }
+  var nameQ   = (document.getElementById('srq')  || {}).value  || '';
+  var country = (document.getElementById('sf-c') || {}).value  || '';
+  var sect    = (document.getElementById('sf-s') || {}).value  || '';
+  var ms      = (document.getElementById('sf-ms')|| {}).value  || '';
+  var verOnly = document.getElementById('sf-v') ? document.getElementById('sf-v').checked : false;
+  var minAge  = (document.getElementById('sf-min-age')||{}).value || '';
+  var maxAge  = (document.getElementById('sf-max-age')||{}).value || '';
+
+  // Show loading state
+  var listEl    = document.getElementById('srList');
+  var countEl   = document.getElementById('srCount');
+  var resultsEl = document.getElementById('srResults');
+  if (resultsEl) resultsEl.style.display = 'block';
+  if (listEl)  listEl.innerHTML = '<p style="text-align:center;padding:20px;color:var(--txt3);">Searching...</p>';
+  if (countEl) countEl.textContent = '';
+
   var params = new URLSearchParams();
-  if (country) params.set('country', country);
-  if (sect)    params.set('sect', sect);
+  if (nameQ)   params.set('name',           nameQ.trim());
+  if (country) params.set('country',        country);
+  if (sect)    params.set('sect',           sect);
   if (ms)      params.set('marital_status', ms);
-  if (verOnly) params.set('verified_only', 'true');
+  if (verOnly) params.set('verified_only',  'true');
+  if (minAge)  params.set('min_age',        minAge);
+  if (maxAge)  params.set('max_age',        maxAge);
+
   apiCall('/api/search?' + params.toString(), 'GET')
   .then(function(res) {
-    document.getElementById('srResults').style.display = 'block';
     if (!res.success || !res.data.length) {
-      document.getElementById('srCount').textContent = '0 profiles found';
-      document.getElementById('srList').innerHTML = '<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No profiles match your filters.</p>';
+      if (countEl) countEl.textContent = '0 profiles found';
+      if (listEl)  listEl.innerHTML =
+        '<div style="text-align:center;padding:30px 20px;">'
+        + '<div style="font-size:3rem;margin-bottom:10px;">🔍</div>'
+        + '<p style="font-weight:800;font-size:.88rem;margin-bottom:6px;">No profiles found</p>'
+        + '<p style="color:var(--txt3);font-size:.78rem;">Try adjusting your filters</p></div>';
       return;
     }
-    document.getElementById('srCount').textContent = res.data.length + ' profile' + (res.data.length !== 1 ? 's' : '') + ' found';
-    document.getElementById('srList').innerHTML = res.data.map(function(p) {
-      return '<div onclick="openViewProfile(\'' + p.id + '\')" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">' + (p.first_name || '') + ' ' + (p.last_name || '') + '</p><p style="font-size:.75rem;color:var(--txt3);">' + (p.age || '?') + ' · ' + (p.city || '') + ' · ' + (p.sect || '') + '</p></div></div>';
-    }).join('');
+    if (countEl) countEl.textContent = res.data.length + ' profile' + (res.data.length !== 1 ? 's' : '') + ' found';
+    if (listEl) {
+      listEl.innerHTML = '';
+      res.data.forEach(function(p) {
+        var row = document.createElement('div');
+        row.style.cssText = 'background:#fff;border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);';
+        // Avatar
+        var av = document.createElement('div');
+        av.style.cssText = 'width:58px;height:58px;border-radius:50%;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.5rem;';
+        if (p.photo_1) {
+          var img = document.createElement('img');
+          img.src = p.photo_1;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+          av.innerHTML = '';
+          av.appendChild(img);
+        } else {
+          av.textContent = '👤';
+        }
+        // Info
+        var info = document.createElement('div'); info.style.flex='1'; info.style.minWidth='0';
+        var nm = document.createElement('p');
+        nm.style.cssText = 'font-weight:800;font-size:.9rem;margin-bottom:3px;';
+        nm.textContent = (p.first_name||'') + (p.last_name ? ' ' + p.last_name[0] + '.' : '');
+        var det = document.createElement('p');
+        det.style.cssText = 'font-size:.76rem;color:var(--txt3);margin-bottom:3px;';
+        det.textContent = (p.age||'?') + ' · ' + (p.city||p.country||'') + (p.sect?' · '+p.sect:'');
+        var bio = document.createElement('p');
+        bio.style.cssText = 'font-size:.74rem;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        bio.textContent = p.bio || '';
+        info.appendChild(nm); info.appendChild(det); if (p.bio) info.appendChild(bio);
+        // Badge + action
+        var right = document.createElement('div');
+        right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;';
+        if (p.id_verified) {
+          var bdg = document.createElement('span');
+          bdg.style.cssText = 'background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;';
+          bdg.textContent = '✓ Verified';
+          right.appendChild(bdg);
+        }
+        var viewBtn = document.createElement('button');
+        viewBtn.style.cssText = 'background:var(--teal);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:.72rem;font-weight:800;cursor:pointer;';
+        viewBtn.textContent = 'View ›';
+        (function(uid){ viewBtn.onclick = function(e){ e.stopPropagation(); openViewProfile(uid); }; })(p.id);
+        right.appendChild(viewBtn);
+        row.appendChild(av); row.appendChild(info); row.appendChild(right);
+        (function(uid){ row.onclick = function(){ openViewProfile(uid); }; })(p.id);
+        listEl.appendChild(row);
+      });
+    }
   })
-  .catch(function() { toast('❌ Search failed.', 2500, 'err'); });
+  .catch(function(e) {
+    console.error('Search error:', e);
+    if (listEl) listEl.innerHTML = '<p style="color:var(--txt3);text-align:center;padding:20px;">Search failed. Please try again.</p>';
+    toast('❌ Search failed. Please try again.', 2500, 'err');
+  });
 }
 
 /* ── Admin ───────────────────────────────────────────────── */
