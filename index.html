@@ -601,7 +601,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--teal4);margin-bottom:7px;">Check Your Phone</h3>
     <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:3px;">6-digit code sent to</p>
     <p style="font-weight:800;color:var(--txt);margin-bottom:5px;" id="otp-ph-target">+1 555-0000</p>
-    <p style="font-size:.74rem;color:var(--teal);">(Demo: code pre-filled ↓)</p>
+    <p id="otp-ph-hint" style="font-size:.82rem;color:var(--teal);font-weight:800;background:#dff2f2;padding:6px 14px;border-radius:8px;"></p>
     <div class="orow" id="otp-ph-cells">
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',0)" onkeydown="otpKey(event,this,'otp-ph-cells',0)"/>
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-ph-cells',1)" onkeydown="otpKey(event,this,'otp-ph-cells',1)"/>
@@ -623,6 +623,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--teal4);margin-bottom:7px;">Check Your Email</h3>
     <p style="font-size:.83rem;color:var(--txt3);line-height:1.6;margin-bottom:3px;">6-digit code sent to</p>
     <p style="font-weight:800;color:var(--txt);margin-bottom:5px;" id="otp-em-target"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="433a2c3603263b222e332f266d202c2e">[email&#160;protected]</a></p>
+    <p id="otp-em-hint" style="font-size:.82rem;color:var(--teal);font-weight:800;background:#fdf0dc;padding:6px 14px;border-radius:8px;"></p>
     <p style="font-size:.74rem;color:var(--teal);">(Demo: code pre-filled ↓)</p>
     <div class="orow" id="otp-em-cells">
       <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',0)" onkeydown="otpKey(event,this,'otp-em-cells',0)"/>
@@ -1769,12 +1770,16 @@ function reg1Next(){
   const dob=document.getElementById('rg-dob').value;
   if(!fn||!ln||!ph||!em||!dob){toast('Please fill in all required fields.','err',3000);return;}
   if(!em.includes('@')){toast('Please enter a valid email.','err',2500);return;}
-  S.regData={fn,ln,ph,em,dob};
+  S.regData={fn,ln,ph,em,dob,phone:ph};
   S.otpPhone=String(Math.floor(100000+Math.random()*900000));
-  // In prod: send SMS via Twilio/AWS SNS to ph with S.otpPhone
   document.getElementById('otp-ph-target').textContent=ph;
+  // Auto-fill OTP cells for testing (remove prefillOTP in production with real SMS)
   prefillOTP('otp-ph-cells',S.otpPhone);
-  toast('📱 Verification code sent to your phone!',3500);
+  // Show OTP prominently — remove this toast when Twilio is connected
+  toast('📱 Your code: '+S.otpPhone+' (auto-filled)',6000);
+  // Show code visibly below the OTP input
+  var hint=document.getElementById('otp-ph-hint');
+  if(hint)hint.textContent='Your code: '+S.otpPhone+' — tap Verify to continue';
   G('s-otp-ph');
 }
 function prefillOTP(cellsId,code){
@@ -1784,8 +1789,17 @@ function prefillOTP(cellsId,code){
   },400);
 }
 function resendOTP(type){
-  if(type==='phone'){S.otpPhone=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-ph-cells',S.otpPhone);toast('📱 New verification code sent!',3000);}
-  else{S.otpEmail=String(Math.floor(100000+Math.random()*900000));prefillOTP('otp-em-cells',S.otpEmail);toast('📧 New verification code sent!',3000);}
+  if(type==='phone'){
+    S.otpPhone=String(Math.floor(100000+Math.random()*900000));
+    prefillOTP('otp-ph-cells',S.otpPhone);
+    toast('📱 New code: '+S.otpPhone+' (auto-filled)',5000);
+    var h=document.getElementById('otp-ph-hint');if(h)h.textContent='Your code: '+S.otpPhone;
+  } else {
+    S.otpEmail=String(Math.floor(100000+Math.random()*900000));
+    prefillOTP('otp-em-cells',S.otpEmail);
+    toast('📧 New code: '+S.otpEmail+' (auto-filled)',5000);
+    var h2=document.getElementById('otp-em-hint');if(h2)h2.textContent='Your code: '+S.otpEmail;
+  }
 }
 function otpInput(el,grpId,idx){
   const cells=document.querySelectorAll('#'+grpId+' .ocell');
@@ -1805,10 +1819,12 @@ function verifyOTP(cellsId,type){
     toast('✅ Verified!',2000);
     if(type==='phone'){
       S.otpEmail=String(Math.floor(100000+Math.random()*900000));
-      // In prod: send email via SendGrid to S.regData.em with S.otpEmail
       document.getElementById('otp-em-target').textContent=S.regData?.em||'your email';
       prefillOTP('otp-em-cells',S.otpEmail);
-      toast('📧 Verification code sent to your email!',3500);
+      // Show OTP prominently — remove when SendGrid is connected
+      toast('📧 Your code: '+S.otpEmail+' (auto-filled)',6000);
+      var ehint=document.getElementById('otp-em-hint');
+      if(ehint)ehint.textContent='Your code: '+S.otpEmail+' — tap Verify to continue';
       setTimeout(()=>G('s-otp-em'),600);
     } else {
       // In prod: send welcome email from infohalalmeetup@gmail.com
@@ -1866,31 +1882,28 @@ function completeReg(){
   var name=(S.regData&&S.regData.fn)?S.regData.fn:'User';
   var email=(S.regData&&S.regData.em)?S.regData.em:'';
   // Build full user object from all reg steps
+  // Build payload with snake_case field names matching the API
   var newUser={
-    id:'u'+Date.now(),
-    firstName:name,
-    lastName:(S.regData&&S.regData.ln)||'',
-    email:email,
-    phone:(S.regData&&S.regData.phone)||'',
-    dob:(S.regData&&S.regData.dob)||'',
-    passwordHash:hashPw(pwEl.value),
-    gender:(S.regData&&S.regData.gender)||'',
-    sect:(S.regData&&S.regData.sect)||'',
-    maritalStatus:(S.regData&&S.regData.maritalStatus)||'',
-    education:(S.regData&&S.regData.education)||'',
-    country:(S.regData&&S.regData.country)||'',
-    city:(S.regData&&S.regData.city)||'',
-    nationality:(S.regData&&S.regData.nationality)||'',
-    languages:(S.regData&&S.regData.languages)||'',
-    occupation:(S.regData&&S.regData.occupation)||'',
-    bio:(S.regData&&S.regData.bio)||'',
-    interests:(S.regData&&S.regData.interests)||'',
-    photos:S.photos.slice(),
-    verified:false,
-    premium:false,
-    subStatus:'none',
-    createdAt:new Date().toISOString(),
-    online:true,
+    first_name:   name,
+    last_name:    (S.regData&&S.regData.ln)          ||'',
+    email:        email,
+    password:     pwEl.value,                          // raw password — API hashes with bcrypt
+    phone:        (S.regData&&S.regData.ph)           ||'',
+    dob:          (S.regData&&S.regData.dob)          ||'',
+    gender:       (S.regData&&S.regData.gender)       ||'',
+    sect:         (S.regData&&S.regData.sect)         ||'',
+    marital_status:(S.regData&&S.regData.maritalStatus)||'Never Married',
+    education:    (S.regData&&S.regData.education)    ||'',
+    country:      (S.regData&&S.regData.country)      ||'',
+    city:         (S.regData&&S.regData.city)         ||'',
+    nationality:  (S.regData&&S.regData.nationality)  ||'',
+    languages:    (S.regData&&S.regData.languages)    ||'',
+    occupation:   (S.regData&&S.regData.occupation)   ||'',
+    bio:          (S.regData&&S.regData.bio)          ||'No bio provided.',
+    interests:    (S.regData&&S.regData.interests)    ||'',
+    photo_1:      '',
+    photo_2:      '',
+    photo_3:      '',
   };
   // POST to real API
   toast('Creating your account...',3000);
