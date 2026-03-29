@@ -506,7 +506,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
       </div>
       <div class="card" style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
         <div style="width:42px;height:42px;background:#e2eef8;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📞</div>
-        <div><p style="font-weight:800;font-size:.87rem;">Secure In-App Calls</p><p style="font-size:.74rem;color:var(--txt3);">Audio & video — Premium $10/week (card only)</p></div>
+        <div><p style="font-weight:800;font-size:.87rem;">Secure In-App Calls</p><p style="font-size:.74rem;color:var(--txt3);">Audio & video — Premium $10/month (card only)</p></div>
       </div>
       <div class="card" style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
         <div style="width:42px;height:42px;background:#e2f5e8;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📧</div>
@@ -1073,11 +1073,11 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
       <div style="text-align:center;margin-bottom:15px;">
         <div style="font-size:2.8rem;margin-bottom:7px;">👑</div>
         <p class="mt">Premium Required</p>
-        <p style="font-size:.81rem;color:var(--txt3);line-height:1.5;">Audio & video calls + live photos require Premium.</p>
+        <p style="font-size:.81rem;color:var(--txt3);line-height:1.5;">Audio & video calls, Ludo game &amp; live photos require Premium.</p>
       </div>
       <div class="subcrd" style="margin-bottom:15px;">
-        <p style="font-size:1.8rem;font-weight:800;color:var(--teal);">$10<span style="font-size:.95rem;font-weight:600;color:var(--txt3);">/week</span></p>
-        <p style="font-size:.72rem;color:var(--txt3);margin-top:2px;">Auto-renews weekly · Cancel anytime</p>
+        <p style="font-size:1.8rem;font-weight:800;color:var(--teal);">$10<span style="font-size:.95rem;font-weight:600;color:var(--txt3);">/month</span></p>
+        <p style="font-size:.72rem;color:var(--txt3);margin-top:2px;">Auto-renews monthly · Cancel anytime</p>
         <p style="font-size:.77rem;color:var(--txt3);margin-bottom:11px;">Credit card only · Cancel anytime</p>
         <div style="text-align:left;display:flex;flex-direction:column;gap:4px;">
           <p style="font-size:.79rem;color:var(--txt2);">✅ Unlimited audio & video calls</p>
@@ -1094,7 +1094,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
       </div>
       <div class="fg"><label>Name on Card</label><input id="cc-name" type="text" placeholder="As it appears on card"/></div>
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:13px;font-size:.73rem;color:var(--txt3);">🔒 256-bit SSL encrypted</div>
-      <button class="btn bg bfull" onclick="processPayment()" style="margin-bottom:9px;">Subscribe · $10/week</button>
+      <button class="btn bg bfull" onclick="processPayment()" style="margin-bottom:9px;">Subscribe · $10/month</button>
       <button class="btn bgh bfull" onclick="MC('m-sub')">Maybe Later</button>
     </div>
   </div>
@@ -1115,7 +1115,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
       </div>
       <div id="ludoSubCheck" style="background:#fdf0dc;border-radius:var(--rs);padding:11px 13px;margin-bottom:14px;display:none;">
         <p style="font-size:.8rem;color:var(--gold3);font-weight:700;">⚠️ Premium Required to host Ludo</p>
-        <p style="font-size:.76rem;color:var(--txt3);margin-top:3px;">Only the person who sends the invite needs a subscription. Subscribe for $10/week.</p>
+        <p style="font-size:.76rem;color:var(--txt3);margin-top:3px;">Only the person who sends the invite needs a subscription. Subscribe for $10/month.</p>
       </div>
       <button class="btn bp bfull" id="ludoStartBtn" onclick="startLudo()" style="margin-bottom:9px;">🎲 Send Ludo Invite</button>
       <button class="btn bgh bfull" onclick="MC('m-ludo-invite')">Maybe Later</button>
@@ -1262,15 +1262,15 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <p class="mt">Manage Subscription</p>
     <div id="sub-active-block" style="background:#e8f5e9;border-radius:var(--rs);padding:12px 14px;margin:12px 0;text-align:left;">
       <p style="font-weight:800;font-size:.85rem;color:#1e8449;margin-bottom:5px;">✅ Premium Active</p>
-      <p id="sub-status-line" style="font-size:.78rem;color:var(--txt2);margin-bottom:3px;">Auto-renews weekly</p>
-      <p style="font-size:.75rem;color:var(--txt3);">$10/week · Cancel anytime</p>
+      <p id="sub-status-line" style="font-size:.78rem;color:var(--txt2);margin-bottom:3px;">Auto-renews monthly</p>
+      <p style="font-size:.75rem;color:var(--txt3);">$10/month · Cancel anytime</p>
     </div>
     <div id="sub-cancelled-block" style="background:#fce8e8;border-radius:var(--rs);padding:12px 14px;margin:12px 0;text-align:left;display:none;">
       <p style="font-weight:800;font-size:.85rem;color:var(--red2);margin-bottom:5px;">⛔ Subscription Cancelled</p>
       <p style="font-size:.78rem;color:var(--txt2);">Re-subscribe to access calls, Ludo &amp; more.</p>
     </div>
     <button id="sub-cancel-btn" class="btn bred bfull" onclick="confirmCancelSub()" style="margin-bottom:9px;">Cancel Subscription</button>
-    <button id="sub-resub-btn" class="btn bp bfull" onclick="MC('m-manage-sub');M('s-myprofile','m-sub');" style="display:none;margin-bottom:9px;">Re-Subscribe ($10/week)</button>
+    <button id="sub-resub-btn" class="btn bp bfull" onclick="MC('m-manage-sub');M('s-myprofile','m-sub');" style="display:none;margin-bottom:9px;">Re-Subscribe ($10/month)</button>
     <button class="btn bgh bfull" onclick="MC('m-manage-sub')">Close</button>
   </div>
 </div>
@@ -1637,6 +1637,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 <script>
+
 
 
 
@@ -2247,9 +2248,23 @@ function openChatByMatch(matchId) {
   });
 }
 function openChat(id) {
-  var matchId = getMatchId(id);
-  if (matchId) openChatByMatch(matchId);
-  else toast('You need to match first before chatting.', 2500, 'err');
+  if (!id) return;
+  // Check matches list from API
+  apiCall('/api/matches', 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var match = (res.data || []).find(function(m) {
+      return m.partner_id === id || m.user1_id === id || m.user2_id === id;
+    });
+    if (match) {
+      openChatByMatch(match.match_id);
+    } else {
+      toast('You need to match first before chatting. Like their profile!', 3000, 'err');
+    }
+  })
+  .catch(function() {
+    toast('Could not load matches. Please try again.', 2500, 'err');
+  });
 }
 function renderChatByMatch() {
   var cont = document.getElementById('chatMsgs');
@@ -2682,8 +2697,14 @@ function submitReport() {
 
 /* ── Calls ──────────────────────────────────────────────── */
 function startCall(type) {
-  if (!S.premium) { if (S.subStatus === 'cancelled') toast('Your subscription is cancelled. Re-subscribe to use calls.', 3000, 'err'); M('s-chat', 'm-sub'); return; }
-  var p = S.user;
+  if (!S.premium) {
+    var msg = S.subStatus === 'cancelled'
+      ? 'Your subscription has ended. Re-subscribe for $10/month to make calls.'
+      : 'Audio & Video calls require a Premium subscription ($10/month).';
+    toast(msg, 3500, 'err');
+    M('s-chat', 'm-sub');
+    return;
+  }
   document.getElementById('call-name').textContent = 'Calling...';
   document.getElementById('call-type').textContent = (type === 'video' ? '🎥 Video' : '📞 Voice') + ' Call';
   S.callSecs = 0; clearInterval(S.callTimer);
@@ -2731,7 +2752,7 @@ function processPayment() {
   if (!nm) { toast('Please enter the name on your card.', 'err', 2500); return; }
   var isReSub = S.subStatus === 'cancelled';
   var now = new Date();
-  var renewDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  var renewDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   apiCall('/api/subscriptions', 'POST', { action: isReSub ? 'resubscribe' : 'subscribe', stripe_sub_id: 'manual_' + Date.now(), stripe_customer_id: '' })
   .then(function(res) {
     MC('m-sub');
@@ -3237,7 +3258,7 @@ function aiTurn(){if(LG.currentTurn!=='green'||!LG.active)return;var dv=Math.flo
 function updateTI(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
 function updateScores(){var rD=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gD=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rH=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gH=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rH+' · ✓×'+rD;if(ts)ts.textContent='🏠×'+gH+' · ✓×'+gD;}
 function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var b=document.getElementById('ludoWinBanner');var w=document.getElementById('winnerText');if(b)b.style.display='flex';if(w)w.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
-function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/week)':'Get Premium to Host ($10/week)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
+function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/month)':'Get Premium to Host ($10/month)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
 function startLudo(){if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}MC('m-ludo-invite');LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;clearTimeout(LG.aiTimer);LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};var mn='Friend';LG.playerNames={red:'You',green:mn};document.getElementById('lp-you-name').textContent='You (Red)';document.getElementById('lp-them-name').textContent=mn+' (Green)';document.getElementById('lp-you').classList.add('active-turn');document.getElementById('lp-them').classList.remove('active-turn');LG.micOn=true;LG.vidOn=true;var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');if(mic){mic.textContent='🎙️';mic.classList.remove('off');}if(vid){vid.textContent='🎥';vid.classList.remove('off');}var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';G('s-ludo');setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);toast('🎲 Ludo started!',2200);}
 function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);G('s-chat');toast('Game ended.',1800);}
 async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera live!',2000);}catch(err){toast('Camera access denied.',3000,'err');LG.camOn=false;}}
