@@ -602,12 +602,12 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <p style="font-size:.85rem;color:var(--txt3);line-height:1.7;margin-bottom:6px;">We sent a 6-digit code to</p>
     <p style="font-weight:800;font-size:.95rem;color:var(--teal4);margin-bottom:18px;" id="otp-em-target">your email</p>
     <div class="orow" id="otp-em-cells" style="margin-bottom:10px;">
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',0)" onkeydown="otpKey(event,this,'otp-em-cells',0)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',1)" onkeydown="otpKey(event,this,'otp-em-cells',1)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',2)" onkeydown="otpKey(event,this,'otp-em-cells',2)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',3)" onkeydown="otpKey(event,this,'otp-em-cells',3)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',4)" onkeydown="otpKey(event,this,'otp-em-cells',4)"/>
-      <input class="ocell" maxlength="1" oninput="otpInput(this,'otp-em-cells',5)" onkeydown="otpKey(event,this,'otp-em-cells',5)"/>
+      <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" oninput="otpInput(this,'otp-em-cells',0)" onkeydown="otpKey(event,this,'otp-em-cells',0)"/>
+      <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" oninput="otpInput(this,'otp-em-cells',1)" onkeydown="otpKey(event,this,'otp-em-cells',1)"/>
+      <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" oninput="otpInput(this,'otp-em-cells',2)" onkeydown="otpKey(event,this,'otp-em-cells',2)"/>
+      <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" oninput="otpInput(this,'otp-em-cells',3)" onkeydown="otpKey(event,this,'otp-em-cells',3)"/>
+      <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" oninput="otpInput(this,'otp-em-cells',4)" onkeydown="otpKey(event,this,'otp-em-cells',4)"/>
+      <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" oninput="otpInput(this,'otp-em-cells',5)" onkeydown="otpKey(event,this,'otp-em-cells',5)"/>
     </div>
     <p id="otp-em-status" style="font-size:.78rem;color:var(--txt3);min-height:20px;margin-bottom:12px;"></p>
     <button class="btn bp bfull" onclick="verifyEmailCode()" style="margin-bottom:12px;font-size:.95rem;padding:14px;">Verify & Continue →</button>
@@ -1548,6 +1548,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 
+
 const API = 'https://halal-meetup-api-production.up.railway.app';
 
 function apiCall(endpoint, method, body) {
@@ -1842,9 +1843,21 @@ function sendEmailVerification(email,name){
     toast('❌ Connection error.',2500,'err');
   });
 }
-function otpInput(el,grpId,idx){
-  const cells=document.querySelectorAll('#'+grpId+' .ocell');
-  if(el.value&&idx<cells.length-1)cells[idx+1].focus();
+function otpInput(el, grpId, idx) {
+  // Keep only digits
+  el.value = el.value.replace(/[^0-9]/g, '').slice(-1);
+  var cells = document.querySelectorAll('#' + grpId + ' .ocell');
+  if (el.value && idx < cells.length - 1) cells[idx + 1].focus();
+}
+function otpPaste(e, grpId) {
+  // Handle paste of full 6-digit code
+  e.preventDefault();
+  var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+  var cells = document.querySelectorAll('#' + grpId + ' .ocell');
+  for (var i = 0; i < cells.length && i < pasted.length; i++) {
+    cells[i].value = pasted[i];
+  }
+  if (pasted.length >= cells.length) cells[cells.length-1].focus();
 }
 function otpKey(e,el,grpId,idx){
   if(e.key==='Backspace'&&!el.value&&idx>0){
@@ -2021,40 +2034,54 @@ function openPhotoSource(source) {
   var sheet = document.getElementById('photo-source-sheet');
   if (sheet) sheet.classList.remove('on');
   var i = S._photoSlotIdx;
-  var inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/jpeg,image/png,image/webp,image/*';
-  if (source === 'camera') inp.capture = 'user'; // front camera for selfie-style
-  inp.style.cssText = 'position:fixed;top:-100px;left:-100px;opacity:0;';
-  document.body.appendChild(inp);
-  inp.addEventListener('change', function() {
-    if (!inp.files || !inp.files[0]) {
-      document.body.removeChild(inp); return;
+
+  // Small delay to let sheet close animation finish
+  setTimeout(function() {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';  // broadest possible — iOS needs this
+    // Only set capture if camera selected AND not iOS (iOS ignores it anyway)
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (source === 'camera' && !isIOS) {
+      inp.capture = 'environment';
     }
-    var file = inp.files[0];
-    if (file.size > 10 * 1024 * 1024) {
-      toast('Photo too large. Please use a photo under 10MB.', 3000, 'err');
-      document.body.removeChild(inp); return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var slot = document.getElementById('ps' + i);
-      S.photos[i] = 1;
-      S._photoFiles = S._photoFiles || {};
-      S._photoFiles[i] = file;
-      slot.innerHTML = '<img src="' + e.target.result + '" '
-        + 'style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
-      slot.classList.add('filled');
-      document.getElementById('pctr').textContent = S.photos.filter(Boolean).length + '/3 uploaded';
-      toast('Photo ' + (i+1) + ' uploaded!', 1800);
-    };
-    reader.onerror = function() { toast('Could not read photo. Try again.', 2500, 'err'); };
-    reader.readAsDataURL(file);
-    setTimeout(function() {
+    // Must be visible and in DOM for iOS Safari to trigger
+    inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
+    document.body.appendChild(inp);
+
+    // iOS Safari requires a real user-gesture triggered click
+    // using a timeout breaks the gesture chain — use direct click
+    inp.addEventListener('change', function(ev) {
+      if (!inp.files || !inp.files[0]) {
+        if (document.body.contains(inp)) document.body.removeChild(inp);
+        return;
+      }
+      var file = inp.files[0];
       if (document.body.contains(inp)) document.body.removeChild(inp);
-    }, 1000);
-  });
-  setTimeout(function() { inp.click(); }, 100);
+
+      if (file.size > 15 * 1024 * 1024) {
+        toast('Photo too large. Max 15MB.', 3000, 'err'); return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var slot = document.getElementById('ps' + i);
+        if (!slot) return;
+        S.photos[i] = 1;
+        S._photoFiles = S._photoFiles || {};
+        S._photoFiles[i] = file;
+        slot.innerHTML = '<img src="' + e.target.result + '" '
+          + 'style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">';
+        slot.classList.add('filled');
+        var ctr = document.getElementById('pctr');
+        if (ctr) ctr.textContent = S.photos.filter(Boolean).length + '/3 uploaded';
+        toast('Photo ' + (i+1) + ' added!', 1800);
+      };
+      reader.onerror = function() { toast('Could not load photo. Try another.', 2500, 'err'); };
+      reader.readAsDataURL(file);
+    });
+
+    inp.click();
+  }, 300);
 }
 
 
