@@ -1524,6 +1524,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 </div><!-- /#app -->
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
 const API = 'https://halal-meetup-api-production.up.railway.app';
 
 function apiCall(endpoint, method, body) {
@@ -1922,9 +1923,12 @@ function completeReg(){
     password:     pwEl.value,                          // raw password — API hashes with bcrypt
     phone:        (S.regData&&S.regData.ph)           ||'',
     dob:          (S.regData&&S.regData.dob)          ||'',
-    gender:       (S.regData&&S.regData.gender)       ||'',
-    sect:         (S.regData&&S.regData.sect)         ||'',
-    marital_status:(S.regData&&S.regData.maritalStatus)||'Never Married',
+    gender:        (S.regData&&S.regData.gender&&['Male','Female'].includes(S.regData.gender))
+                    ? S.regData.gender : 'Male',
+    sect:          (S.regData&&S.regData.sect)          ||'',
+    marital_status:(S.regData&&S.regData.maritalStatus&&
+                    ['Never Married','Divorced','Widowed'].includes(S.regData.maritalStatus))
+                    ? S.regData.maritalStatus : 'Never Married',
     education:    (S.regData&&S.regData.education)    ||'',
     country:      (S.regData&&S.regData.country)      ||'',
     city:         (S.regData&&S.regData.city)         ||'',
@@ -1946,7 +1950,14 @@ function completeReg(){
   })
   .then(r=>r.json())
   .then(function(res){
-    if(!res.success){toast('❌ '+res.error,4000,'err');return;}
+    if(!res.success){
+      var msg=res.error||'Registration failed. Please try again.';
+      // Show specific guidance for common errors
+      if(msg.includes('already registered'))msg='This email is already registered. Please log in.';
+      if(msg.includes('18 years'))msg='You must be at least 18 years old to register.';
+      toast('❌ '+msg,5000,'err');
+      return;
+    }
     S.user=res.data.user;
     S.token=res.data.token;
     S.premium=false;
