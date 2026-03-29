@@ -1521,9 +1521,31 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <button class="btn bgh bfull" onclick="MC('m-intro-msg')">Maybe Later</button>
   </div>
 </div>
+
+<!-- Photo source choice sheet -->
+<div class="mov" id="photo-source-sheet">
+  <div class="msh">
+    <div class="mh"></div>
+    <p class="mt" style="margin-bottom:16px;">Add Photo</p>
+    <button class="btn bp bfull" onclick="openPhotoSource('camera')"
+      style="margin-bottom:10px;font-size:.95rem;padding:14px;">
+      📸 Take Photo
+    </button>
+    <button class="btn bfull" onclick="openPhotoSource('gallery')"
+      style="margin-bottom:10px;font-size:.95rem;padding:14px;background:var(--cream2);border:1.5px solid var(--sand);">
+      🖼️ Choose from Gallery
+    </button>
+    <button class="btn bgh bfull" onclick="MC('photo-source-sheet')"
+      style="font-size:.88rem;">
+      Cancel
+    </button>
+  </div>
+</div>
 </div><!-- /#app -->
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+
 
 
 const API = 'https://halal-meetup-api-production.up.railway.app';
@@ -1975,16 +1997,155 @@ function completeReg(){
 }
 
 /* ══ PHOTOS ══ */
-function photoTap(i){
-  const slot=document.getElementById('ps'+i);
-  if(S.photos[i]){S.photos[i]=0;slot.innerHTML='<span style="font-size:1.8rem;">📷</span><span class="plbl">'+(i===0?'Main':i===1?'2nd':'3rd')+' (req)</span><span class="rdot"></span>';slot.classList.remove('filled');}
-  else{S.photos[i]=1;const e=['🤳','🖼️','🏞️'][i];slot.innerHTML='<span style="font-size:2rem;">'+e+'</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">Uploaded ✓</span>';slot.classList.add('filled');}
-  document.getElementById('pctr').textContent=S.photos.filter(Boolean).length+'/3 uploaded';
+function photoTap(i) {
+  var slot = document.getElementById('ps' + i);
+  // If already uploaded — tapping clears it
+  if (S.photos[i]) {
+    S.photos[i] = 0;
+    S._photoFiles = S._photoFiles || {};
+    delete S._photoFiles[i];
+    var lbl = i===0?'Main':i===1?'2nd':'3rd';
+    slot.innerHTML = '<span style="font-size:1.8rem;">📷</span>'
+      + '<span class="plbl">'+lbl+' (req)</span><span class="rdot"></span>';
+    slot.classList.remove('filled');
+    document.getElementById('pctr').textContent = S.photos.filter(Boolean).length + '/3 uploaded';
+    return;
+  }
+  // Show source choice sheet
+  S._photoSlotIdx = i;
+  var sheet = document.getElementById('photo-source-sheet');
+  if (sheet) sheet.classList.add('on');
 }
+
+function openPhotoSource(source) {
+  var sheet = document.getElementById('photo-source-sheet');
+  if (sheet) sheet.classList.remove('on');
+  var i = S._photoSlotIdx;
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/jpeg,image/png,image/webp,image/*';
+  if (source === 'camera') inp.capture = 'user'; // front camera for selfie-style
+  inp.style.cssText = 'position:fixed;top:-100px;left:-100px;opacity:0;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files || !inp.files[0]) {
+      document.body.removeChild(inp); return;
+    }
+    var file = inp.files[0];
+    if (file.size > 10 * 1024 * 1024) {
+      toast('Photo too large. Please use a photo under 10MB.', 3000, 'err');
+      document.body.removeChild(inp); return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var slot = document.getElementById('ps' + i);
+      S.photos[i] = 1;
+      S._photoFiles = S._photoFiles || {};
+      S._photoFiles[i] = file;
+      slot.innerHTML = '<img src="' + e.target.result + '" '
+        + 'style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
+      slot.classList.add('filled');
+      document.getElementById('pctr').textContent = S.photos.filter(Boolean).length + '/3 uploaded';
+      toast('Photo ' + (i+1) + ' uploaded!', 1800);
+    };
+    reader.onerror = function() { toast('Could not read photo. Try again.', 2500, 'err'); };
+    reader.readAsDataURL(file);
+    setTimeout(function() {
+      if (document.body.contains(inp)) document.body.removeChild(inp);
+    }, 1000);
+  });
+  setTimeout(function() { inp.click(); }, 100);
+}
+
+
 function checkPhotos(){if(S.photos.filter(Boolean).length<3){toast('Please upload all 3 required photos.','err',2500);return;}G('s-reg5');}
 function selectID(el){document.querySelectorAll('.idopt').forEach(x=>x.style.borderColor='var(--sand)');el.style.borderColor='var(--teal)';}
-function tapUpload(el,msg){el.style.borderColor='var(--teal)';el.style.background='#dff2f2';el.innerHTML='<div style="font-size:2.5rem;margin-bottom:6px;">✅</div><p style="color:var(--teal);font-weight:800;font-size:.9rem;">'+msg+'</p>';}
-function takeSelfie(){const b=document.getElementById('selfiebtn');b.textContent='✅ Selfie Captured!';b.style.background='var(--green)';}
+function tapUpload(el, msg) {
+  // Create hidden file input
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/jpeg,image/png,image/webp,application/pdf';
+  inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.onchange = function() {
+    if (!inp.files || !inp.files[0]) return;
+    var file = inp.files[0];
+    var maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast('File too large. Max 10MB.', 3000, 'err');
+      document.body.removeChild(inp);
+      return;
+    }
+    // Show preview for images
+    if (file.type.startsWith('image/')) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        el.style.borderColor = 'var(--teal)';
+        el.style.background = '#dff2f2';
+        el.innerHTML = '<img src="' + e.target.result + '" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:6px;">'
+          + '<p style="color:var(--teal);font-weight:800;font-size:.85rem;">✅ ' + msg + '</p>'
+          + '<p style="font-size:.72rem;color:var(--txt3);">' + file.name + '</p>';
+        // Store file reference for upload
+        el._file = file;
+        toast('✅ ' + msg, 2000);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      el.style.borderColor = 'var(--teal)';
+      el.style.background = '#dff2f2';
+      el.innerHTML = '<div style="font-size:2.5rem;margin-bottom:6px;">✅</div>'
+        + '<p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'
+        + '<p style="font-size:.72rem;color:var(--txt3);">' + file.name + '</p>';
+      el._file = file;
+      toast('✅ ' + msg, 2000);
+    }
+    document.body.removeChild(inp);
+  };
+  inp.click();
+}
+function takeSelfie() {
+  // Try camera first, fall back to file picker
+  var sring = document.querySelector('.sring');
+  var btn = document.getElementById('selfiebtn');
+
+  // Create file input that opens front camera on mobile
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.capture = 'user'; // front camera on mobile
+  inp.style.display = 'none';
+  document.body.appendChild(inp);
+
+  inp.onchange = function() {
+    if (!inp.files || !inp.files[0]) return;
+    var file = inp.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      // Show selfie preview
+      if (sring) {
+        sring.innerHTML = '<img src="' + e.target.result + '" '
+          + 'style="width:140px;height:140px;border-radius:50%;object-fit:cover;'
+          + 'border:3px solid var(--teal);display:block;margin:0 auto;">';
+      }
+      if (btn) {
+        btn.textContent = '✅ Selfie Captured!';
+        btn.style.background = 'var(--green)';
+        btn.style.color = '#fff';
+      }
+      // Store file
+      S._selfieFile = file;
+      toast('✅ Selfie captured!', 2000);
+    };
+    reader.readAsDataURL(file);
+    document.body.removeChild(inp);
+  };
+
+  inp.oncancel = function() {
+    document.body.removeChild(inp);
+  };
+
+  inp.click();
+}
 
 /* ══ BLOCK DETECTION ══ */
 const PH_RX=/(\+?\d[\d\s\-().]{6,}\d)|(\b(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)[\s,\-]*(zero|one|two|three|four|five|six|seven|eight|nine|oh|nought)\b)/i;
@@ -2457,7 +2618,32 @@ function saveProfile(){
   openMyProfile();
   toast('✅ Profile updated!',2500);
 }
-function editPhotoTap(){const sl=document.getElementById('eps2');if(sl){sl.innerHTML='<span style="font-size:2rem;">🏞️</span><span style="font-size:.6rem;color:var(--teal);font-weight:800;margin-top:3px;">✓</span>';sl.classList.add('filled');}toast('✅ Photo uploaded!',2000);}
+function editPhotoTap() {
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/jpeg,image/png,image/webp,image/*';
+  inp.style.cssText = 'position:fixed;top:-100px;left:-100px;opacity:0;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files || !inp.files[0]) return;
+    var file = inp.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var sl = document.getElementById('eps2');
+      if (sl) {
+        sl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
+        sl.classList.add('filled');
+      }
+      S._editPhoto = file;
+      toast('Photo updated!', 2000);
+    };
+    reader.readAsDataURL(file);
+    setTimeout(function() {
+      if (document.body.contains(inp)) document.body.removeChild(inp);
+    }, 1000);
+  });
+  setTimeout(function() { inp.click(); }, 100);
+}
 
 /* ══ REPORT ══ */
 function submitReport(){const r=document.getElementById('rep-reason').value;const d=document.getElementById('rep-details').value.trim();if(!r){toast('Please select a reason.','err',2000);return;}if(!d||d.length<10){toast('Please provide more detail.','err',2500);return;}MC('m-report');toast('🚩 Report submitted. Team reviews within 24h.',4000);}
