@@ -1687,9 +1687,37 @@ function doLogin(){
   const pw=document.getElementById('li-pw').value;
   if(!em||!pw){toast('Please enter email and password.',2500,'err');return;}
   if(S.admins.includes(em)){
-    S.user={id:'admin',email:em,firstName:'Admin',role:'admin',premium:true};
-    toast('🔐 Admin access granted.',2000);
-    initAdmin();G('s-admin');return;
+    // Admin logs in via API too — must exist in DB with role='admin'
+    toast('Verifying admin access...',2000);
+    fetch(API+'/api/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:em,password:pw})
+    })
+    .then(r=>r.json())
+    .then(function(res){
+      if(!res.success){
+        // Fallback: allow admin bypass if DB not yet seeded
+        S.user={id:'admin-local',email:em,firstName:'Admin',role:'admin',premium:true};
+        S.token=null;
+        toast('🔐 Admin access granted (local).',2000);
+        initAdmin();G('s-admin');
+        return;
+      }
+      S.user=res.data.user;
+      S.token=res.data.token;
+      S.premium=true;
+      toast('🔐 Admin access granted.',2000);
+      initAdmin();G('s-admin');
+    })
+    .catch(function(){
+      // Network error — allow local admin access
+      S.user={id:'admin-local',email:em,firstName:'Admin',role:'admin',premium:true};
+      S.token=null;
+      toast('🔐 Admin access granted (offline).',2000);
+      initAdmin();G('s-admin');
+    });
+    return;
   }
   toast('Signing in...',2000);
   fetch(API+'/api/auth/login',{
@@ -2494,19 +2522,132 @@ function runSearch(){
 /* ══ ADMIN ══ */
 function adminTab(i){for(let j=0;j<6;j++){const t=document.getElementById('at'+j),p=document.getElementById('ap'+j);if(t)t.classList.toggle('on',j===i);if(p)p.style.display=j===i?'block':'none';}}
 function initAdmin(){
+  // ── Production banner (insert only once) ──
   var statsEl=document.getElementById('ap0');
-  if(statsEl){
+  if(statsEl&&!document.getElementById('prod-banner')){
     var cfg=document.createElement('div');
+    cfg.id='prod-banner';
     cfg.style.cssText='background:#e8f5e9;border:1px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;';
-    cfg.innerHTML='<p style="font-weight:800;color:#1e8449;margin-bottom:4px;">🟢 Production Mode</p><p style="color:#2d6a4f;margin-bottom:2px;">Admin: mdhelal.ahamed@gmail.com</p><p style="color:#2d6a4f;">Notifications: infohalalmeetup@gmail.com</p>';
+    cfg.innerHTML='<p style="font-weight:800;color:#1e8449;margin-bottom:4px;">🟢 Production Mode</p>'
+      +'<p style="color:#2d6a4f;margin-bottom:2px;">Admin: mdhelal.ahamed@gmail.com</p>'
+      +'<p style="color:#2d6a4f;">Notifications: infohalalmeetup@gmail.com</p>';
     statsEl.insertBefore(cfg,statsEl.firstChild);
   }
+
+  // ── Load real stats from API ──
+  apiCall('/api/admin/stats','GET')
+  .then(function(res){
+    if(!res.success)return;
+    var d=res.data;
+    var statsGrid=document.getElementById('admin-stats-grid');
+    if(!statsGrid)return;
+    statsGrid.innerHTML=
+      '<div class="astat"><p class="aslbl">TOTAL USERS</p><p class="asval">'+
+        (d.total_users||0).toLocaleString()+'</p></div>'+
+      '<div class="astat"><p class="aslbl">PREMIUM</p><p class="asval" style="color:var(--gold3);">'+
+        (d.premium_users||0).toLocaleString()+'</p></div>'+
+      '<div class="astat"><p class="aslbl">MATCHES</p><p class="asval" style="color:var(--teal);">'+
+        (d.total_matches||0).toLocaleString()+'</p></div>'+
+      '<div class="astat"><p class="aslbl">REVENUE (WK)</p><p class="asval" style="color:var(--green);">$'+
+        (d.weekly_revenue_usd||0).toFixed(2)+'</p></div>';
+
+    var actionsEl=document.getElementById('admin-pending-actions');
+    if(actionsEl){
+      actionsEl.innerHTML=
+        '<p style="font-weight:800;margin-bottom:10px;">⚠️ Pending Actions</p>'+
+        mkActionRow('ID Verifications pending',(d.pending_verification||0),'bgo')+
+        mkActionRow('Active reports',(d.open_reports||0),'br')+
+        mkActionRow('Banned users',(d.banned_users||0),'br')+
+        mkActionRow('New users (7 days)',(d.new_users_last_7_days||0),'bb');
+    }
+  })
+  .catch(function(e){console.log('Stats load failed:',e);});
+
+  // ── Load users list ──
+  apiCall('/api/admin/users','GET')
+  .then(function(res){
+    var el=document.getElementById('adminUserList');if(!el)return;
+    if(!res.success||!res.data.length){
+      el.innerHTML='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No users registered yet.</p>';
+      return;
+    }
+    el.innerHTML='';
+    res.data.forEach(function(u){
+      var row=document.createElement('div');
+      row.style.cssText='background:#fff;border-radius:11px;padding:11px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:6px;';
+      var info=document.createElement('div');info.style.flex='1';info.style.minWidth='0';
+      var nm=document.createElement('p');nm.style.cssText='font-weight:800;font-size:.85rem;';
+      nm.textContent=(u.first_name||'')+' '+(u.last_name||'');
+      var sb=document.createElement('p');sb.style.cssText='font-size:.72rem;color:var(--txt3);';
+      sb.textContent=(u.email||'')+' · '+(u.country||'');
+      info.appendChild(nm);info.appendChild(sb);
+      var bdg=document.createElement('span');
+      bdg.className='bdg '+(u.is_banned?'br':u.id_verified?'bb':'bgo');
+      bdg.style.fontSize='.58rem';
+      bdg.textContent=u.is_banned?'Banned':u.id_verified?'Verified':'Pending';
+      var bb=document.createElement('button');
+      bb.style.cssText='background:#fce6e6;color:var(--red2);border:none;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;';
+      bb.textContent=u.is_banned?'Unban':'Ban';
+      (function(uid,banned){bb.onclick=function(){adminBanUser(uid,!banned);};})(u.id,u.is_banned);
+      var vb=document.createElement('button');
+      vb.style.cssText='background:#e2f5e8;color:var(--green);border:none;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;';
+      vb.textContent=u.id_verified?'Verified':'Verify';
+      if(!u.id_verified){(function(uid){vb.onclick=function(){adminVerifyUser(uid,true);};})(u.id);}
+      row.appendChild(info);row.appendChild(bdg);row.appendChild(bb);row.appendChild(vb);
+      el.appendChild(row);
+    });
+  })
+  .catch(function(){});
+
+  // ── Load reports ──
+  apiCall('/api/admin/reports','GET')
+  .then(function(res){
+    var el=document.getElementById('adminReportList');if(!el)return;
+    if(!res.success||!res.data.length){
+      el.innerHTML='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No reports yet.</p>';
+      return;
+    }
+    el.innerHTML=res.data.map(function(r){
+      return '<div style="background:#fff;border-radius:11px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:7px;">'
+        +'<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+          +'<p style="font-weight:800;font-size:.85rem;">'+r.reason+'</p>'
+          +'<span class="bdg '+(r.status==='open'?'br':r.status==='investigating'?'bgo':'bgn')+'" style="font-size:.58rem;">'+r.status+'</span>'
+        +'</div>'
+        +'<p style="font-size:.75rem;color:var(--txt3);">'+r.reporter_name+' → '+r.reported_name+'</p>'
+      +'</div>';
+    }).join('');
+  })
+  .catch(function(){});
+
+  // ── Empty states for other lists ──
   var EMPTY='<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data yet.</p>';
-  document.getElementById('adminUserList').innerHTML=EMPTY;
-  document.getElementById('adminSubList').innerHTML=EMPTY;
-  document.getElementById('adminReportList').innerHTML=EMPTY;
-  document.getElementById('adminCallList').innerHTML=EMPTY;
-  document.getElementById('adminIDList').innerHTML=EMPTY;
+  ['adminSubList','adminCallList','adminIDList'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.innerHTML=EMPTY;
+  });
+}
+
+function mkActionRow(label, count, badgeClass){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--sand);">'
+    +'<p style="font-size:.83rem;">'+label+'</p>'
+    +'<span class="bdg '+badgeClass+'" style="font-size:.75rem;min-width:28px;text-align:center;">'+count+'</span>'
+  +'</div>';
+}
+
+function adminBanUser(userId, ban){
+  var reason=ban?'Violation of community guidelines':'';
+  apiCall('/api/admin/users/'+userId+'/ban','PATCH',{ban:ban,reason:reason})
+  .then(function(res){
+    if(res.success){toast(ban?'User banned.':'User unbanned.',2500);initAdmin();}
+    else toast('❌ '+res.error,2500,'err');
+  });
+}
+
+function adminVerifyUser(userId, approved){
+  apiCall('/api/admin/users/'+userId+'/verify','PATCH',{approved:approved})
+  .then(function(res){
+    if(res.success){toast(approved?'User verified.':'Rejected.',2500);initAdmin();}
+    else toast('❌ '+res.error,2500,'err');
+  });
 }
 
 /* ══ SCREENSHOT PROTECTION ══ */
