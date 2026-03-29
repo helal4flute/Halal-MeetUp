@@ -1666,10 +1666,35 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   </div>
 </div>
 
+
+<!-- Ludo Incoming Invite Modal -->
+<div class="mov" id="m-ludo-incoming">
+  <div class="msh" style="background:#1a1a2e;color:#fff;border-radius:24px 24px 0 0;padding:28px 22px;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:3rem;margin-bottom:8px;">🎲</div>
+      <p style="font-size:1rem;font-weight:800;margin-bottom:4px;" id="ludo-invite-title">Ludo Invite!</p>
+      <p style="font-size:.8rem;color:rgba(255,255,255,.6);">You have been invited to play Ludo</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <button onclick="MC('m-ludo-incoming')"
+        style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;">
+        ❌ Decline
+      </button>
+      <button onclick="acceptLudoInvite()"
+        style="background:#27ae60;color:#fff;border:none;border-radius:12px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;">
+        🎲 Play!
+      </button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /#app -->
 
 
 <script>
+
+
+
 
 
 
@@ -3430,11 +3455,16 @@ function pollNotifications() {
     unread.forEach(function(n) {
       var created = n.created_at ? new Date(n.created_at).getTime() : 0;
       var age = now - created;
-      if (age < 60000 && !S._seenNotifs[n.id]) {
+      if (age < 300000 && !S._seenNotifs[n.id]) { // 5 min window
         S._seenNotifs[n.id] = true;
         if (n.type === 'call') {
-          // Show incoming call UI
           showIncomingCall(n);
+        } else if (n.type === 'ludo') {
+          showLudoInviteNotif(n);
+        } else if (n.type === 'match') {
+          toast('💞 ' + (n.title || 'New match!'), 4000);
+        } else if (n.type === 'like') {
+          toast('💚 ' + (n.title || 'Someone liked you!'), 4000);
         } else {
           toast(n.title || 'New notification', 4000);
         }
@@ -3447,35 +3477,50 @@ function pollNotifications() {
 }
 
 function showIncomingCall(notification) {
-  // Fetch call data
   var callId = notification.call_id;
-  if (!callId) return;
+  if (!callId || callId === '') {
+    // No call_id — show simple notification toast
+    toast(notification.title || 'Incoming call!', 6000);
+    return;
+  }
   apiCall('/api/calls/' + callId, 'GET')
   .then(function(res) {
-    if (!res.success || res.data.status !== 'ringing') return;
+    if (!res.success) return;
     var callData = res.data;
+    // Accept if ringing or very recent (within 60s)
+    var created = callData.created_at ? new Date(callData.created_at).getTime() : 0;
+    var age = Date.now() - created;
+    if (callData.status !== 'ringing' && age > 60000) return;
     callData.id = callId;
     WC._pendingCall = callData;
-    // Update modal
+    // Update incoming call modal
     var nameEl = document.getElementById('ic-caller-name');
     var typeEl = document.getElementById('ic-call-type');
     var iconEl = document.getElementById('ic-type-icon');
-    if (nameEl) nameEl.textContent = (callData.caller_name || notification.title || 'Incoming Call');
+    var callerDisplay = callData.caller_name || notification.title || 'Incoming Call';
+    if (nameEl) nameEl.textContent = callerDisplay;
     if (typeEl) typeEl.textContent = (callData.call_type === 'video' ? 'Video Call' : 'Audio Call');
     if (iconEl) iconEl.textContent = callData.call_type === 'video' ? '🎥' : '📞';
-    // Show modal and ring
     var modal = document.getElementById('m-incoming-call');
     if (modal) modal.classList.add('on');
-    toast((callData.call_type === 'video' ? '🎥' : '📞') + ' Incoming call!', 6000);
+    // Auto-dismiss after 30s if not answered
+    setTimeout(function() {
+      var m = document.getElementById('m-incoming-call');
+      if (m && m.classList.contains('on')) {
+        m.classList.remove('on');
+        toast('Missed call from ' + callerDisplay, 3000);
+      }
+    }, 30000);
+    toast((callData.call_type === 'video' ? '🎥' : '📞') + ' ' + callerDisplay + ' is calling!', 8000);
   })
-  .catch(function(){});
+  .catch(function(e){ console.error('showIncomingCall:', e); });
 }
 
 function startNotifPolling() {
   if (_notifPollTimer) return;
   S._seenNotifs = {};
   pollNotifications(); // immediate first check
-  _notifPollTimer = setInterval(pollNotifications, 30000); // every 30s
+  _notifPollTimer = setInterval(pollNotifications, 3000); // every 3s for real-time calls
 }
 
 function stopNotifPolling() {
@@ -3561,8 +3606,88 @@ function aiTurn(){if(LG.currentTurn!=='green'||!LG.active)return;var dv=Math.flo
 function updateTI(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
 function updateScores(){var rD=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gD=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rH=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gH=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rH+' · ✓×'+rD;if(ts)ts.textContent='🏠×'+gH+' · ✓×'+gD;}
 function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var b=document.getElementById('ludoWinBanner');var w=document.getElementById('winnerText');if(b)b.style.display='flex';if(w)w.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
-function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/month)':'Get Premium to Host ($10/month)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
-function startLudo(){if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}MC('m-ludo-invite');LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;clearTimeout(LG.aiTimer);LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};var mn='Friend';LG.playerNames={red:'You',green:mn};document.getElementById('lp-you-name').textContent='You (Red)';document.getElementById('lp-them-name').textContent=mn+' (Green)';document.getElementById('lp-you').classList.add('active-turn');document.getElementById('lp-them').classList.remove('active-turn');LG.micOn=true;LG.vidOn=true;var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');if(mic){mic.textContent='🎙️';mic.classList.remove('off');}if(vid){vid.textContent='🎥';vid.classList.remove('off');}var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';G('s-ludo');setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);toast('🎲 Ludo started!',2200);}
+function openLudoInvite() {
+  var sc = document.getElementById('ludoSubCheck');
+  var sb = document.getElementById('ludoStartBtn');
+  if (!S.premium) {
+    if (sc) sc.style.display = 'block';
+    var msg = S.subStatus === 'cancelled'
+      ? 'Re-subscribe to host Ludo ($10/month)'
+      : 'Get Premium to Host ($10/month)';
+    if (sb) {
+      sb.textContent = '👑 ' + msg;
+      sb.onclick = function() { MC('m-ludo-invite'); M('s-chat','m-sub'); };
+    }
+  } else {
+    if (sc) sc.style.display = 'none';
+    if (sb) {
+      sb.textContent = '🎲 Send Ludo Invite';
+      sb.onclick = function() { sendLudoInvite(); };
+    }
+  }
+  M('s-chat','m-ludo-invite');
+}
+
+function sendLudoInvite() {
+  if (!S.chatPartnerId) { toast('No match selected.', 2000, 'err'); return; }
+  // Send notification to partner
+  apiCall('/api/notifications', 'POST', {
+    to_user_id: S.chatPartnerId,
+    type: 'ludo',
+    title: (S.user && S.user.first_name ? S.user.first_name : 'Someone') + ' invited you to play Ludo! 🎲',
+    body: 'Open the chat to join the Ludo game.',
+    related_match_id: S.chatId,
+  })
+  .then(function(res) {
+    MC('m-ludo-invite');
+    toast('🎲 Ludo invite sent!', 2500);
+    startLudo();
+  })
+  .catch(function() {
+    MC('m-ludo-invite');
+    toast('Invite sent! Starting game...', 2000);
+    startLudo();
+  });
+}
+
+function showLudoInviteNotif(notification) {
+  var matchId = notification.related_match_id || '';
+  var title   = notification.title || 'Ludo invite!';
+  S._pendingLudoMatchId = matchId;
+  // Show ludo invite modal if possible, else toast
+  var modal = document.getElementById('m-ludo-incoming');
+  if (modal) {
+    var titleEl = document.getElementById('ludo-invite-title');
+    if (titleEl) titleEl.textContent = title;
+    modal.classList.add('on');
+    setTimeout(function() { modal.classList.remove('on'); }, 15000);
+  } else {
+    toast('🎲 ' + title + ' — tap Matches to join', 8000);
+  }
+}
+
+function acceptLudoInvite(matchId) {
+  var mid = matchId || S._pendingLudoMatchId;
+  var modal = document.getElementById('m-ludo-incoming');
+  if (modal) modal.classList.remove('on');
+  var toastEl = document.getElementById('toast');
+  if (toastEl) toastEl.style.display = 'none';
+  if (mid) {
+    openChatByMatch(mid);
+    setTimeout(function() { startLudo(); }, 800);
+  } else if (S.chatId) {
+    startLudo();
+  }
+}
+function startLudo(){if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}MC('m-ludo-invite');LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;clearTimeout(LG.aiTimer);LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};var mn='Friend';LG.playerNames={red:'You',green:mn};document.getElementById('lp-you-name').textContent='You (Red)';document.getElementById('lp-them-name').textContent=mn+' (Green)';document.getElementById('lp-you').classList.add('active-turn');document.getElementById('lp-them').classList.remove('active-turn');LG.micOn=true;LG.vidOn=true;var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');if(mic){mic.textContent='🎙️';mic.classList.remove('off');}if(vid){vid.textContent='🎥';vid.classList.remove('off');}var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';G('s-ludo');setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);toast('🎲 Ludo started!',2200);
+  // Send a chat message so partner knows game started
+  if(S.chatId&&S.chatPartnerId){
+    apiCall('/api/matches/'+S.chatId+'/messages','POST',{
+      text:'🎲 I have started a Ludo game! Come play — open our chat.',
+      to_user_id:S.chatPartnerId
+    }).catch(function(){});
+  }
+}
 function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);G('s-chat');toast('Game ended.',1800);}
 async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera live!',2000);}catch(err){toast('Camera access denied.',3000,'err');LG.camOn=false;}}
 function stopCamera(){if(LG.camStream){LG.camStream.getTracks().forEach(function(t){t.stop();});LG.camStream=null;}LG.camOn=false;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=null;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='none';var btn=document.getElementById('ludo-cam-btn');if(btn){btn.textContent='📵';btn.style.background='';}}
