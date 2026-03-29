@@ -587,7 +587,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     </div>
     <div class="ebanner" id="ebanner" style="display:none;"><span style="font-size:1.1rem;">📧</span><div></div></div>
     <div style="background:#dff2f2;border-radius:var(--rs);padding:10px 12px;font-size:.77rem;color:var(--teal4);margin-bottom:14px;line-height:1.7;">
-      📱  to verify number<br>📧 OTP then sent to verify email<br>🎉 Welcome email sent after verification
+      📧 A 6-digit verification code will be sent to your email<br>🎉 Welcome email sent after registration
     </div>
     <button class="btn bp bfull" onclick="reg1Next()">Send Email Code →</button>
   </div>
@@ -1525,6 +1525,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
+
 const API = 'https://halal-meetup-api-production.up.railway.app';
 
 function apiCall(endpoint, method, body) {
@@ -1764,29 +1765,34 @@ function reg1Next(){
       if(target)target.textContent=em;
       document.querySelectorAll('#otp-em-cells .ocell').forEach(function(c){c.value='';});
       var st=document.getElementById('otp-em-status');
-      if(res.data&&res.data.emailSent){
-        // Real email sent via SendGrid
-        if(st)st.textContent='';
-        toast('📧 Verification code sent to '+em,4000);
-      } else if(res.data&&res.data.code){
-        // No SendGrid — auto-fill code and show it to user
+      if(st)st.textContent='';
+      if(res.data&&res.data.code){
+        // Code returned in response (dev mode or no email provider)
         var code=res.data.code;
         var cells=document.querySelectorAll('#otp-em-cells .ocell');
         cells.forEach(function(cell,i){cell.value=code[i]||'';});
-        if(st)st.textContent='Your code: '+code+' (auto-filled)';
-        toast('📧 Code: '+code+' — tap Verify to continue',8000);
+        if(st)st.textContent='Code: '+code+' (check your email or use this)';
+        toast('📧 Code: '+code,8000);
       } else {
-        if(st)st.textContent='';
-        toast('📧 Verification code sent to '+em,4000);
+        toast('📧 Verification code sent to '+em+' — check your inbox',4000);
       }
-      G('s-otp-em');
+      G('s-otp-em');  // Always navigate
     } else {
-      toast('❌ '+(res.error||'Could not send email. Check your connection and try again.'),4000,'err');
+      // Even on error — still navigate so user can try entering a code
+      // (code may have been sent even if response had an issue)
+      toast('⚠️ '+(res.error||'Check your email for the code'),4000,'err');
+      var target2=document.getElementById('otp-em-target');
+      if(target2)target2.textContent=em;
+      G('s-otp-em');
     }
   })
   .catch(function(e){
     console.error('send-verification error:',e);
-    toast('❌ Connection error. Please check your internet and try again.',3500,'err');
+    // Still navigate — let user try entering a code manually
+    toast('⚠️ Network issue — if you have a code, enter it below',4000,'err');
+    var target=document.getElementById('otp-em-target');
+    if(target)target.textContent=em;
+    G('s-otp-em');
   });
 }
 function sendEmailVerification(email,name){
