@@ -1321,303 +1321,118 @@ id="s-myprofile" style="background:var(--cream2);">
 </div>
 
 <!-- ══════════════ S22: CALL SCREEN ══════════════ -->
+
+<!-- ══════════════ CALL SCREEN ══════════════ -->
 <div class="scr cbg" id="s-call">
-  <!-- Top row: View Profile | Title | Chat — accessible any time during call -->
   <div style="padding:54px 20px 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-    <button onclick="G('s-viewprofile')" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:11px;padding:7px 12px;font-size:.77rem;font-weight:800;cursor:pointer;backdrop-filter:blur(5px);">👤 Profile</button>
+    <button onclick="G('s-chat')" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:11px;padding:7px 12px;font-size:.77rem;font-weight:800;cursor:pointer;">← Chat</button>
     <p style="color:rgba(255,255,255,.35);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;">Halal-MeetUp</p>
-    <button onclick="G('s-chat')" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:11px;padding:7px 12px;font-size:.77rem;font-weight:800;cursor:pointer;backdrop-filter:blur(5px);">💬 Chat</button>
+    <button onclick="endCall()" style="background:rgba(200,40,40,.5);border:1px solid rgba(255,100,100,.3);color:#fff;border-radius:11px;padding:7px 12px;font-size:.77rem;font-weight:800;cursor:pointer;">End Call</button>
   </div>
-  <!-- Secondary controls (iPhone style: top area) -->
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;padding:16px 22px 0;flex-shrink:0;">
     <button class="ccbtn" id="btn-mute" onclick="toggleMute()"><span>🎙️</span><span>Mute</span></button>
-    <button class="ccbtn" id="btn-spk" onclick="toggleCB('btn-spk','📱','🔊','Earpiece','Speaker')"><span>🔊</span><span id="bt-spk-lbl">Speaker</span></button>
+    <button class="ccbtn" id="btn-spk" onclick="toggleSpeaker()"><span>🔊</span><span>Speaker</span></button>
     <button class="ccbtn" id="btn-vid" onclick="toggleVideo()"><span>🎥</span><span>Video</span></button>
-    <button class="ccbtn"><span>⌨️</span>Keypad</button>
-    <button class="ccbtn" onclick="G('s-myprofile')"><span>👤</span>My Profile</button>
-    <button class="ccbtn" onclick="G('s-discover')"><span>🧭</span>Discover</button>
+    <button class="ccbtn" onclick="rejoinCall()"><span>🔄</span><span>Reconnect</span></button>
+    <button class="ccbtn" onclick="G('s-discover')"><span>🧭</span><span>Discover</span></button>
+    <button class="ccbtn" onclick="endCall()" style="background:rgba(200,50,50,.35);"><span>📵</span><span>End</span></button>
   </div>
-  <!-- Caller info -->
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;">
-    <!-- Remote video (full screen for video calls) -->
-    <video id="call-remote-video" autoplay playsinline style="display:none;width:100%;max-height:280px;border-radius:14px;background:#000;object-fit:cover;margin-bottom:10px;"></video>
-    <!-- Remote audio (audio calls) -->
-    <audio id="call-remote-audio" autoplay></audio>
-    <!-- Local video preview (small PiP) -->
-    <video id="call-local-video" autoplay playsinline muted style="display:none;position:absolute;top:130px;right:16px;width:80px;height:100px;border-radius:10px;object-fit:cover;border:2px solid rgba(255,255,255,.4);z-index:10;"></video>
-    <!-- Call status -->
-    <p id="call-status" style="color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:6px;">Connecting...</p>
-    <!-- Rejoin button -->
-    <button onclick="rejoinCall()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:7px 16px;font-size:.78rem;margin-bottom:10px;" id="rejoin-btn">🔄 Rejoin</button>
-
-    <div style="width:94px;height:94px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin-bottom:13px;border:3px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2.7rem;box-shadow:0 0 40px rgba(201,150,58,.26);">👤</div>
-    <h2 id="call-name" style="font-family:'Cormorant Garamond',serif;font-size:1.85rem;color:#fff;margin-bottom:3px;">Member</h2>
-    <p id="call-type" style="color:rgba(255,255,255,.48);font-size:.83rem;margin-bottom:5px;">🎥 Video Call</p>
-    <p id="call-timer" style="color:rgba(255,255,255,.76);font-size:.97rem;font-weight:700;font-variant-numeric:tabular-nums;">00:00:00</p>
-    <div class="sbars" style="margin-top:9px;"><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div><div class="sbar"></div></div>
-  </div>
-  <!-- Big red END button (bottom center, iPhone style) -->
-  <div style="padding:0 40px 50px;flex-shrink:0;display:flex;justify-content:center;">
-    <button class="endbtn" onclick="endCall()" title="End call">📵</button>
+  <!-- Caller info + video -->
+  <div style="flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;">
+    <video id="call-remote-video" autoplay playsinline webkit-playsinline
+      style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#111;"></video>
+    <audio id="call-remote-audio" autoplay playsinline></audio>
+    <video id="call-local-video" autoplay playsinline muted webkit-playsinline
+      style="display:none;position:absolute;top:10px;right:10px;width:90px;height:120px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.5);z-index:10;background:#222;"></video>
+    <div style="position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;">
+      <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid rgba(255,255,255,.35);">👤</div>
+      <p id="call-name" style="color:#fff;font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;margin-bottom:5px;text-shadow:0 1px 4px rgba(0,0,0,.6);"></p>
+      <p id="call-type" style="color:rgba(255,255,255,.75);font-size:.82rem;margin-bottom:5px;"></p>
+      <p id="call-status" style="color:rgba(255,255,255,.6);font-size:.75rem;margin-bottom:8px;">Connecting...</p>
+      <p id="call-timer" style="color:#fff;font-size:1.15rem;font-weight:700;font-family:monospace;text-shadow:0 1px 4px rgba(0,0,0,.5);">00:00</p>
+      <button id="rejoin-btn" onclick="rejoinCall()" style="display:none;margin-top:12px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:10px;padding:8px 20px;font-size:.8rem;cursor:pointer;">🔄 Reconnect</button>
+    </div>
   </div>
 </div>
 
-<!-- ══════════════ S23: ADMIN DASHBOARD ══════════════ -->
-<div class="scr" id="s-admin" style="background:#eff3f6;">
-  <div style="background:var(--teal4);padding:50px 16px 11px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
-    <button class="ibtn back-ibtn" onclick="G('s-login')">&#8592;</button>
-    <div style="flex:1;"><h2 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#fff;">Admin Portal</h2><p style="font-size:.67rem;color:rgba(255,255,255,.45);">Halal-MeetUp · Staff Access</p></div>
-    <span class="bdg br">🔐 Admin</span>
+<!-- ══════════════ ADMIN ══════════════ -->
+<div class="scr" id="s-admin" style="background:var(--cream2);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-discover')">&#8592;</button><h2>Admin Panel</h2></div>
+  <div style="display:flex;gap:6px;padding:0 14px 10px;background:var(--teal);flex-shrink:0;overflow-x:auto;">
+    <button class="atab on" id="at0" onclick="adminTab(0)">Stats</button>
+    <button class="atab" id="at1" onclick="adminTab(1)">Users</button>
+    <button class="atab" id="at2" onclick="adminTab(2)">Reports</button>
+    <button class="atab" id="at3" onclick="adminTab(3)">Subs</button>
+    <button class="atab" id="at4" onclick="adminTab(4)">Calls</button>
+    <button class="atab" id="at5" onclick="adminTab(5)">ID</button>
   </div>
-  <div style="background:#fff;display:flex;overflow-x:auto;border-bottom:1px solid #dde4ea;flex-shrink:0;">
-    <button class="atab on" id="at0" onclick="adminTab(0)">📊 Stats</button>
-    <button class="atab" id="at1" onclick="adminTab(1)">👥 Users</button>
-    <button class="atab" id="at2" onclick="adminTab(2)">💳 Subs</button>
-    <button class="atab" id="at3" onclick="adminTab(3)">🚩 Reports</button>
-    <button class="atab" id="at4" onclick="adminTab(4)">📞 Calls</button>
-    <button class="atab" id="at5" onclick="adminTab(5)">🛡️ ID Verif.</button>
-  </div>
-  <div class="scroll" style="padding:12px 12px 18px;">
-    <!-- TAB 0 -->
+  <div class="scroll" style="padding:13px 14px 24px;">
     <div id="ap0">
-      <div id="admin-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;">
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Total Users</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">0</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Premium</p><p style="font-size:1.65rem;font-weight:800;color:var(--gold3);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Matches</p><p style="font-size:1.65rem;font-weight:800;color:var(--blue);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
-        <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);"><p style="font-size:.67rem;color:#8a9ab0;text-transform:uppercase;letter-spacing:.05em;">Revenue (wk)</p><p style="font-size:1.65rem;font-weight:800;color:var(--teal);">—</p><p style="font-size:.69rem;color:var(--txt3);">Loading...</p></div>
+      <div id="admin-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px;">
+        <div class="card" style="text-align:center;padding:14px 10px;"><p style="font-size:.7rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Total Users</p><p style="font-size:1.6rem;font-weight:800;color:var(--teal);">0</p></div>
+        <div class="card" style="text-align:center;padding:14px 10px;"><p style="font-size:.7rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Premium</p><p style="font-size:1.6rem;font-weight:800;color:var(--gold3);">0</p></div>
+        <div class="card" style="text-align:center;padding:14px 10px;"><p style="font-size:.7rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Matches</p><p style="font-size:1.6rem;font-weight:800;color:var(--green);">0</p></div>
+        <div class="card" style="text-align:center;padding:14px 10px;"><p style="font-size:.7rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Revenue</p><p style="font-size:1.6rem;font-weight:800;color:var(--teal);">$0</p></div>
       </div>
-      <div id="admin-pending-actions" style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 9px rgba(0,0,0,.05);margin-bottom:8px;">
-        <p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">⚠️ Pending Actions</p>
-        <p style="font-size:.8rem;color:var(--txt3);text-align:center;padding:8px;">Loading...</p>
-      </div>
+      <div class="card" id="admin-pending-actions" style="margin-bottom:11px;"></div>
     </div>
-    <!-- TAB 1 -->
-    <div id="ap1" style="display:none;">
-      <div style="background:#fff;border-radius:11px;padding:9px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);"><input type="text" placeholder="🔍 Search users..." style="width:100%;padding:8px 12px;border:1.5px solid var(--sand);border-radius:50px;font-family:'Nunito',sans-serif;font-size:.83rem;outline:none;"/></div>
-      <div id="adminUserList"></div>
-    </div>
-    <!-- TAB 2 -->
-    <div id="ap2" style="display:none;">
-      <div id="admin-sub-summary" style="background:#fff;border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
-        <p style="font-weight:800;font-size:.83rem;margin-bottom:9px;">Revenue</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div style="background:#dff2f2;border-radius:9px;padding:10px;text-align:center;"><p id="admin-revenue-val" style="font-size:1.35rem;font-weight:800;color:var(--teal);">$0.00</p><p style="font-size:.69rem;color:var(--txt3);">This Week</p></div>
-          <div style="background:#fdf0dc;border-radius:9px;padding:10px;text-align:center;"><p id="admin-subs-val" style="font-size:1.35rem;font-weight:800;color:var(--gold3);">0</p><p style="font-size:.69rem;color:var(--txt3);">Active Subs</p></div>
-        </div>
-      </div>
-      <div id="adminSubList"></div>
-    </div>
-    <!-- TAB 3 -->
-    <div id="ap3" style="display:none;"><div id="adminReportList"></div></div>
-    <!-- TAB 4 -->
-    <div id="ap4" style="display:none;"><div id="adminCallList"></div></div>
-    <!-- TAB 5 -->
-    <div id="ap5" style="display:none;"><div id="adminIDList"></div></div>
+    <div id="ap1" style="display:none;"><div id="adminUserList"></div></div>
+    <div id="ap2" style="display:none;"><div id="adminReportList"></div></div>
+    <div id="ap3" style="display:none;"><div id="adminSubList"><p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data.</p></div></div>
+    <div id="ap4" style="display:none;"><div id="adminCallList"><p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data.</p></div></div>
+    <div id="ap5" style="display:none;"><div id="adminIDList"><p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No data.</p></div></div>
   </div>
 </div>
 
-
-<!-- ══════════════ S-CALLLOGS: CALL LOG LIST ══════════════ -->
+<!-- ══════════════ CALL LOGS ══════════════ -->
 <div class="scr" id="s-calllogs" style="background:var(--cream2);">
-  <div class="tbar">
-    <button class="ibtn back-ibtn" onclick="G('s-matches')" title="Back">&#8592;</button>
-    <h2>Call History</h2>
-  </div>
-  <div class="scroll" style="padding:13px 14px 20px;">
-    <div id="callLogList"></div>
-  </div>
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-myprofile')">&#8592;</button><h2>Call History</h2></div>
+  <div class="scroll" style="padding:12px 14px 24px;"><div id="callLogList"></div></div>
 </div>
 
-<!-- ══════════════ S-LUDO: LUDO GAME ══════════════ -->
-<div class="scr ludo-screen" id="s-ludo">
-
-  <!-- TOP BAR -->
-  <div style="padding:50px 14px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;">
-    <button onclick="exitLudo()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:7px 12px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">← Exit</button>
-    <p style="color:rgba(255,255,255,.4);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;">Halal-MeetUp · Ludo</p>
-    <div style="display:flex;gap:6px;align-items:center;">
-      <!-- CAMERA TOGGLE (pilot feature) -->
-      <button class="ludo-av-btn" id="ludo-cam-btn" onclick="toggleCamera()" title="Turn on camera">📵</button>
-      <button class="ludo-av-btn" id="ludo-mic" onclick="toggleLudoAV('mic')" title="Mute/Unmute">🎙️</button>
-      <button class="ludo-av-btn" id="ludo-vid" onclick="toggleLudoAV('vid')" title="Video on/off">🎥</button>
-    </div>
+<!-- ══════════════ LUDO ══════════════ -->
+<div class="scr" id="s-ludo" style="background:#1a1a2e;color:#fff;">
+  <div style="background:#1a1a2e;padding:50px 14px 8px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <button class="ibtn" onclick="exitLudo()" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);">←</button>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;flex:1;">Ludo 🎲</h2>
+    <button class="ibtn" id="ludo-mic" onclick="toggleLudoAV('mic')" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);">🎙️</button>
+    <button class="ibtn" id="ludo-vid" onclick="toggleLudoAV('vid')" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);">🎥</button>
+    <button class="ibtn" id="ludo-cam-btn" onclick="toggleCamera()" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);">📵</button>
   </div>
-
-  <!-- CAMERA PREVIEW (hidden until turned on) -->
-  <div id="camPreviewWrap" style="display:none;flex-shrink:0;padding:0 14px 6px;position:relative;">
-    <div style="position:relative;width:100%;height:120px;background:#000;border-radius:10px;overflow:hidden;border:2px solid rgba(201,150,58,.5);">
+  <audio id="ludo-remote-audio" autoplay playsinline style="display:none;"></audio>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;flex-shrink:0;">
+      <div id="lp-you" style="display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:10px;border:2px solid transparent;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#e74c3c;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;">R</div>
+        <div><p id="lp-you-name" style="font-size:.8rem;font-weight:800;">You (Red)</p><p id="lp-you-score" style="font-size:.68rem;color:rgba(255,255,255,.5);">🏠×4</p></div>
+      </div>
+      <div style="text-align:center;"><p id="turnIndicator" style="font-size:.75rem;color:rgba(255,255,255,.7);font-weight:700;">Roll!</p></div>
+      <div id="lp-them" style="display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:10px;border:2px solid transparent;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#27ae60;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;">G</div>
+        <div><p id="lp-them-name" style="font-size:.8rem;font-weight:800;">Friend</p><p id="lp-them-score" style="font-size:.68rem;color:rgba(255,255,255,.5);">🏠×4</p></div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:0 8px;position:relative;">
+      <canvas id="ludoCanvas" width="320" height="320" style="border-radius:8px;max-width:100%;"></canvas>
+      <div id="ludoWinBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);border-radius:8px;flex-direction:column;align-items:center;justify-content:center;">
+        <p id="winnerText" style="font-size:1.6rem;font-weight:800;color:var(--gold);margin-bottom:16px;">You Won! 🏆</p>
+        <button class="btn bp" onclick="exitLudo()">Back to Chat</button>
+      </div>
+    </div>
+    <div id="camPreviewWrap" style="display:none;position:absolute;top:100px;right:10px;width:80px;height:100px;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.4);z-index:20;">
       <video id="camVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
-      <div style="position:absolute;top:5px;left:8px;background:rgba(184,48,48,.85);color:#fff;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:50px;">🔴 LIVE</div>
-      <div style="position:absolute;top:5px;right:8px;" id="camPipBtn">
-        <button onclick="togglePiP()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:3px 8px;font-size:.65rem;cursor:pointer;font-family:'Nunito',sans-serif;">PiP</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;flex-shrink:0;gap:10px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <canvas id="diceCanvas" width="48" height="48" onclick="rollDice()" style="cursor:pointer;background:#fff;border-radius:8px;" id="ludoDice"></canvas>
+        <p id="diceHint" style="font-size:.62rem;color:rgba(255,255,255,.5);">Tap dice</p>
       </div>
-      <div style="position:absolute;bottom:5px;left:8px;font-size:.65rem;color:rgba(255,255,255,.7);" id="camResLabel">📹 Camera live</div>
-    </div>
-  </div>
-
-  <!-- PLAYER BARS -->
-  <div style="display:flex;justify-content:space-between;padding:0 12px 6px;flex-shrink:0;gap:8px;">
-    <div class="lplayer-bar active-turn" id="lp-you" style="flex:1;min-width:0;">
-      <div style="width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0;box-shadow:0 0 6px #e74c3c;"></div>
-      <div style="min-width:0;flex:1;">
-        <p style="color:#fff;font-weight:800;font-size:.73rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="lp-you-name">You (Red)</p>
-        <p style="color:rgba(255,255,255,.45);font-size:.6rem;" id="lp-you-score">🏠×4 · ✓×0</p>
+      <div style="flex:1;text-align:center;">
+        <p id="diceResult" style="font-size:.78rem;color:rgba(255,255,255,.75);font-weight:700;margin-bottom:3px;">Tap dice to roll</p>
+        <button id="skipTurnBtn" onclick="endTurn()" style="display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:5px 14px;font-size:.72rem;cursor:pointer;">Skip</button>
       </div>
+      <button onclick="rollDice()" style="background:var(--teal);border:none;color:#fff;border-radius:12px;padding:10px 18px;font-size:.85rem;font-weight:800;cursor:pointer;">🎲 Roll</button>
     </div>
-    <div class="turn-indicator" id="turnIndicator" style="flex:1.2;font-size:.65rem;padding:4px 8px;">Your turn!</div>
-    <div class="lplayer-bar" id="lp-them" style="flex:1;min-width:0;justify-content:flex-end;">
-      <div style="min-width:0;flex:1;text-align:right;">
-        <p style="color:#fff;font-weight:800;font-size:.73rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="lp-them-name">Match (Green)</p>
-        <p style="color:rgba(255,255,255,.45);font-size:.6rem;" id="lp-them-score">🏠×4 · ✓×0</p>
-      </div>
-      <div style="width:10px;height:10px;border-radius:50%;background:#27ae60;flex-shrink:0;box-shadow:0 0 6px #27ae60;"></div>
-    </div>
-  </div>
-
-  <!-- BOARD + CONTROLS -->
-  <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px 0;flex:1;overflow:hidden;">
-    <!-- SVG Board — rendered by JS into this container -->
-    <canvas id="ludoCanvas" width="320" height="320" style="border-radius:8px;box-shadow:0 0 24px rgba(201,150,58,.3);flex-shrink:0;touch-action:none;cursor:pointer;"></canvas>
-
-    <!-- Dice + status row -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 14px 6px;flex-shrink:0;width:100%;">
-      <!-- Dice -->
-      <button id="ludoDice" onclick="rollDice()" style="width:56px;height:56px;background:#fff;border-radius:12px;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35);transition:transform .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <canvas id="diceCanvas" width="44" height="44"></canvas>
-      </button>
-      <div style="flex:1;">
-        <p style="color:#e4b55a;font-size:.8rem;font-weight:800;" id="diceResult">Tap dice to roll</p>
-        <p style="color:rgba(255,255,255,.5);font-size:.68rem;margin-top:2px;" id="diceHint">Roll a 6 to enter play</p>
-      </div>
-      <!-- Roll again / Skip -->
-      <button id="skipTurnBtn" onclick="endTurn()" style="display:none;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">Skip ›</button>
-    </div>
-  </div>
-
-  <!-- WIN OVERLAY -->
-  <div id="ludoWinBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);align-items:center;justify-content:center;z-index:200;">
-    <div class="ludo-win-banner">
-      <div style="font-size:3rem;margin-bottom:8px;">🏆</div>
-      <p style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:#fff;margin-bottom:4px;" id="winnerText">You Won!</p>
-      <p style="font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:16px;">MashaAllah — what a great game!</p>
-      <button onclick="exitLudo()" style="background:#fff;border:none;border-radius:50px;padding:10px 28px;font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--teal4);">Back to Chat</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MATCH NOTIFICATION OVERLAY ══ -->
-<div id="match-overlay" style="display:none;position:absolute;inset:0;background:linear-gradient(160deg,rgba(13,115,119,.96),rgba(201,150,58,.92));z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;">
-  <div style="animation:fadeUp .4s ease;">
-    <div style="font-size:4rem;margin-bottom:8px;">💞</div>
-    <p style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;color:#fff;font-weight:600;margin-bottom:4px;">It's a Match!</p>
-    <p style="color:rgba(255,255,255,.75);font-size:.9rem;margin-bottom:6px;">You and</p>
-    <p style="color:#e4b55a;font-size:1.3rem;font-weight:800;margin-bottom:20px;" id="match-partner-name">Your match</p>
-    <p style="color:rgba(255,255,255,.65);font-size:.8rem;line-height:1.6;margin-bottom:24px;">MashaAllah! You both liked each other.<br>Start a conversation in sha Allah 🌙</p>
-    <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
-      <button id="match-chat-btn" class="btn bg bfull" style="font-size:.95rem;">💬 Say Assalamu Alaikum</button>
-      <button class="btn bfull" onclick="hideMatchOverlay()" style="background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);">Continue Discovering</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ INTRO MESSAGE MODAL (before match) ══ -->
-<div class="mov" id="m-intro-msg">
-  <div class="msh">
-    <div class="mh"></div>
-    <div style="text-align:center;margin-bottom:14px;">
-      <div style="font-size:2.5rem;margin-bottom:8px;">💌</div>
-      <p class="mt">Send an Intro</p>
-      <p style="font-size:.82rem;color:var(--txt3);line-height:1.6;">You liked <strong id="intro-partner-name">them</strong>! Send a short respectful intro message. They'll see it when they view your like.</p>
-    </div>
-    <div class="fg" style="margin-bottom:14px;">
-      <label>Your intro message <span class="req-star">*</span></label>
-      <textarea id="intro-msg-inp" class="cinp" rows="3" placeholder="Assalamu Alaikum! I came across your profile and..." style="resize:none;min-height:80px;"></textarea>
-      <p style="font-size:.72rem;color:var(--txt3);margin-top:4px;">Keep it halal and respectful. No phone numbers.</p>
-    </div>
-    <button class="btn bp bfull" onclick="sendIntroMessage()" style="margin-bottom:9px;">💌 Send Intro</button>
-    <button class="btn bgh bfull" onclick="MC('m-intro-msg')">Maybe Later</button>
-  </div>
-</div>
-
-<!-- Photo source choice sheet -->
-<div class="mov" id="photo-source-sheet">
-  <div class="msh">
-    <div class="mh"></div>
-    <p class="mt" style="margin-bottom:16px;">Add Photo</p>
-    <button class="btn bp bfull" onclick="openPhotoSource('camera')"
-      style="margin-bottom:10px;font-size:.95rem;padding:14px;">
-      📸 Take Photo
-    </button>
-    <button class="btn bfull" onclick="openPhotoSource('gallery')"
-      style="margin-bottom:10px;font-size:.95rem;padding:14px;background:var(--cream2);border:1.5px solid var(--sand);">
-      🖼️ Choose from Gallery
-    </button>
-    <button class="btn bgh bfull" onclick="MC('photo-source-sheet')"
-      style="font-size:.88rem;">
-      Cancel
-    </button>
-  </div>
-</div>
-
-<!-- ══════════════ FORGOT PASSWORD ══════════════ -->
-<div class="scr" id="s-forgot-pw" style="background:var(--cream);">
-  <div class="tbar">
-    <button class="ibtn back-ibtn" onclick="G('s-login')">&#8592;</button>
-    <h2>Reset Password</h2>
-  </div>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:36px 24px 28px;text-align:center;">
-    <div style="width:76px;height:76px;background:#dff2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.3rem;margin-bottom:18px;">🔑</div>
-    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--teal4);margin-bottom:8px;">Forgot Password?</h3>
-    <p style="font-size:.84rem;color:var(--txt3);line-height:1.7;margin-bottom:24px;">Enter your registered email address and we will send you a reset code.</p>
-    <div class="fg" style="width:100%;margin-bottom:14px;text-align:left;">
-      <label>Email Address</label>
-      <input id="fp-email" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email"/>
-    </div>
-    <div id="fp-code-section" style="display:none;width:100%;">
-      <p style="font-size:.82rem;color:var(--teal);font-weight:700;margin-bottom:12px;">Enter the 6-digit code sent to your email:</p>
-      <div class="orow" id="fp-otp-cells" style="margin-bottom:10px;">
-        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" oninput="otpInput(this,'fp-otp-cells',0)" onkeydown="otpKey(event,this,'fp-otp-cells',0)" onpaste="otpPaste(event,'fp-otp-cells')"/>
-        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',1)" onkeydown="otpKey(event,this,'fp-otp-cells',1)"/>
-        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',2)" onkeydown="otpKey(event,this,'fp-otp-cells',2)"/>
-        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',3)" onkeydown="otpKey(event,this,'fp-otp-cells',3)"/>
-        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',4)" onkeydown="otpKey(event,this,'fp-otp-cells',4)"/>
-        <input class="ocell" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" oninput="otpInput(this,'fp-otp-cells',5)" onkeydown="otpKey(event,this,'fp-otp-cells',5)"/>
-      </div>
-      <div class="fg" style="text-align:left;">
-        <label>New Password</label>
-        <input id="fp-new-pw" type="password" placeholder="Minimum 8 characters" autocomplete="new-password"/>
-      </div>
-      <div class="fg" style="text-align:left;">
-        <label>Confirm New Password</label>
-        <input id="fp-new-pw2" type="password" placeholder="Repeat new password" autocomplete="new-password"/>
-      </div>
-    </div>
-    <p id="fp-status" style="font-size:.79rem;color:var(--txt3);min-height:18px;margin-bottom:10px;"></p>
-    <button id="fp-btn" class="btn bp bfull" onclick="forgotPasswordStep()" style="margin-bottom:12px;font-size:.93rem;padding:14px;">
-      Send Reset Code
-    </button>
-    <p style="font-size:.79rem;color:var(--txt3);">Remembered it? <a href="#" onclick="G('s-login');return false;" style="color:var(--teal);font-weight:700;">Sign In</a></p>
-  </div>
-</div>
-
-
-<!-- Edit photo source sheet -->
-<div class="mov" id="edit-photo-sheet">
-  <div class="msh">
-    <div class="mh"></div>
-    <p class="mt" style="margin-bottom:18px;">Change Photo</p>
-    <button class="btn bp bfull" onclick="_doEditPhotoOpen('camera')"
-      style="margin-bottom:10px;font-size:.95rem;padding:14px;">
-      📸 Take Photo
-    </button>
-    <button class="btn bfull" onclick="_doEditPhotoOpen('gallery')"
-      style="margin-bottom:10px;font-size:.95rem;padding:14px;background:var(--cream2);border:1.5px solid var(--sand);">
-      🖼️ Choose from Gallery
-    </button>
-    <button class="btn bgh bfull" onclick="MC('edit-photo-sheet')"
-      style="font-size:.88rem;">
-      Cancel
-    </button>
   </div>
 </div>
 
@@ -1626,19 +1441,45 @@ id="s-myprofile" style="background:var(--cream2);">
   <div class="tbar">
     <button class="ibtn back-ibtn" onclick="G('s-discover')">&#8592;</button>
     <h2>Notifications</h2>
-    <button class="ibtn" onclick="markAllRead()" style="font-size:.72rem;font-weight:800;color:var(--teal);">All Read</button>
+    <button class="ibtn" onclick="markAllRead()" style="font-size:.72rem;font-weight:800;">All Read</button>
   </div>
   <div class="scroll" style="padding:12px 14px 24px;">
     <div id="notif-list">
       <div style="text-align:center;padding:40px 20px;color:var(--txt3);">
         <div style="font-size:3rem;margin-bottom:12px;">🔔</div>
-        <p style="font-weight:800;font-size:.9rem;margin-bottom:6px;">No notifications yet</p>
-        <p style="font-size:.78rem;line-height:1.6;">When someone likes you or you get a match, it'll appear here.</p>
+        <p style="font-weight:800;font-size:.9rem;">No notifications yet</p>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ══════════════ FORGOT PASSWORD ══════════════ -->
+<div class="scr" id="s-forgot-pw" style="background:var(--cream);">
+  <div class="tbar"><button class="ibtn back-ibtn" onclick="G('s-login')">&#8592;</button><h2>Reset Password</h2></div>
+  <div class="scroll" style="padding:24px 20px;">
+    <div style="text-align:center;margin-bottom:24px;"><div style="font-size:3rem;margin-bottom:10px;">🔑</div><p style="font-size:.85rem;color:var(--txt3);line-height:1.6;">Enter your email to receive a reset code.</p></div>
+    <div class="fg"><label>Email Address</label><input id="fp-email" type="email" placeholder="your@email.com"/></div>
+    <div id="fp-code-section" style="display:none;">
+      <div class="fg"><label>6-Digit Code</label>
+        <div id="fp-otp-cells" class="ocells">
+          <input class="ocell" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(this,'fp-otp-cells',0)" onkeydown="otpKey(event,this,'fp-otp-cells',0)" onpaste="otpPaste(event,'fp-otp-cells')">
+          <input class="ocell" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(this,'fp-otp-cells',1)" onkeydown="otpKey(event,this,'fp-otp-cells',1)">
+          <input class="ocell" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(this,'fp-otp-cells',2)" onkeydown="otpKey(event,this,'fp-otp-cells',2)">
+          <input class="ocell" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(this,'fp-otp-cells',3)" onkeydown="otpKey(event,this,'fp-otp-cells',3)">
+          <input class="ocell" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(this,'fp-otp-cells',4)" onkeydown="otpKey(event,this,'fp-otp-cells',4)">
+          <input class="ocell" maxlength="1" type="text" inputmode="numeric" oninput="otpInput(this,'fp-otp-cells',5)" onkeydown="otpKey(event,this,'fp-otp-cells',5)">
+        </div>
+      </div>
+      <div class="fg"><label>New Password</label><input id="fp-new-pw" type="password" placeholder="Min 8 characters"/></div>
+      <div class="fg"><label>Confirm Password</label><input id="fp-new-pw2" type="password" placeholder="Repeat password"/></div>
+    </div>
+    <p id="fp-status" style="font-size:.78rem;color:var(--red2);text-align:center;margin-bottom:10px;"></p>
+    <button class="btn bp bfull" id="fp-btn" onclick="forgotPasswordStep()">Send Reset Code</button>
+    <p style="font-size:.79rem;color:var(--txt3);text-align:center;margin-top:14px;">Remembered it? <a href="#" onclick="G('s-login');return false;" style="color:var(--teal);font-weight:700;">Sign In</a></p>
+  </div>
+</div>
+
+</div><!-- /#app -->
 
 <!-- Incoming Call Modal -->
 <div class="mov" id="m-incoming-call" style="z-index:9999;">
@@ -1649,64 +1490,38 @@ id="s-myprofile" style="background:var(--cream2);">
       <p style="font-size:.82rem;color:rgba(255,255,255,.6);" id="ic-call-type">Audio Call</p>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-      <button onclick="declineCall(WC._pendingCall)"
-        style="background:#e74c3c;color:#fff;border:none;border-radius:14px;padding:16px;font-size:.95rem;font-weight:800;cursor:pointer;">
-        ❌ Decline
-      </button>
-      <button onclick="answerIncomingCall(WC._pendingCall)"
-        style="background:#27ae60;color:#fff;border:none;border-radius:14px;padding:16px;font-size:.95rem;font-weight:800;cursor:pointer;">
-        ✅ Answer
-      </button>
+      <button onclick="declineCall(WC._pendingCall)" style="background:#e74c3c;color:#fff;border:none;border-radius:14px;padding:16px;font-size:.95rem;font-weight:800;cursor:pointer;">❌ Decline</button>
+      <button onclick="answerIncomingCall(WC._pendingCall)" style="background:#27ae60;color:#fff;border:none;border-radius:14px;padding:16px;font-size:.95rem;font-weight:800;cursor:pointer;">✅ Answer</button>
     </div>
   </div>
 </div>
 
-
-<!-- Ludo Incoming Invite Modal -->
+<!-- Ludo Incoming Modal -->
 <div class="mov" id="m-ludo-incoming">
   <div class="msh" style="background:#1a1a2e;color:#fff;border-radius:24px 24px 0 0;padding:28px 22px;">
     <div style="text-align:center;margin-bottom:18px;">
       <div style="font-size:3rem;margin-bottom:8px;">🎲</div>
       <p style="font-size:1rem;font-weight:800;margin-bottom:4px;" id="ludo-invite-title">Ludo Invite!</p>
-      <p style="font-size:.8rem;color:rgba(255,255,255,.6);">You have been invited to play Ludo</p>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <button onclick="MC('m-ludo-incoming')"
-        style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;">
-        ❌ Decline
-      </button>
-      <button onclick="acceptLudoInvite()"
-        style="background:#27ae60;color:#fff;border:none;border-radius:12px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;">
-        🎲 Play!
-      </button>
+      <button onclick="MC('m-ludo-incoming')" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;">❌ Decline</button>
+      <button onclick="acceptLudoInvite()" style="background:#27ae60;color:#fff;border:none;border-radius:12px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;">🎲 Play!</button>
     </div>
   </div>
 </div>
 
-</div><!-- /#app -->
-
+<!-- Edit photo source sheet -->
+<div class="mov" id="edit-photo-sheet">
+  <div class="msh">
+    <div class="mh"></div>
+    <p class="mt" style="margin-bottom:18px;">Change Photo</p>
+    <button class="btn bp bfull" onclick="_doEditPhotoOpen('camera')" style="margin-bottom:10px;font-size:.95rem;padding:14px;">📸 Take Photo</button>
+    <button class="btn bfull" onclick="_doEditPhotoOpen('gallery')" style="margin-bottom:10px;font-size:.95rem;padding:14px;background:var(--cream2);border:1.5px solid var(--sand);">🖼️ Choose from Gallery</button>
+    <button class="btn bgh bfull" onclick="MC('edit-photo-sheet')" style="font-size:.88rem;">Cancel</button>
+  </div>
+</div>
 
 <script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -1742,7 +1557,7 @@ const S = {
   unread: {}, blocked: [], deletedConvs: [], selectedConvs: [],
   _pendingDelMode: '', _pendingDelId: -1, callLogs: [],
   msgs: {}, regData: {}, _photoSlotIdx: 0, _photoFiles: {},
-  _discoverCandidateId: null, _discoverQueue: [], _seenNotifs: {},
+  _discoverCandidateId: null, _discoverQueue: [],
   _introTargetId: null, _fpEmail: null, _viewingUserId: null,
   admins: ['mdhelal.ahamed@gmail.com', 'admin@halal-meetup.com'],
 };
@@ -1753,9 +1568,7 @@ function G(id) {
   var t = document.getElementById(id);
   if (t) {
     t.classList.add('on');
-    if (id === 's-matches')       renderConvList();
-    if (id === 's-notifications') loadNotifications();
-    if (id === 's-discover') { if (S.user && S.token) fetchDiscoverProfiles(); }
+    if (id === 's-matches') renderConvList();
     if (id === 's-chat')    renderChatByMatch();
     if (id === 's-myprofile') openMyProfile();
     if (id === 's-admin')   initAdmin();
@@ -1846,8 +1659,8 @@ function loadUserSession() {
   S.unread = {};
   S._seenNotifs = {};
   loadNextDiscoverProfile();
-  connectSSE();           // real-time events via SSE
-  startNotifPolling();    // fallback polling for notifications
+  connectSSE();
+  startNotifPolling();
 }
 
 /* ── Registration ───────────────────────────────────────── */
@@ -2154,68 +1967,8 @@ function checkPhotos() {
 }
 
 function selectID(el) { document.querySelectorAll('.idopt').forEach(function(x) { x.style.borderColor = 'var(--sand)'; }); el.style.borderColor = 'var(--teal)'; }
-function tapUpload(el, msg) {
-  var inp = document.createElement('input');
-  inp.type   = 'file';
-  inp.accept = 'image/*,application/pdf';
-  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
-  document.body.appendChild(inp);
-  inp.addEventListener('change', function() {
-    if (!inp.files || !inp.files[0]) {
-      if (document.body.contains(inp)) document.body.removeChild(inp); return;
-    }
-    var file = inp.files[0];
-    if (document.body.contains(inp)) document.body.removeChild(inp);
-    if (file.size > 15 * 1024 * 1024) { toast('File too large. Max 15MB.', 3000, 'err'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      el.style.borderColor = 'var(--teal)';
-      el.style.background  = '#dff2f2';
-      var isImg = file.type.startsWith('image/');
-      el.innerHTML = isImg
-        ? '<img src="' + e.target.result + '" style="max-height:120px;max-width:100%;border-radius:8px;object-fit:contain;">'
-          + '<p style="color:var(--teal);font-weight:800;font-size:.8rem;margin-top:6px;">' + msg + '</p>'
-        : '<div style="font-size:2.5rem;margin-bottom:6px;">📄</div>'
-          + '<p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'
-          + '<p style="color:var(--txt3);font-size:.75rem;">' + file.name + '</p>';
-      el.style.cursor = 'default';
-      toast('Document uploaded!', 2000);
-    };
-    reader.readAsDataURL(file);
-  });
-  inp.click();
-}
-function takeSelfie() {
-  var inp = document.createElement('input');
-  inp.type   = 'file';
-  inp.accept = 'image/*';
-  var isIOS  = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (!isIOS) inp.capture = 'user'; // front camera on Android
-  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
-  document.body.appendChild(inp);
-  inp.addEventListener('change', function() {
-    if (!inp.files || !inp.files[0]) {
-      if (document.body.contains(inp)) document.body.removeChild(inp); return;
-    }
-    var file = inp.files[0];
-    if (document.body.contains(inp)) document.body.removeChild(inp);
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      // Show selfie preview in the sring circle
-      var ring = document.querySelector('.sring');
-      if (ring) {
-        ring.innerHTML = '<img src="' + e.target.result + '" '
-          + 'style="width:140px;height:140px;border-radius:50%;object-fit:cover;border:3px solid var(--teal);">';
-      }
-      S._selfieFile = file;
-      var btn = document.getElementById('selfiebtn');
-      if (btn) { btn.textContent = '✅ Selfie Captured! Tap to retake'; btn.style.background = 'var(--green)'; }
-      toast('Selfie captured!', 2000);
-    };
-    reader.readAsDataURL(file);
-  });
-  inp.click();
-}
+function tapUpload(el, msg) { el.style.borderColor = 'var(--teal)'; el.style.background = '#dff2f2'; el.innerHTML = '<div style="font-size:2.5rem;margin-bottom:6px;">✅</div><p style="color:var(--teal);font-weight:800;font-size:.9rem;">' + msg + '</p>'; }
+function takeSelfie() { var b = document.getElementById('selfiebtn'); b.textContent = '✅ Selfie Captured!'; b.style.background = 'var(--green)'; }
 
 /* ── Block detection ─────────────────────────────────────── */
 var PH_RX = /(\+?\d[\d\s\-().]{6,}\d)/i;
@@ -2254,22 +2007,10 @@ function showMatchNotification(partnerId, matchId) {
   var pName   = document.getElementById('match-partner-name');
   var btn     = document.getElementById('match-chat-btn');
   if (!overlay) return;
-  if (pName) pName.textContent = 'You matched! 💞';
+  if (pName) pName.textContent = 'Your new match';
   if (btn) btn.onclick = function() { hideMatchOverlay(); openChatByMatch(matchId); };
   overlay.style.display = 'flex';
   setTimeout(hideMatchOverlay, 8000);
-  // Load partner name
-  if (partnerId) {
-    apiCall('/api/users/' + partnerId, 'GET')
-    .then(function(res) {
-      if (res.success && pName) {
-        pName.textContent = (res.data.first_name || '') + ' liked you back! 💞';
-      }
-    }).catch(function(){});
-  }
-  // Toast + trigger notification refresh
-  toast('It is a Match! 🎉', 4000);
-  setTimeout(pollNotifications, 2000);
 }
 function hideMatchOverlay() { var o = document.getElementById('match-overlay'); if (o) o.style.display = 'none'; }
 function showIntroMessagePrompt(toId) {
@@ -2301,24 +2042,8 @@ function openChatByMatch(matchId) {
     S.chatPartnerId = match.partner_id;
     var nameEl   = document.getElementById('chat-name');
     var statusEl = document.getElementById('chat-status');
-    var fullName = (match.first_name || '') + ' ' + (match.last_name || '');
-    if (nameEl) nameEl.textContent = fullName;
-    S.chatPartnerName = fullName;
+    if (nameEl) nameEl.textContent = match.first_name + ' ' + match.last_name;
     if (statusEl) statusEl.textContent = match.online ? 'Online now' : 'Last seen recently';
-    // Set partner photo in chat header
-    var avatarEl = document.getElementById('chat-avatar');
-    var avatarFb = document.getElementById('chat-avatar-fb');
-    if (avatarEl) {
-      if (match.avatar && match.avatar.length > 100) {
-        avatarEl.style.backgroundImage    = 'url(' + JSON.stringify(match.avatar) + ')';
-        avatarEl.style.backgroundSize     = 'cover';
-        avatarEl.style.backgroundPosition = 'center';
-        if (avatarFb) avatarFb.style.display = 'none';
-      } else {
-        avatarEl.style.backgroundImage = 'none';
-        if (avatarFb) avatarFb.style.display = '';
-      }
-    }
     var notice = document.getElementById('blocked-notice');
     var cbar   = document.querySelector('.cbar');
     if (S.blocked.includes(match.partner_id)) { if (notice) notice.style.display = 'block'; if (cbar) cbar.style.display = 'none'; }
@@ -2328,23 +2053,9 @@ function openChatByMatch(matchId) {
   });
 }
 function openChat(id) {
-  if (!id) return;
-  // Check matches list from API
-  apiCall('/api/matches', 'GET')
-  .then(function(res) {
-    if (!res.success) return;
-    var match = (res.data || []).find(function(m) {
-      return m.partner_id === id || m.user1_id === id || m.user2_id === id;
-    });
-    if (match) {
-      openChatByMatch(match.match_id);
-    } else {
-      toast('You need to match first before chatting. Like their profile!', 3000, 'err');
-    }
-  })
-  .catch(function() {
-    toast('Could not load matches. Please try again.', 2500, 'err');
-  });
+  var matchId = getMatchId(id);
+  if (matchId) openChatByMatch(matchId);
+  else toast('You need to match first before chatting.', 2500, 'err');
 }
 function renderChatByMatch() {
   var cont = document.getElementById('chatMsgs');
@@ -2397,15 +2108,7 @@ function sendMsg() {
 function mkBubble(m) {
   var wrap = document.createElement('div');
   wrap.className = 'bwrap' + (m.f === 'me' ? ' sent' : '');
-  if (m.f !== 'me') { var av = document.createElement('div'); av.className = 'avsm'; av.style.cssText = 'width:44px;height:44px;border-radius:50%;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.3rem;';
-      if (match.avatar && match.avatar.length > 100) {
-        var img = document.createElement('img');
-        img.src = match.avatar;
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-        img.onerror = function(){ av.textContent = '👤'; };
-        av.appendChild(img);
-      } else { av.textContent = '👤'; }
-      wrap.appendChild(av); }
+  if (m.f !== 'me') { var av = document.createElement('div'); av.className = 'avsm'; av.style.background = 'linear-gradient(135deg,var(--teal),var(--gold))'; av.textContent = '👤'; wrap.appendChild(av); }
   var col  = document.createElement('div'); col.style.flex = '1'; col.style.minWidth = '0';
   var bub  = document.createElement('div');
   if (m.blocked === 'phone') { bub.className = 'bub bblocked'; bub.innerHTML = '<strong style="color:var(--gold3);font-size:.74rem;">🚫 Phone numbers blocked</strong>'; }
@@ -2447,16 +2150,7 @@ function renderConvList() {
       row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:12px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.05);';
       var av = document.createElement('div');
       av.style.cssText = 'width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,' + colours[i % colours.length] + ');display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;';
-      av.textContent = '';
-      if (match.avatar && match.avatar.length > 100) {
-        var img = document.createElement('img');
-        img.src = match.avatar;
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
-        img.onerror = function() { av.textContent = '👤'; };
-        av.appendChild(img);
-      } else {
-        av.textContent = '👤';
-      }
+      av.textContent = '👤';
       var info = document.createElement('div'); info.style.flex = '1'; info.style.minWidth = '0';
       var nameEl = document.createElement('p'); nameEl.style.cssText = 'font-weight:800;font-size:.87rem;margin-bottom:2px;'; nameEl.textContent = (match.first_name || '') + ' ' + (match.last_name || '');
       var previewEl = document.createElement('p'); previewEl.style.cssText = 'font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; previewEl.textContent = match.last_message || '💞 You matched! Say Assalamu Alaikum';
@@ -2474,74 +2168,21 @@ function renderConvList() {
 
 /* ── Discover ─────────────────────────────────────────────── */
 function loadNextDiscoverProfile() {
-  if (!S.user || !S.token) { showEmptyDiscover(); return; }
-  // Use queued profiles first
-  if (S._discoverQueue && S._discoverQueue.length > 1) {
-    S._discoverQueue.shift(); // remove shown profile
-    renderDiscoverCard(S._discoverQueue[0]);
-    // Pre-fetch more when queue is low
-    if (S._discoverQueue.length < 3) fetchDiscoverProfiles();
-    return;
-  }
-  fetchDiscoverProfiles();
-}
-
-function fetchDiscoverProfiles() {
-  apiCall('/api/discover?page=' + (S._discoverPage || 0) + '&page_size=10', 'GET')
+  if (!S.user || !S.token) return;
+  apiCall('/api/discover?page=' + (S._discoverPage || 0), 'GET')
   .then(function(res) {
-    if (!res.success || !res.data || !res.data.length) { showEmptyDiscover(); return; }
+    if (!res.success || !res.data.length) { showEmptyDiscover(); return; }
+    var p = res.data[0];
+    S._discoverCandidateId = p.id;
     S._discoverQueue = res.data;
-    S._discoverPage  = (S._discoverPage || 0) + 1;
-    renderDiscoverCard(res.data[0]);
+    var nameEl = document.getElementById('cName');
+    var subEl  = document.getElementById('cSub');
+    var bioEl  = document.getElementById('cBio');
+    if (nameEl) nameEl.textContent = (p.first_name || '') + ' ' + (p.last_name || '');
+    if (subEl)  subEl.textContent  = (p.age || '?') + ' · ' + (p.city || '') + (p.sect ? ' · ' + p.sect : '');
+    if (bioEl)  bioEl.textContent  = p.bio || 'No bio yet.';
   })
-  .catch(function(e) { console.error('Discover error:', e); showEmptyDiscover(); });
-}
-
-function renderDiscoverCard(p) {
-  if (!p) { showEmptyDiscover(); return; }
-  S._discoverCandidateId = p.id;
-
-  // Update photo area
-  var photoImg      = document.getElementById('cPhotoImg');
-  var photoFallback = document.getElementById('cPhotoFallback');
-  if (photoImg) {
-    if (p.photo_1) {
-      photoImg.style.backgroundImage = 'url(' + JSON.stringify(p.photo_1) + ')';
-      photoImg.style.display = 'block';
-      if (photoFallback) photoFallback.style.display = 'none';
-    } else {
-      photoImg.style.backgroundImage = '';
-      photoImg.style.display = 'none';
-      if (photoFallback) photoFallback.style.display = 'block';
-    }
-  }
-
-  // Update name + sub info
-  var nameEl = document.getElementById('cName');
-  var subEl  = document.getElementById('cSub');
-  var bioEl  = document.getElementById('cBio');
-  if (nameEl) nameEl.textContent = (p.first_name || '') + (p.last_name ? ' ' + p.last_name[0] + '.' : '');
-  if (subEl)  subEl.textContent  = (p.age || '?') + ' · ' + (p.city || p.country || 'Somewhere') + (p.sect ? ' · ' + p.sect : '');
-  if (bioEl)  bioEl.textContent  = p.bio || '';
-
-  // Verified badge
-  var badge = document.getElementById('cVerBadge');
-  if (badge) badge.style.display = p.id_verified ? 'inline-block' : 'none';
-
-  // Online dot
-  var dot = document.getElementById('cOnlineDot');
-  if (dot) dot.style.background = p.online ? '#2ecc71' : '#95a5a6';
-
-  // Reset card position
-  var card = document.getElementById('swipeCard');
-  if (card) {
-    card.style.transition = 'none';
-    card.style.transform  = '';
-    card.style.opacity    = '1';
-    ['ov-like','ov-nope','ov-super'].forEach(function(id) {
-      var el = document.getElementById(id); if (el) el.style.opacity = 0;
-    });
-  }
+  .catch(function() { showEmptyDiscover(); });
 }
 function showEmptyDiscover() {
   var card = document.getElementById('swipeCard');
@@ -2556,142 +2197,25 @@ function showEmptyDiscover() {
 /* ── Profile display ─────────────────────────────────────── */
 function openViewProfile(userId) {
   S._viewingUserId = userId;
-  // Show loading state
-  var loading = document.getElementById('vp-loading');
-  var content = document.getElementById('vp-content');
-  if (loading) loading.style.display = 'flex';
-  if (content) content.style.display = 'none';
-  G('s-viewprofile');
-  // Ensure view profile doesn't overfill
-  var vpEl = document.getElementById('s-viewprofile');
-  if (vpEl) vpEl.style.overflowY = 'hidden';
-
   apiCall('/api/users/' + userId, 'GET')
   .then(function(res) {
-    if (loading) loading.style.display = 'none';
-    if (!res.success || !res.data) {
-      toast('Could not load profile.', 2500, 'err');
-      return;
-    }
+    if (!res.success) return;
     var u = res.data;
-    if (content) { content.style.display = 'flex'; content.style.flexDirection = 'column'; content.style.height = '100%'; }
-
-    // ── Photo ──────────────────────────────────────
-    var vpPhoto    = document.getElementById('vp-photo');
-    var vpFallback = document.getElementById('vp-photo-fallback');
-    if (vpPhoto) {
-      if (u.photo_1 && u.photo_1.length > 10) {
-        vpPhoto.style.backgroundImage    = 'url(' + JSON.stringify(u.photo_1) + ')';
-        vpPhoto.style.backgroundSize     = 'cover';
-        vpPhoto.style.backgroundPosition = 'center';
-        if (vpFallback) vpFallback.style.display = 'none';
-      } else {
-        vpPhoto.style.backgroundImage = 'none';
-        if (vpFallback) { vpFallback.style.display = 'flex'; vpFallback.textContent = '👤'; }
-      }
-    }
-
-    // ── Online status ───────────────────────────────
-    var onlineBadge = document.getElementById('vp-online-badge');
-    var onlineDot   = document.getElementById('vp-online-dot');
-    var onlineTxt   = document.getElementById('vp-online-txt');
-    if (onlineBadge) onlineBadge.style.display = 'flex';
-    if (onlineDot)   onlineDot.style.background = u.online ? '#2ecc71' : '#95a5a6';
-    if (onlineTxt)   onlineTxt.textContent = u.online ? 'Online' : 'Last seen recently';
-
-    // ── Verified badge ──────────────────────────────
-    var verBadge = document.getElementById('vp-verified-badge');
-    if (verBadge) verBadge.style.display = u.id_verified ? 'inline-block' : 'none';
-
-    // ── Name & sub-line ─────────────────────────────
     var nameEl = document.getElementById('vp-name');
     var subEl  = document.getElementById('vp-sub');
-    if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name ? u.last_name[0] + '.' : '');
-    var subParts = [];
-    if (u.age)     subParts.push(u.age);
-    if (u.city)    subParts.push(u.city);
-    if (u.country) subParts.push(u.country);
-    if (u.sect)    subParts.push(u.sect);
-    if (subEl) subEl.textContent = subParts.join(' · ');
-
-    // ── Badges row ──────────────────────────────────
-    var badgesEl = document.getElementById('vp-badges');
-    if (badgesEl) {
-      badgesEl.innerHTML = '';
-      var badges = [u.marital_status, u.education, u.nationality].filter(Boolean);
-      badges.forEach(function(b) {
-        var span = document.createElement('span');
-        span.className = 'bdg bgo';
-        span.textContent = b;
-        badgesEl.appendChild(span);
-      });
-    }
-
-    // ── Bio ─────────────────────────────────────────
-    var bioEl = document.getElementById('vp-bio');
-    if (bioEl) bioEl.textContent = u.bio || 'No bio provided.';
-
-    // ── Details grid ────────────────────────────────
-    var detailsEl = document.getElementById('vp-details');
-    if (detailsEl) {
-      var details = [
-        { label: 'Occupation',  value: u.occupation },
-        { label: 'Education',   value: u.education  },
-        { label: 'Languages',   value: u.languages  },
-        { label: 'Nationality', value: u.nationality},
-        { label: 'Country',     value: u.country    },
-        { label: 'City',        value: u.city       },
-      ].filter(function(d) { return d.value; });
-      detailsEl.innerHTML = details.map(function(d) {
-        return '<div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">'
-          + d.label + '</p><p style="font-size:.83rem;font-weight:700;">' + d.value + '</p></div>';
-      }).join('');
-      var detCard = document.getElementById('vp-details-card');
-      if (detCard) detCard.style.display = details.length ? 'block' : 'none';
-    }
-
-    // ── Interests ───────────────────────────────────
-    var intEl = document.getElementById('vp-interests');
-    var intCard = document.getElementById('vp-interests-card');
-    if (intEl && u.interests) {
-      var tags = u.interests.split(/[,،;]+/).map(function(t) { return t.trim(); }).filter(Boolean);
-      intEl.innerHTML = tags.map(function(t) {
-        return '<span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">' + t + '</span>';
-      }).join('');
-      if (intCard) intCard.style.display = tags.length ? 'block' : 'none';
-    } else {
-      if (intCard) intCard.style.display = 'none';
-    }
-
-    // ── Action button (Like or Message) ─────────────
+    var bioEl  = document.getElementById('vp-bio');
+    if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
+    if (subEl)  subEl.textContent  = (u.age || '?') + ' · ' + (u.city || '') + (u.country ? ', ' + u.country : '');
+    if (bioEl)  bioEl.textContent  = u.bio || '';
     var btn = document.getElementById('vp-action-btn');
-    apiCall('/api/matches', 'GET')
-    .then(function(mRes) {
-      if (!btn) return;
-      var matched = mRes.success && (mRes.data || []).some(function(m) {
-        return m.partner_id === userId;
-      });
-      if (matched) {
-        btn.textContent = '💬 Message';
-        btn.style.background = 'var(--teal)';
-        btn.onclick = function() { openChat(userId); };
-      } else {
-        btn.textContent = '💚 Like';
-        btn.style.background = '#27ae60';
-        btn.onclick = function() { vpAction(); };
-      }
-    }).catch(function() {
-      if (btn) { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
-    });
-  })
-  .catch(function(e) {
-    console.error('openViewProfile error:', e);
-    var loading = document.getElementById('vp-loading');
-    if (loading) loading.style.display = 'none';
-    toast('Could not load profile. Please try again.', 2500, 'err');
+    if (btn) {
+      var matchId = getMatchId(userId);
+      if (matchId) { btn.textContent = '💬 Message'; btn.style.background = 'var(--teal)'; }
+      else { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
+    }
+    G('s-viewprofile');
   });
 }
-
 function vpAction() {
   var userId  = S._viewingUserId;
   if (!userId || !S.user) return;
@@ -2729,16 +2253,6 @@ function openMyProfile() {
     // Premium status
     var subEl = document.getElementById('mp-sub');
     if (subEl) subEl.textContent = u.premium ? 'Premium' : 'Free';
-    // Show profile photo if available
-    var photoEl = document.getElementById('mp-avatar');
-    if (photoEl && u.photo_1) {
-      photoEl.innerHTML = '<img src="' + u.photo_1 + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
-    }
-    // Update match/like stats
-    var matchEl = document.getElementById('mp-match-count');
-    var likeEl  = document.getElementById('mp-like-count');
-    if (matchEl) matchEl.textContent = u.match_count || 0;
-    if (likeEl)  likeEl.textContent  = u.like_count  || 0;
   })
   .catch(function() {
     var u = S.user || {};
@@ -2752,18 +2266,6 @@ function loadEdit() {
   var fields = { 'ep-fn': u.first_name, 'ep-ln': u.last_name, 'ep-occ': u.occupation,
                  'ep-city': u.city, 'ep-bio': u.bio, 'ep-interests': u.interests };
   Object.keys(fields).forEach(function(id) { var el = document.getElementById(id); if (el) el.value = fields[id] || ''; });
-  // Populate photo slots from existing photos
-  var photoMap = { 'eps1': u.photo_1, 'eps2': u.photo_2, 'eps3': u.photo_3 };
-  Object.keys(photoMap).forEach(function(slotId) {
-    var src = photoMap[slotId];
-    var slot = document.getElementById(slotId);
-    if (slot && src) {
-      slot.innerHTML = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
-      slot.classList.add('filled');
-    }
-  });
-  S._editPhotos = {};
-  S._editPhotoFiles = {};
 }
 
 function saveProfile() {
@@ -2775,140 +2277,39 @@ function saveProfile() {
     bio:        document.getElementById('ep-bio').value,
     interests:  document.getElementById('ep-interests') ? document.getElementById('ep-interests').value : '',
   };
-  // Include any updated photos
-  if (S._editPhotos) {
-    if (S._editPhotos['eps1']) updates.photo_1 = S._editPhotos['eps1'];
-    if (S._editPhotos['eps2']) updates.photo_2 = S._editPhotos['eps2'];
-    if (S._editPhotos['eps3']) updates.photo_3 = S._editPhotos['eps3'];
-  }
-  // Validate
-  if (!updates.first_name.trim()) { toast('First name is required.', 2000, 'err'); return; }
-  if (!updates.bio.trim())        { toast('Bio is required.', 2000, 'err'); return; }
-  toast('Saving...', 2000);
   apiCall('/api/users/me', 'PUT', updates)
   .then(function(res) {
     if (res.success) {
-      // Merge returned user data into session
-      var updatedUser = res.data || updates;
-      S.user = Object.assign(S.user || {}, updatedUser);
-      S._editPhotos = {};
-      S._editPhotoFiles = {};
+      S.user = Object.assign(S.user, updates);
       toast('✅ Profile updated!', 2500);
-      G('s-myprofile');
+      openMyProfile();
     } else {
-      toast('❌ ' + (res.error || 'Update failed.'), 3000, 'err');
+      toast('❌ ' + (res.error || 'Update failed.'), 2500, 'err');
     }
   })
-  .catch(function() { toast('❌ Connection error. Please try again.', 2500, 'err'); });
+  .catch(function() { toast('❌ Connection error.', 2500, 'err'); });
 }
 
-
-
-/* ══ PHOTO COMPRESSION ═══════════════════════════════════ */
-function compressPhoto(file, maxWidth, maxHeight, quality, callback) {
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var img = new Image();
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      var w = img.width, h = img.height;
-      // Scale down
-      if (w > maxWidth)  { h = Math.round(h * maxWidth / w);  w = maxWidth; }
-      if (h > maxHeight) { w = Math.round(w * maxHeight / h); h = maxHeight; }
-      canvas.width  = w;
-      canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      var dataUrl = canvas.toDataURL('image/jpeg', quality || 0.75);
-      callback(dataUrl);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function openProfilePhotoUpload() {
+function editPhotoTap() {
   var inp = document.createElement('input');
   inp.type   = 'file';
   inp.accept = 'image/*';
-  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;';
   document.body.appendChild(inp);
   inp.addEventListener('change', function() {
-    if (!inp.files || !inp.files[0]) {
-      if (document.body.contains(inp)) document.body.removeChild(inp); return;
-    }
+    if (!inp.files || !inp.files[0]) { document.body.removeChild(inp); return; }
     var file = inp.files[0];
-    if (document.body.contains(inp)) document.body.removeChild(inp);
-    if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
-    // Compress before uploading (keeps DB size manageable)
-    compressPhoto(file, 400, 400, 0.8, function(dataUrl) {
-      // Show preview immediately
-      var avatarEl = document.getElementById('mp-avatar');
-      if (avatarEl) {
-        avatarEl.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
-          + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;font-weight:800;text-align:center;padding:3px 0;">📷 CHANGE</div>';
-      }
-      S._profilePhotoData = dataUrl;
-      toast('Uploading photo...', 2000);
-      apiCall('/api/users/me', 'PUT', { photo_1: dataUrl })
-      .then(function(res) {
-        if (res.success) {
-          if (S.user) S.user.photo_1 = dataUrl;
-          toast('✅ Profile photo updated!', 2500);
-        } else {
-          toast('❌ Upload failed: ' + (res.error || 'Please try again'), 3000, 'err');
-        }
-      })
-      .catch(function(e) { toast('❌ Connection error uploading photo.', 2500, 'err'); });
-    });
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var sl = document.getElementById('eps2');
+      if (sl) { sl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">'; sl.classList.add('filled'); }
+      S._editPhoto = file;
+      toast('Photo updated!', 2000);
+    };
+    reader.readAsDataURL(file);
+    setTimeout(function() { if (document.body.contains(inp)) document.body.removeChild(inp); }, 1000);
   });
   inp.click();
-}
-function editPhotoTap(slotId) {
-  var targetId = slotId || 'eps0';
-  S._editSlotTarget = targetId;
-  // Show source sheet
-  var sheet = document.getElementById('edit-photo-sheet');
-  if (sheet) { sheet.classList.add('on'); return; }
-  // Fallback: open gallery directly
-  _doEditPhotoOpen('gallery', targetId);
-}
-
-function _doEditPhotoOpen(source, targetId) {
-  var sheet = document.getElementById('edit-photo-sheet');
-  if (sheet) sheet.classList.remove('on');
-  var tId = targetId || S._editSlotTarget || 'eps0';
-  setTimeout(function() {
-    var inp = document.createElement('input');
-    inp.type   = 'file';
-    inp.accept = 'image/*';
-    var isIOS  = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (source === 'camera' && !isIOS) inp.capture = 'user';
-    inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
-    document.body.appendChild(inp);
-    inp.addEventListener('change', function() {
-      if (!inp.files || !inp.files[0]) {
-        if (document.body.contains(inp)) document.body.removeChild(inp); return;
-      }
-      var file = inp.files[0];
-      if (document.body.contains(inp)) document.body.removeChild(inp);
-      if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
-      compressPhoto(file, 600, 800, 0.8, function(dataUrl) {
-        var sl = document.getElementById(tId);
-        if (sl) {
-          sl.innerHTML = ''
-            + '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">'
-            + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:.58rem;font-weight:800;text-align:center;padding:4px 0;border-radius:0 0 10px 10px;">TAP TO CHANGE</div>';
-          sl.classList.add('filled');
-          sl.style.position = 'relative';
-          sl.style.overflow = 'hidden';
-        }
-        S._editPhotos = S._editPhotos || {};
-        S._editPhotos[tId] = dataUrl;
-        toast('✅ Photo selected! Tap Save to update your profile.', 2500);
-      });
-    });
-    inp.click();
-  }, 250);
 }
 
 /* ── Block / unblock ─────────────────────────────────────── */
@@ -2929,339 +2330,22 @@ function submitReport() {
 }
 
 /* ── Calls ──────────────────────────────────────────────── */
-
-/* ══ RINGTONE (Web Audio API — no files needed) ══════════ */
-var _ringCtx  = null;
-var _ringNode = null;
-var _ringInt  = null;
-
-function playRingtone(type) {
-  stopRingtone();
-  try {
-    _ringCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var freqs  = type === 'outgoing'
-      ? [440, 480]   // standard dial tone
-      : [660, 880];  // incoming ring tone
-
-    function beep(freq, dur, delay) {
-      var osc  = _ringCtx.createOscillator();
-      var gain = _ringCtx.createGain();
-      osc.connect(gain);
-      gain.connect(_ringCtx.destination);
-      osc.frequency.value = freq;
-      osc.type = 'sine';
-      var t = _ringCtx.currentTime + delay;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.3, t + 0.01);
-      gain.gain.setValueAtTime(0.3, t + dur - 0.05);
-      gain.gain.linearRampToValueAtTime(0, t + dur);
-      osc.start(t);
-      osc.stop(t + dur);
-    }
-
-    function ringCycle() {
-      if (type === 'outgoing') {
-        // UK-style: 400ms on, 200ms off, 400ms on, 2s off
-        beep(440, 0.4,  0.0);
-        beep(480, 0.4,  0.0);
-        beep(440, 0.4,  0.6);
-        beep(480, 0.4,  0.6);
-      } else {
-        // Incoming: rising two-tone
-        beep(660, 0.15, 0.0);
-        beep(880, 0.15, 0.2);
-        beep(660, 0.15, 0.4);
-        beep(880, 0.15, 0.6);
-        beep(660, 0.15, 0.8);
-        beep(880, 0.15, 1.0);
-      }
-    }
-
-    ringCycle();
-    _ringInt = setInterval(ringCycle, type === 'outgoing' ? 4000 : 2000);
-  } catch(e) {
-    console.log('Ringtone not available:', e.message);
-  }
-}
-
-function stopRingtone() {
-  if (_ringInt) { clearInterval(_ringInt); _ringInt = null; }
-  if (_ringCtx) {
-    try { _ringCtx.close(); } catch(e) {}
-    _ringCtx = null;
-  }
-}
-/* ══ WebRTC CALL SYSTEM ═══════════════════════════════════ */
-var WC = {
-  pc: null,           // RTCPeerConnection
-  localStream: null,  // local media stream
-  remoteStream: null, // remote media stream
-  callId: null,       // current call ID in DB
-  pollTimer: null,    // signaling poll timer
-  type: 'audio',      // 'audio' | 'video'
-  isCaller: false,    // true if we initiated
-  partnerId: null,
-  muted: false,
-  videoOff: false,
-};
-
-var STUN = { iceServers: [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'stun:stun2.l.google.com:19302' },
-]};
-
 function startCall(type) {
-  if (!S.premium) {
-    var msg = S.subStatus === 'cancelled'
-      ? 'Your subscription has ended. Re-subscribe for $10/month.'
-      : 'Audio & Video calls require Premium ($10/month).';
-    toast(msg, 3500, 'err');
-    M('s-chat', 'm-sub');
-    return;
-  }
-  if (!S.chatPartnerId) { toast('No match selected.', 2000, 'err'); return; }
-  WC.type      = type;
-  WC.isCaller  = true;
-  WC.partnerId = S.chatPartnerId;
-  _initCallUI(type, 'Ringing...');
-  G('s-call');
-  playRingtone('outgoing');   // start outgoing ringtone
-  _startWebRTC(type, true);
-}
-
-function _initCallUI(type, statusText) {
-  var nameEl   = document.getElementById('call-name');
-  var typeEl   = document.getElementById('call-type');
-  var timerEl  = document.getElementById('call-timer');
-  var statusEl = document.getElementById('call-status');
-  if (nameEl)   nameEl.textContent   = S.chatPartnerName || 'Connecting...';
-  if (typeEl)   typeEl.textContent   = (type === 'video' ? '🎥 Video' : '📞 Voice') + ' Call';
-  if (timerEl)  timerEl.textContent  = '00:00';
-  if (statusEl) statusEl.textContent = statusText || 'Connecting...';
-  S.callSecs = 0;
-  clearInterval(S.callTimer);
+  if (!S.premium) { if (S.subStatus === 'cancelled') toast('Your subscription is cancelled. Re-subscribe to use calls.', 3000, 'err'); M('s-chat', 'm-sub'); return; }
+  var p = S.user;
+  document.getElementById('call-name').textContent = 'Calling...';
+  document.getElementById('call-type').textContent = (type === 'video' ? '🎥 Video' : '📞 Voice') + ' Call';
+  S.callSecs = 0; clearInterval(S.callTimer);
   S.callTimer = setInterval(function() {
     S.callSecs++;
-    var m = String(Math.floor(S.callSecs/60)).padStart(2,'0');
-    var s = String(S.callSecs%60).padStart(2,'0');
-    if (timerEl) timerEl.textContent = m + ':' + s;
+    var mins = String(Math.floor(S.callSecs / 60)).padStart(2, '0');
+    var secs = String(S.callSecs % 60).padStart(2, '0');
+    var el = document.getElementById('call-timer');
+    if (el) el.textContent = '00:' + mins + ':' + secs;
   }, 1000);
-}
-
-async function _startWebRTC(type, isCaller) {
-  try {
-    // Get local media
-    var constraints = type === 'video'
-      ? { audio: true, video: { facingMode: 'user', width: 320, height: 240 } }
-      : { audio: true, video: false };
-    WC.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-    // Show local video preview
-    var localVid = document.getElementById('call-local-video');
-    if (localVid && type === 'video') {
-      localVid.srcObject = WC.localStream;
-      localVid.style.display = 'block';
-    }
-    // Create peer connection
-    WC.pc = new RTCPeerConnection(STUN);
-    WC.localStream.getTracks().forEach(function(t) { WC.pc.addTrack(t, WC.localStream); });
-    // On remote stream
-    WC.pc.ontrack = function(event) {
-      var remoteVid = document.getElementById('call-remote-video');
-      var remoteAud = document.getElementById('call-remote-audio');
-      WC.remoteStream = event.streams[0];
-      if (type === 'video' && remoteVid) {
-        remoteVid.srcObject = WC.remoteStream;
-        remoteVid.style.display = 'block';
-      } else if (remoteAud) {
-        remoteAud.srcObject = WC.remoteStream;
-      }
-      var statusEl = document.getElementById('call-status');
-      if (statusEl) statusEl.textContent = 'Connected';
-    };
-    // ICE candidates
-    var pendingCandidates = [];
-    WC.pc.onicecandidate = function(e) {
-      if (e.candidate) pendingCandidates.push(e.candidate);
-    };
-    WC.pc.oniceconnectionstatechange = function() {
-      console.log('ICE state:', WC.pc.iceConnectionState);
-      if (WC.pc.iceConnectionState === 'disconnected' || WC.pc.iceConnectionState === 'failed') {
-        toast('Call connection lost. Try again.', 3000, 'err');
-      }
-    };
-    if (isCaller) {
-      // Create and send offer via API
-      var offer = await WC.pc.createOffer();
-      await WC.pc.setLocalDescription(offer);
-      // Wait for ICE gathering
-      await new Promise(function(resolve) { setTimeout(resolve, 1500); });
-      // POST call to API with offer + candidates
-      var callRes = await apiCall('/api/calls', 'POST', {
-        to_user_id:  WC.partnerId,
-        call_type:   type,
-        sdp_offer:   JSON.stringify({ sdp: WC.pc.localDescription, candidates: pendingCandidates }),
-      });
-      if (!callRes.success) { toast('Could not initiate call.', 2500, 'err'); _cleanupCall(); return; }
-      WC.callId = callRes.data.call_id || callRes.data.id;
-      // Send notification to partner
-      await apiCall('/api/notifications', 'POST', {
-        to_user_id: WC.partnerId,
-        type: 'call',
-        title: (S.user.first_name || 'Someone') + ' is calling you! ' + (type === 'video' ? '🎥' : '📞'),
-        body: 'Tap to answer the ' + type + ' call.',
-        related_match_id: S.chatId,
-        call_id: WC.callId,
-        call_type: type,
-      }).catch(function(){});
-      toast('Calling... waiting for answer', 4000);
-      // SSE handles real-time delivery — polling is fallback only
-      // Poll for answer
-      _pollForAnswer();
-    } else {
-      // Answering — set remote offer and create answer
-      var callData = WC._incomingCallData;
-      var offerData = JSON.parse(callData.sdp_offer || '{}');
-      await WC.pc.setRemoteDescription(new RTCSessionDescription(offerData.sdp));
-      // Add remote ICE candidates
-      (offerData.candidates || []).forEach(function(c) {
-        WC.pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
-      });
-      var answer = await WC.pc.createAnswer();
-      await WC.pc.setLocalDescription(answer);
-      await new Promise(function(resolve) { setTimeout(resolve, 1000); });
-      // Send answer back
-      await apiCall('/api/calls/' + callData.id + '/answer', 'PATCH', {
-        sdp_answer: JSON.stringify({ sdp: WC.pc.localDescription, candidates: pendingCandidates }),
-        status: 'accepted',
-      });
-      var statusEl = document.getElementById('call-status');
-      if (statusEl) statusEl.textContent = 'Connected';
-    }
-  } catch(err) {
-    console.error('WebRTC error:', err);
-    toast('Could not access microphone/camera: ' + err.message, 4000, 'err');
-    _cleanupCall();
-  }
-}
-
-function _pollForAnswer() {
-  if (WC.pollTimer) clearInterval(WC.pollTimer);
-  var attempts = 0;
-  WC.pollTimer = setInterval(async function() {
-    attempts++;
-    if (attempts > 60) { // 60s timeout
-      clearInterval(WC.pollTimer);
-      stopRingtone();
-      toast('No answer. Call ended.', 3000, 'err');
-      _cleanupCall();
-      return;
-    }
-    try {
-      var res = await apiCall('/api/calls/' + WC.callId, 'GET');
-      if (!res.success) return;
-      var call = res.data;
-      if (call.status === 'accepted' && call.sdp_answer) {
-        clearInterval(WC.pollTimer);
-        var answerData = JSON.parse(call.sdp_answer);
-        await WC.pc.setRemoteDescription(new RTCSessionDescription(answerData.sdp));
-        (answerData.candidates || []).forEach(function(c) {
-          WC.pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
-        });
-        var statusEl = document.getElementById('call-status');
-        stopRingtone();
-        if (statusEl) statusEl.textContent = 'Connected';
-        toast('Call connected!', 2000);
-      } else if (call.status === 'declined' || call.status === 'missed') {
-        clearInterval(WC.pollTimer);
-        toast('Call ' + call.status + '.', 3000, 'err');
-        _cleanupCall();
-      }
-    } catch(e) {}
-  }, 1000);
-}
-
-function answerIncomingCall(callData) {
-  var cd = callData || WC._pendingCall;
-  if (!cd) { toast('No incoming call to answer.', 2000, 'err'); return; }
-  MC('m-incoming-call');
-  stopRingtone();
-  WC._incomingCallData = cd;
-  WC._pendingCall      = cd;
-  WC.type      = cd.call_type || 'audio';
-  WC.isCaller  = false;
-  WC.partnerId = cd.caller_id || cd.from_user_id;
-  WC.callId    = cd.id || cd.call_id;
-  WC.chatPartnerId = WC.partnerId;
-  _initCallUI(WC.type, 'Connecting...');
   G('s-call');
-  _startWebRTC(WC.type, false);
 }
-
-function declineCall(callData) {
-  var cd = callData || WC._pendingCall;
-  stopRingtone();
-  if (cd && (cd.id || cd.call_id)) {
-    apiCall('/api/calls/' + (cd.id || cd.call_id) + '/answer', 'PATCH', { status: 'declined' }).catch(function(){});
-  }
-  MC('m-incoming-call');
-  WC._pendingCall = null;
-  toast('Call declined.', 2000);
-}
-
-function endCall() {
-  stopRingtone();
-  clearInterval(S.callTimer);
-  if (WC.callId) {
-    apiCall('/api/calls/' + WC.callId + '/answer', 'PATCH', { status: 'ended' }).catch(function(){});
-  }
-  _cleanupCall();
-  G('s-chat');
-  toast('Call ended.', 2000);
-}
-
-function _cleanupCall() {
-  stopRingtone();
-  clearInterval(S.callTimer);
-  clearInterval(WC.pollTimer);
-  if (WC.localStream)  WC.localStream.getTracks().forEach(function(t){t.stop();});
-  if (WC.pc)           WC.pc.close();
-  WC.pc = null; WC.localStream = null; WC.remoteStream = null;
-  WC.callId = null; WC.pollTimer = null;
-  var localVid  = document.getElementById('call-local-video');
-  var remoteVid = document.getElementById('call-remote-video');
-  if (localVid)  { localVid.srcObject  = null; localVid.style.display  = 'none'; }
-  if (remoteVid) { remoteVid.srcObject = null; remoteVid.style.display = 'none'; }
-}
-
-function toggleMute() {
-  if (!WC.localStream) return;
-  WC.muted = !WC.muted;
-  WC.localStream.getAudioTracks().forEach(function(t){ t.enabled = !WC.muted; });
-  var btn = document.getElementById('btn-mute');
-  if (btn) {
-    btn.querySelector('span').textContent = WC.muted ? '🔇' : '🎙️';
-    btn.querySelector('span:last-child').textContent = WC.muted ? 'Unmute' : 'Mute';
-  }
-  toast(WC.muted ? 'Muted' : 'Unmuted', 1200);
-}
-
-function toggleVideo() {
-  if (!WC.localStream) return;
-  WC.videoOff = !WC.videoOff;
-  WC.localStream.getVideoTracks().forEach(function(t){ t.enabled = !WC.videoOff; });
-  var btn = document.getElementById('btn-vid');
-  if (btn) {
-    btn.querySelector('span').textContent = WC.videoOff ? '📷' : '🎥';
-    btn.querySelector('span:last-child').textContent = WC.videoOff ? 'Video Off' : 'Video';
-  }
-  toast(WC.videoOff ? 'Video off' : 'Video on', 1200);
-}
-
-function rejoinCall() {
-  if (!WC.callId) { toast('No active call to rejoin.', 2000, 'err'); return; }
-  _startWebRTC(WC.type, WC.isCaller);
-}
+function endCall() { clearInterval(S.callTimer); G('s-chat'); toast('Call ended.', 2000); }
 function toggleCB(id, i1, i2, l1, l2) { var btn = document.getElementById(id); if (!btn) return; btn.classList.toggle('act'); var sp = btn.querySelector('span'); var lbl = btn.querySelector('span:last-child'); if (btn.classList.contains('act')) { if (sp) sp.textContent = i1; if (lbl) lbl.textContent = l1; } else { if (sp) sp.textContent = i2; if (lbl) lbl.textContent = l2; } }
 function openCallLogs() {
   var list = document.getElementById('callLogList');
@@ -3296,7 +2380,7 @@ function processPayment() {
   if (!nm) { toast('Please enter the name on your card.', 'err', 2500); return; }
   var isReSub = S.subStatus === 'cancelled';
   var now = new Date();
-  var renewDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  var renewDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   apiCall('/api/subscriptions', 'POST', { action: isReSub ? 'resubscribe' : 'subscribe', stripe_sub_id: 'manual_' + Date.now(), stripe_customer_id: '' })
   .then(function(res) {
     MC('m-sub');
@@ -3339,98 +2423,30 @@ function confirmCancelSub() { MC('m-manage-sub'); M('s-myprofile', 'm-confirm-ca
 
 /* ── Search ──────────────────────────────────────────────── */
 function runSearch() {
+  var country  = document.getElementById('sf-c').value;
+  var sect     = document.getElementById('sf-s').value;
+  var ms       = document.getElementById('sf-ms').value;
+  var verOnly  = document.getElementById('sf-v').checked;
   if (!S.token) { toast('Please sign in to search.', 2500, 'err'); return; }
-  var nameQ   = (document.getElementById('srq')  || {}).value  || '';
-  var country = (document.getElementById('sf-c') || {}).value  || '';
-  var sect    = (document.getElementById('sf-s') || {}).value  || '';
-  var ms      = (document.getElementById('sf-ms')|| {}).value  || '';
-  var verOnly = document.getElementById('sf-v') ? document.getElementById('sf-v').checked : false;
-  var minAge  = (document.getElementById('sf-min-age')||{}).value || '';
-  var maxAge  = (document.getElementById('sf-max-age')||{}).value || '';
-
-  // Show loading state
-  var listEl    = document.getElementById('srList');
-  var countEl   = document.getElementById('srCount');
-  var resultsEl = document.getElementById('srResults');
-  if (resultsEl) resultsEl.style.display = 'block';
-  if (listEl)  listEl.innerHTML = '<p style="text-align:center;padding:20px;color:var(--txt3);">Searching...</p>';
-  if (countEl) countEl.textContent = '';
-
   var params = new URLSearchParams();
-  if (nameQ)   params.set('name',           nameQ.trim());
-  if (country) params.set('country',        country);
-  if (sect)    params.set('sect',           sect);
+  if (country) params.set('country', country);
+  if (sect)    params.set('sect', sect);
   if (ms)      params.set('marital_status', ms);
-  if (verOnly) params.set('verified_only',  'true');
-  if (minAge)  params.set('min_age',        minAge);
-  if (maxAge)  params.set('max_age',        maxAge);
-
+  if (verOnly) params.set('verified_only', 'true');
   apiCall('/api/search?' + params.toString(), 'GET')
   .then(function(res) {
+    document.getElementById('srResults').style.display = 'block';
     if (!res.success || !res.data.length) {
-      if (countEl) countEl.textContent = '0 profiles found';
-      if (listEl)  listEl.innerHTML =
-        '<div style="text-align:center;padding:30px 20px;">'
-        + '<div style="font-size:3rem;margin-bottom:10px;">🔍</div>'
-        + '<p style="font-weight:800;font-size:.88rem;margin-bottom:6px;">No profiles found</p>'
-        + '<p style="color:var(--txt3);font-size:.78rem;">Try adjusting your filters</p></div>';
+      document.getElementById('srCount').textContent = '0 profiles found';
+      document.getElementById('srList').innerHTML = '<p style="color:var(--txt3);text-align:center;padding:20px;font-size:.85rem;">No profiles match your filters.</p>';
       return;
     }
-    if (countEl) countEl.textContent = res.data.length + ' profile' + (res.data.length !== 1 ? 's' : '') + ' found';
-    if (listEl) {
-      listEl.innerHTML = '';
-      res.data.forEach(function(p) {
-        var row = document.createElement('div');
-        row.style.cssText = 'background:#fff;border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);';
-        // Avatar
-        var av = document.createElement('div');
-        av.style.cssText = 'width:58px;height:58px;border-radius:50%;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.5rem;';
-        if (p.photo_1) {
-          var img = document.createElement('img');
-          img.src = p.photo_1;
-          img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-          av.innerHTML = '';
-          av.appendChild(img);
-        } else {
-          av.textContent = '👤';
-        }
-        // Info
-        var info = document.createElement('div'); info.style.flex='1'; info.style.minWidth='0';
-        var nm = document.createElement('p');
-        nm.style.cssText = 'font-weight:800;font-size:.9rem;margin-bottom:3px;';
-        nm.textContent = (p.first_name||'') + (p.last_name ? ' ' + p.last_name[0] + '.' : '');
-        var det = document.createElement('p');
-        det.style.cssText = 'font-size:.76rem;color:var(--txt3);margin-bottom:3px;';
-        det.textContent = (p.age||'?') + ' · ' + (p.city||p.country||'') + (p.sect?' · '+p.sect:'');
-        var bio = document.createElement('p');
-        bio.style.cssText = 'font-size:.74rem;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-        bio.textContent = p.bio || '';
-        info.appendChild(nm); info.appendChild(det); if (p.bio) info.appendChild(bio);
-        // Badge + action
-        var right = document.createElement('div');
-        right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;';
-        if (p.id_verified) {
-          var bdg = document.createElement('span');
-          bdg.style.cssText = 'background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:50px;';
-          bdg.textContent = '✓ Verified';
-          right.appendChild(bdg);
-        }
-        var viewBtn = document.createElement('button');
-        viewBtn.style.cssText = 'background:var(--teal);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:.72rem;font-weight:800;cursor:pointer;';
-        viewBtn.textContent = 'View ›';
-        (function(uid){ viewBtn.onclick = function(e){ e.stopPropagation(); openViewProfile(uid); }; })(p.id);
-        right.appendChild(viewBtn);
-        row.appendChild(av); row.appendChild(info); row.appendChild(right);
-        (function(uid){ row.onclick = function(){ openViewProfile(uid); }; })(p.id);
-        listEl.appendChild(row);
-      });
-    }
+    document.getElementById('srCount').textContent = res.data.length + ' profile' + (res.data.length !== 1 ? 's' : '') + ' found';
+    document.getElementById('srList').innerHTML = res.data.map(function(p) {
+      return '<div onclick="openViewProfile(\'' + p.id + '\')" style="background:#fff;border-radius:var(--rs);padding:12px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:7px;box-shadow:var(--sh);"><div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--gold));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">👤</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.88rem;">' + (p.first_name || '') + ' ' + (p.last_name || '') + '</p><p style="font-size:.75rem;color:var(--txt3);">' + (p.age || '?') + ' · ' + (p.city || '') + ' · ' + (p.sect || '') + '</p></div></div>';
+    }).join('');
   })
-  .catch(function(e) {
-    console.error('Search error:', e);
-    if (listEl) listEl.innerHTML = '<p style="color:var(--txt3);text-align:center;padding:20px;">Search failed. Please try again.</p>';
-    toast('❌ Search failed. Please try again.', 2500, 'err');
-  });
+  .catch(function() { toast('❌ Search failed.', 2500, 'err'); });
 }
 
 /* ── Admin ───────────────────────────────────────────────── */
@@ -3622,316 +2638,6 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-
-
-/* ══ SSE: Real-time event stream ══════════════════════════ */
-var _sseConn = null;
-
-function connectSSE() {
-  if (!S.token) return;
-  if (_sseConn) { _sseConn.close(); _sseConn = null; }
-
-  var url = API + '/api/events';
-  _sseConn = new EventSource(url + '?token=' + encodeURIComponent(S.token));
-
-  _sseConn.addEventListener('incoming_call', function(e) {
-    try {
-      var data = JSON.parse(e.data);
-      console.log('[SSE] Incoming call:', data);
-      // Show incoming call UI immediately — no polling delay
-      WC._pendingCall = data;
-      var nameEl = document.getElementById('ic-caller-name');
-      var typeEl = document.getElementById('ic-call-type');
-      var iconEl = document.getElementById('ic-type-icon');
-      var callerDisplay = data.caller_name || 'Incoming Call';
-      if (nameEl) nameEl.textContent = callerDisplay;
-      if (typeEl) typeEl.textContent = data.call_type === 'video' ? 'Video Call' : 'Audio Call';
-      if (iconEl) iconEl.textContent = data.call_type === 'video' ? '🎥' : '📞';
-      var modal = document.getElementById('m-incoming-call');
-      if (modal) modal.classList.add('on');
-      playRingtone('incoming');   // ring ring ring!
-      toast((data.call_type === 'video' ? '🎥' : '📞') + ' ' + callerDisplay + ' is calling!', 10000);
-      // Auto-dismiss after 30s
-      setTimeout(function() {
-        var m = document.getElementById('m-incoming-call');
-        if (m && m.classList.contains('on')) {
-          m.classList.remove('on');
-          // Mark as missed
-          if (data.call_id) {
-            apiCall('/api/calls/' + data.call_id + '/answer', 'PATCH', { status: 'missed' }).catch(function(){});
-          }
-          toast('Missed call from ' + callerDisplay, 3000);
-        }
-      }, 30000);
-    } catch(ex) { console.error('[SSE] incoming_call error:', ex); }
-  });
-
-  _sseConn.addEventListener('call_answered', function(e) {
-    try {
-      var data = JSON.parse(e.data);
-      console.log('[SSE] Call answered:', data);
-      if (data.status === 'accepted' && data.sdp_answer && WC.pc) {
-        clearInterval(WC.pollTimer);
-        var answerData = JSON.parse(data.sdp_answer);
-        WC.pc.setRemoteDescription(new RTCSessionDescription(answerData.sdp))
-        .then(function() {
-          (answerData.candidates || []).forEach(function(cc) {
-            WC.pc.addIceCandidate(new RTCIceCandidate(cc)).catch(function(){});
-          });
-          stopRingtone();
-          var statusEl = document.getElementById('call-status');
-          if (statusEl) statusEl.textContent = 'Connected';
-          toast('Call connected! 🎉', 2500);
-        }).catch(function(ex) { console.error('setRemoteDescription:', ex); });
-      }
-    } catch(ex) { console.error('[SSE] call_answered error:', ex); }
-  });
-
-  _sseConn.addEventListener('call_ended', function(e) {
-    try {
-      var data = JSON.parse(e.data);
-      console.log('[SSE] Call ended:', data.status);
-      if (data.status === 'declined') {
-        toast('Call declined.', 3000, 'err');
-        _cleanupCall();
-        if (document.getElementById('s-call') && document.getElementById('s-call').classList.contains('on')) {
-          G('s-chat');
-        }
-      }
-    } catch(ex) {}
-  });
-
-  _sseConn.addEventListener('notification', function(e) {
-    try {
-      var data = JSON.parse(e.data);
-      console.log('[SSE] Notification:', data.type, data.title);
-      if (!S._seenNotifs) S._seenNotifs = {};
-      var notifId = data.type + '_' + Date.now();
-      if (data.type === 'ludo') {
-        showLudoInviteNotif(data);
-      } else if (data.type === 'match') {
-        toast('💞 ' + (data.title || 'New match!'), 4000);
-      } else if (data.type === 'like') {
-        toast('💚 ' + (data.title || 'Someone liked you!'), 4000);
-      } else {
-        toast(data.title || 'New notification', 4000);
-      }
-      updateNotifBadge(1); // show badge
-    } catch(ex) { console.error('[SSE] notification error:', ex); }
-  });
-
-  _sseConn.addEventListener('ping', function() {
-    // Heartbeat — connection is alive
-  });
-
-  _sseConn.onerror = function(e) {
-    console.log('[SSE] Connection error — will retry in 5s');
-    _sseConn.close();
-    _sseConn = null;
-    setTimeout(connectSSE, 5000); // reconnect
-  };
-
-  _sseConn.onopen = function() {
-    console.log('[SSE] Connected — real-time events active');
-  };
-}
-
-function disconnectSSE() {
-  if (_sseConn) { _sseConn.close(); _sseConn = null; }
-}
-/* ══ NOTIFICATIONS ═════════════════════════════════════════ */
-var _notifPollTimer = null;
-
-function openNotifications() {
-  G('s-notifications');
-  loadNotifications();
-  // Mark all as read after viewing
-  setTimeout(markAllRead, 2000);
-}
-
-function loadNotifications() {
-  if (!S.token) return;
-  var listEl = document.getElementById('notif-list');
-  if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3);">Loading...</div>';
-  apiCall('/api/notifications', 'GET')
-  .then(function(res) {
-    if (!res.success) return;
-    var notifs = res.data || [];
-    updateNotifBadge(notifs.filter(function(n){ return !n.is_read; }).length);
-    if (!listEl) return;
-    if (!notifs.length) {
-      listEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--txt3);"><div style="font-size:3rem;margin-bottom:12px;">🔔</div><p style="font-weight:800;font-size:.9rem;margin-bottom:6px;">No notifications yet</p><p style="font-size:.78rem;line-height:1.6;">When someone likes you or you match, it will appear here.</p></div>';
-      return;
-    }
-    listEl.innerHTML = '';
-    notifs.forEach(function(n) {
-      var row = document.createElement('div');
-      row.style.cssText = 'background:' + (n.is_read ? 'var(--white)' : '#e8f8f5') + ';border-radius:12px;padding:13px 14px;margin-bottom:8px;cursor:pointer;border-left:3px solid ' + (n.type==='match' ? 'var(--teal)' : n.type==='like' ? 'var(--green)' : 'var(--gold)') + ';';
-      var icon = n.type==='match' ? '💞' : n.type==='like' ? '💚' : n.type==='message' ? '💬' : '🔔';
-      var time = n.created_at ? new Date(n.created_at).toLocaleDateString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-      row.innerHTML = '<div style="display:flex;align-items:flex-start;gap:10px;">'
-        + '<span style="font-size:1.4rem;flex-shrink:0;">' + icon + '</span>'
-        + '<div style="flex:1;min-width:0;">'
-        + '<p style="font-weight:800;font-size:.85rem;margin-bottom:3px;">' + (n.title || '') + '</p>'
-        + '<p style="font-size:.78rem;color:var(--txt3);line-height:1.5;margin-bottom:4px;">' + (n.body || '') + '</p>'
-        + '<p style="font-size:.68rem;color:var(--txt3);">' + time + '</p>'
-        + '</div>'
-        + (!n.is_read ? '<div style="width:8px;height:8px;background:var(--teal);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>' : '')
-        + '</div>';
-      // Click action based on type
-      (function(notif) {
-        row.onclick = function() {
-          if (notif.type === 'match' && notif.related_match_id) {
-            openChatByMatch(notif.related_match_id);
-          } else if ((notif.type === 'like') && notif.related_user_id) {
-            openViewProfile(notif.related_user_id);
-          }
-        };
-      })(n);
-      listEl.appendChild(row);
-    });
-  })
-  .catch(function(e) { console.error('Load notifications:', e); });
-}
-
-function updateNotifBadge(count) {
-  var badge = document.getElementById('notif-badge');
-  if (!badge) return;
-  badge.style.display = count > 0 ? 'block' : 'none';
-}
-
-function markAllRead() {
-  if (!S.token) return;
-  apiCall('/api/notifications/read-all', 'PATCH', {})
-  .then(function() { updateNotifBadge(0); })
-  .catch(function() {});
-}
-
-function pollNotifications() {
-  if (!S.token) return;
-  apiCall('/api/notifications', 'GET')
-  .then(function(res) {
-    if (!res.success) return;
-    var unread = (res.data || []).filter(function(n){ return !n.is_read; });
-    updateNotifBadge(unread.length);
-    var now = Date.now();
-    unread.forEach(function(n) {
-      var created = n.created_at ? new Date(n.created_at).getTime() : 0;
-      var age = now - created;
-      if (age < 300000 && !S._seenNotifs[n.id]) { // 5 min window
-        S._seenNotifs[n.id] = true;
-        if (n.type === 'call') {
-          showIncomingCall(n);
-        } else if (n.type === 'ludo') {
-          showLudoInviteNotif(n);
-        } else if (n.type === 'match') {
-          toast('💞 ' + (n.title || 'New match!'), 4000);
-        } else if (n.type === 'like') {
-          toast('💚 ' + (n.title || 'Someone liked you!'), 4000);
-        } else {
-          toast(n.title || 'New notification', 4000);
-        }
-        // Mark as read immediately
-        apiCall('/api/notifications/' + n.id + '/read', 'PATCH', {}).catch(function(){});
-      }
-    });
-  })
-  .catch(function() {});
-}
-
-function showIncomingCall(notification) {
-  var callId = notification.call_id;
-  if (!callId || callId === '') {
-    // No call_id — show simple notification toast
-    toast(notification.title || 'Incoming call!', 6000);
-    return;
-  }
-  apiCall('/api/calls/' + callId, 'GET')
-  .then(function(res) {
-    if (!res.success) return;
-    var callData = res.data;
-    // Accept if ringing or very recent (within 60s)
-    var created = callData.created_at ? new Date(callData.created_at).getTime() : 0;
-    var age = Date.now() - created;
-    if (callData.status !== 'ringing' && age > 60000) return;
-    callData.id = callId;
-    WC._pendingCall = callData;
-    // Update incoming call modal
-    var nameEl = document.getElementById('ic-caller-name');
-    var typeEl = document.getElementById('ic-call-type');
-    var iconEl = document.getElementById('ic-type-icon');
-    var callerDisplay = callData.caller_name || notification.title || 'Incoming Call';
-    if (nameEl) nameEl.textContent = callerDisplay;
-    if (typeEl) typeEl.textContent = (callData.call_type === 'video' ? 'Video Call' : 'Audio Call');
-    if (iconEl) iconEl.textContent = callData.call_type === 'video' ? '🎥' : '📞';
-    var modal = document.getElementById('m-incoming-call');
-    if (modal) modal.classList.add('on');
-    playRingtone('incoming');   // ring!
-    // Auto-dismiss after 30s if not answered
-    setTimeout(function() {
-      var m = document.getElementById('m-incoming-call');
-      if (m && m.classList.contains('on')) {
-        m.classList.remove('on');
-        toast('Missed call from ' + callerDisplay, 3000);
-      }
-    }, 30000);
-    toast((callData.call_type === 'video' ? '🎥' : '📞') + ' ' + callerDisplay + ' is calling!', 8000);
-  })
-  .catch(function(e){ console.error('showIncomingCall:', e); });
-}
-
-function startNotifPolling() {
-  if (_notifPollTimer) clearInterval(_notifPollTimer);
-  S._seenNotifs = {};
-  // Poll immediately then every 3s
-  pollNotifications();
-  pollPendingCalls();  // check for pending calls immediately
-  _notifPollTimer = setInterval(function() {
-    pollNotifications();
-    pollPendingCalls();
-  }, 3000);
-}
-
-function pollPendingCalls() {
-  if (!S.token) return;
-  apiCall('/api/calls/pending', 'GET')
-  .then(function(res) {
-    if (!res.success || !res.data || !res.data.length) return;
-    res.data.forEach(function(call) {
-      var callKey = 'call_' + call.id;
-      if (S._seenNotifs[callKey]) return;  // already handled
-      S._seenNotifs[callKey] = true;
-      console.log('[POLL] Incoming call detected:', call.id, call.call_type);
-      // Show incoming call modal
-      WC._pendingCall = call;
-      var nameEl = document.getElementById('ic-caller-name');
-      var typeEl = document.getElementById('ic-call-type');
-      var iconEl = document.getElementById('ic-type-icon');
-      if (nameEl) nameEl.textContent = call.caller_name || 'Someone';
-      if (typeEl) typeEl.textContent = call.call_type === 'video' ? 'Video Call' : 'Audio Call';
-      if (iconEl) iconEl.textContent = call.call_type === 'video' ? '🎥' : '📞';
-      var modal = document.getElementById('m-incoming-call');
-      if (modal) modal.classList.add('on');
-      playRingtone('incoming');
-      toast((call.call_type === 'video' ? '🎥' : '📞') + ' ' + (call.caller_name || 'Someone') + ' is calling!', 10000);
-      // Auto-dismiss after 30s
-      setTimeout(function() {
-        var m = document.getElementById('m-incoming-call');
-        if (m && m.classList.contains('on')) {
-          m.classList.remove('on');
-          stopRingtone();
-          apiCall('/api/calls/' + call.id + '/answer', 'PATCH', { status: 'missed' }).catch(function(){});
-          toast('Missed call from ' + (call.caller_name || 'Someone'), 3000);
-        }
-      }, 30000);
-    });
-  })
-  .catch(function() {});
-}
-
-function stopNotifPolling() {
-  if (_notifPollTimer) { clearInterval(_notifPollTimer); _notifPollTimer = null; }
-}
 /* ══ SWIPE (DISCOVER) ══════════════════════════════════════ */
 var DS = { on: false, sx: 0, cx: 0 };
 function initSwipe() {
@@ -4012,111 +2718,14 @@ function aiTurn(){if(LG.currentTurn!=='green'||!LG.active)return;var dv=Math.flo
 function updateTI(msg){var el=document.getElementById('turnIndicator');if(el)el.textContent=msg;}
 function updateScores(){var rD=LG.pieces.red.filter(function(p){return p.pos>=57;}).length;var gD=LG.pieces.green.filter(function(p){return p.pos>=57;}).length;var rH=LG.pieces.red.filter(function(p){return p.pos===0;}).length;var gH=LG.pieces.green.filter(function(p){return p.pos===0;}).length;var ys=document.getElementById('lp-you-score');var ts=document.getElementById('lp-them-score');if(ys)ys.textContent='🏠×'+rH+' · ✓×'+rD;if(ts)ts.textContent='🏠×'+gH+' · ✓×'+gD;}
 function showWinner(color){if(LG.winner)return;LG.winner=color;LG.active=false;clearTimeout(LG.aiTimer);var b=document.getElementById('ludoWinBanner');var w=document.getElementById('winnerText');if(b)b.style.display='flex';if(w)w.textContent=color==='red'?'You Won! 🏆':(LG.playerNames.green+' Won!');}
-function openLudoInvite() {
-  var sc = document.getElementById('ludoSubCheck');
-  var sb = document.getElementById('ludoStartBtn');
-  if (!S.premium) {
-    if (sc) sc.style.display = 'block';
-    var msg = S.subStatus === 'cancelled'
-      ? 'Re-subscribe to host Ludo ($10/month)'
-      : 'Get Premium to Host ($10/month)';
-    if (sb) {
-      sb.textContent = '👑 ' + msg;
-      sb.onclick = function() { MC('m-ludo-invite'); M('s-chat','m-sub'); };
-    }
-  } else {
-    if (sc) sc.style.display = 'none';
-    if (sb) {
-      sb.textContent = '🎲 Send Ludo Invite';
-      sb.onclick = function() { sendLudoInvite(); };
-    }
-  }
-  M('s-chat','m-ludo-invite');
-}
-
-function sendLudoInvite() {
-  if (!S.chatPartnerId) { toast('No match selected.', 2000, 'err'); return; }
-  // Send notification to partner
-  apiCall('/api/notifications', 'POST', {
-    to_user_id: S.chatPartnerId,
-    type: 'ludo',
-    title: (S.user && S.user.first_name ? S.user.first_name : 'Someone') + ' invited you to play Ludo! 🎲',
-    body: 'Open the chat to join the Ludo game.',
-    related_match_id: S.chatId,
-  })
-  .then(function(res) {
-    MC('m-ludo-invite');
-    toast('🎲 Ludo invite sent!', 2500);
-    startLudo();
-  })
-  .catch(function() {
-    MC('m-ludo-invite');
-    toast('Invite sent! Starting game...', 2000);
-    startLudo();
-  });
-}
-
-function showLudoInviteNotif(notification) {
-  var matchId = notification.related_match_id || '';
-  var title   = notification.title || 'Ludo invite!';
-  S._pendingLudoMatchId = matchId;
-  // Show ludo invite modal if possible, else toast
-  var modal = document.getElementById('m-ludo-incoming');
-  if (modal) {
-    var titleEl = document.getElementById('ludo-invite-title');
-    if (titleEl) titleEl.textContent = title;
-    modal.classList.add('on');
-    setTimeout(function() { modal.classList.remove('on'); }, 15000);
-  } else {
-    toast('🎲 ' + title + ' — tap Matches to join', 8000);
-  }
-}
-
-function acceptLudoInvite(matchId) {
-  var mid = matchId || S._pendingLudoMatchId;
-  var modal = document.getElementById('m-ludo-incoming');
-  if (modal) modal.classList.remove('on');
-  var toastEl = document.getElementById('toast');
-  if (toastEl) toastEl.style.display = 'none';
-  if (mid) {
-    openChatByMatch(mid);
-    setTimeout(function() { startLudo(); }, 800);
-  } else if (S.chatId) {
-    startLudo();
-  }
-}
-function startLudo(){if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}MC('m-ludo-invite');LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;clearTimeout(LG.aiTimer);LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};var mn='Friend';LG.playerNames={red:'You',green:mn};document.getElementById('lp-you-name').textContent='You (Red)';document.getElementById('lp-them-name').textContent=mn+' (Green)';document.getElementById('lp-you').classList.add('active-turn');document.getElementById('lp-them').classList.remove('active-turn');LG.micOn=true;LG.vidOn=true;var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');if(mic){mic.textContent='🎙️';mic.classList.remove('off');}if(vid){vid.textContent='🎥';vid.classList.remove('off');}var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';G('s-ludo');setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);toast('🎲 Ludo started!',2200);
-  // Send a chat message so partner knows game started
-  if(S.chatId&&S.chatPartnerId){
-    apiCall('/api/matches/'+S.chatId+'/messages','POST',{
-      text:'🎲 I have started a Ludo game! Come play — open our chat.',
-      to_user_id:S.chatPartnerId
-    }).catch(function(){});
-  }
-}
+function openLudoInvite(){var sc=document.getElementById('ludoSubCheck');var sb=document.getElementById('ludoStartBtn');if(!S.premium){if(sc)sc.style.display='block';var msg=S.subStatus==='cancelled'?'Re-subscribe to host Ludo ($10/week)':'Get Premium to Host ($10/week)';if(sb){sb.textContent='👑 '+msg;sb.onclick=function(){MC('m-ludo-invite');M('s-chat','m-sub');};}}else{if(sc)sc.style.display='none';if(sb){sb.textContent='🎲 Send Ludo Invite';sb.onclick=startLudo;}}M('s-chat','m-ludo-invite');}
+function startLudo(){if(!S.premium){MC('m-ludo-invite');M('s-chat','m-sub');return;}MC('m-ludo-invite');LG.active=true;LG.currentTurn='red';LG.diceValue=0;LG.diceRolled=false;LG.winner=null;clearTimeout(LG.aiTimer);LG.pieces={red:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}],green:[{pos:0,id:0},{pos:0,id:1},{pos:0,id:2},{pos:0,id:3}]};var mn='Friend';LG.playerNames={red:'You',green:mn};document.getElementById('lp-you-name').textContent='You (Red)';document.getElementById('lp-them-name').textContent=mn+' (Green)';document.getElementById('lp-you').classList.add('active-turn');document.getElementById('lp-them').classList.remove('active-turn');LG.micOn=true;LG.vidOn=true;var mic=document.getElementById('ludo-mic'),vid=document.getElementById('ludo-vid');if(mic){mic.textContent='🎙️';mic.classList.remove('off');}if(vid){vid.textContent='🎥';vid.classList.remove('off');}var banner=document.getElementById('ludoWinBanner');if(banner)banner.style.display='none';G('s-ludo');setTimeout(function(){if(!initCanvas())return;_bc.onclick=ludoClick;drawBoard();drawDice(0);updateScores();updateTI('Your turn — Roll the dice!');},60);toast('🎲 Ludo started!',2200);}
 function exitLudo(){LG.active=false;clearTimeout(LG.aiTimer);G('s-chat');toast('Game ended.',1800);}
 async function startCamera(){var btn=document.getElementById('ludo-cam-btn');try{var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});LG.camStream=stream;LG.camOn=true;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=stream;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='block';if(btn){btn.textContent='📹';btn.style.background='rgba(231,76,60,.6)';}toast('📹 Camera live!',2000);}catch(err){toast('Camera access denied.',3000,'err');LG.camOn=false;}}
 function stopCamera(){if(LG.camStream){LG.camStream.getTracks().forEach(function(t){t.stop();});LG.camStream=null;}LG.camOn=false;var vid=document.getElementById('camVideo');if(vid)vid.srcObject=null;var wrap=document.getElementById('camPreviewWrap');if(wrap)wrap.style.display='none';var btn=document.getElementById('ludo-cam-btn');if(btn){btn.textContent='📵';btn.style.background='';}}
 function toggleCamera(){if(LG.camOn)stopCamera();else startCamera();}
 async function togglePiP(){var vid=document.getElementById('camVideo');if(!vid||!document.pictureInPictureEnabled)return;try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else await vid.requestPictureInPicture();}catch(e){toast('PiP not supported.',2000,'err');}}
-function toggleLudoAV(type){
-  if(type==='mic'){
-    LG.micOn=!LG.micOn;
-    var btn=document.getElementById('ludo-mic');
-    if(btn){btn.textContent=LG.micOn?'🎙️':'🔇';btn.classList.toggle('off',!LG.micOn);}
-    // Mute/unmute local stream if active
-    if(LG.camStream){LG.camStream.getAudioTracks().forEach(function(t){t.enabled=LG.micOn;});}
-    if(WC.localStream){WC.localStream.getAudioTracks().forEach(function(t){t.enabled=LG.micOn;});}
-    toast(LG.micOn?'Mic on':'Mic muted',1200);
-  } else {
-    LG.vidOn=!LG.vidOn;
-    var btn=document.getElementById('ludo-vid');
-    if(btn){btn.textContent=LG.vidOn?'🎥':'📷';btn.classList.toggle('off',!LG.vidOn);}
-    if(LG.camStream){LG.camStream.getVideoTracks().forEach(function(t){t.enabled=LG.vidOn;});}
-    if(WC.localStream){WC.localStream.getVideoTracks().forEach(function(t){t.enabled=LG.vidOn;});}
-    toast(LG.vidOn?'Video on':'Video off',1200);
-  }
-}
+function toggleLudoAV(type){if(type==='mic'){LG.micOn=!LG.micOn;var btn=document.getElementById('ludo-mic');if(btn){btn.textContent=LG.micOn?'🎙️':'🔇';btn.classList.toggle('off',!LG.micOn);}toast(LG.micOn?'Mic on':'Mic muted',1200);}else{LG.vidOn=!LG.vidOn;var btn=document.getElementById('ludo-vid');if(btn){btn.textContent=LG.vidOn?'🎥':'📷';btn.classList.toggle('off',!LG.vidOn);}toast(LG.vidOn?'Video on':'Video off',1200);}}
 
 /* ══ INIT ══════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function() {
@@ -4127,6 +2736,36 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
   });
 });
+
+var WC={pc:null,localStream:null,remoteStream:null,callId:null,pollTimer:null,type:'audio',isCaller:false,partnerId:null,muted:false,videoOff:false,_pendingCall:null,_incomingCallData:null};
+var STUN={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+
+var _ringCtx=null,_ringInt=null;
+function playRingtone(type){stopRingtone();try{_ringCtx=new(window.AudioContext||window.webkitAudioContext)();function beep(f1,dur,delay){var o=_ringCtx.createOscillator(),g=_ringCtx.createGain();o.connect(g);g.connect(_ringCtx.destination);o.frequency.value=f1;o.type='sine';var t=_ringCtx.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);g.gain.setValueAtTime(0.3,t+dur-0.05);g.gain.linearRampToValueAtTime(0,t+dur);o.start(t);o.stop(t+dur);}function ring(){if(type==='outgoing'){beep(440,0.4,0);beep(480,0.4,0);beep(440,0.4,0.6);beep(480,0.4,0.6);}else{beep(660,0.15,0);beep(880,0.15,0.25);beep(660,0.15,0.5);beep(880,0.15,0.75);}}ring();_ringInt=setInterval(ring,type==='outgoing'?4000:2500);}catch(e){}}
+function stopRingtone(){if(_ringInt){clearInterval(_ringInt);_ringInt=null;}if(_ringCtx){try{_ringCtx.close();}catch(e){}_ringCtx=null;}}
+
+function startCall(type){if(!S.premium){toast('Audio & Video calls require Premium ($10/month).',3500,'err');M('s-chat','m-sub');return;}if(!S.chatPartnerId){toast('Open a chat first.',2000,'err');return;}WC.type=type;WC.isCaller=true;WC.partnerId=S.chatPartnerId;_initCallUI(type,'Ringing...');G('s-call');playRingtone('outgoing');_startWebRTC(type,true);}
+
+function _initCallUI(type,statusText){var nameEl=document.getElementById('call-name'),typeEl=document.getElementById('call-type'),timerEl=document.getElementById('call-timer'),statusEl=document.getElementById('call-status');if(nameEl)nameEl.textContent=S.chatPartnerName||'Connecting...';if(typeEl)typeEl.textContent=(type==='video'?'🎥 Video':'📞 Voice')+' Call';if(timerEl)timerEl.textContent='00:00';if(statusEl)statusEl.textContent=statusText||'Connecting...';S.callSecs=0;clearInterval(S.callTimer);S.callTimer=setInterval(function(){S.callSecs++;var m=String(Math.floor(S.callSecs/60)).padStart(2,'0'),s=String(S.callSecs%60).padStart(2,'0');if(timerEl)timerEl.textContent=m+':'+s;},1000);}
+
+async function _startWebRTC(type,isCaller){try{var constraints=type==='video'?{audio:true,video:{facingMode:'user',width:{ideal:320},height:{ideal:240}}}:{audio:true,video:false};try{WC.localStream=await navigator.mediaDevices.getUserMedia(constraints);}catch(me){if(type==='video'){WC.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});toast('Camera unavailable - audio only',3000,'err');}else throw me;}var lv=document.getElementById('call-local-video');if(lv&&WC.localStream.getVideoTracks().length){lv.srcObject=WC.localStream;lv.muted=true;lv.style.display='block';lv.play().catch(function(){});}WC.pc=new RTCPeerConnection(STUN);WC.localStream.getTracks().forEach(function(t){WC.pc.addTrack(t,WC.localStream);});WC.pc.ontrack=function(ev){console.log('[RTC] Remote track:',ev.track.kind);if(!WC.remoteStream)WC.remoteStream=new MediaStream();WC.remoteStream.addTrack(ev.track);var rv=document.getElementById('call-remote-video'),ra=document.getElementById('call-remote-audio');if(type==='video'&&rv){rv.srcObject=WC.remoteStream;rv.style.display='block';rv.play().catch(function(e){console.warn('rv:',e.message);});}if(ra){ra.srcObject=WC.remoteStream;ra.play().catch(function(e){console.warn('ra:',e.message);});}stopRingtone();var se=document.getElementById('call-status');if(se)se.textContent='Connected ✓';};WC.pc.oniceconnectionstatechange=function(){var st=WC.pc.iceConnectionState;var se=document.getElementById('call-status');if(st==='connected'||st==='completed'){if(se)se.textContent='Connected ✓';stopRingtone();}else if(st==='failed'){toast('Connection failed.',3000,'err');}};var iceCands=[];WC.pc.onicecandidate=function(e){if(e.candidate)iceCands.push(e.candidate.toJSON());};function waitICE(){return new Promise(function(res){if(WC.pc.iceGatheringState==='complete'){res();return;}var t=setTimeout(res,3000);WC.pc.onicegatheringstatechange=function(){if(WC.pc.iceGatheringState==='complete'){clearTimeout(t);res();}};});}if(isCaller){var offer=await WC.pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:type==='video'});await WC.pc.setLocalDescription(offer);await waitICE();var sdp=JSON.stringify({sdp:{type:WC.pc.localDescription.type,sdp:WC.pc.localDescription.sdp},candidates:iceCands});var cr=await apiCall('/api/calls','POST',{to_user_id:WC.partnerId,call_type:type,sdp_offer:sdp});if(!cr.success){toast('Call failed.'+(cr.error||''),3000,'err');_cleanupCall();return;}WC.callId=cr.data.call_id||cr.data.id;await apiCall('/api/notifications','POST',{to_user_id:WC.partnerId,type:'call',title:(S.user.first_name||'Someone')+' is calling! '+(type==='video'?'🎥':'📞'),body:'Tap to answer',related_match_id:S.chatId,call_id:WC.callId,call_type:type}).catch(function(){});var se=document.getElementById('call-status');if(se)se.textContent='Ringing...';_pollForAnswer();}else{var cd=WC._incomingCallData||WC._pendingCall;if(!cd){toast('Call data missing.',2000,'err');_cleanupCall();return;}var od=JSON.parse(cd.sdp_offer||'{}');if(!od.sdp){toast('Invalid call offer.',3000,'err');_cleanupCall();return;}await WC.pc.setRemoteDescription(new RTCSessionDescription(od.sdp));for(var ci of(od.candidates||[])){try{await WC.pc.addIceCandidate(new RTCIceCandidate(ci));}catch(e){}}var ans=await WC.pc.createAnswer();await WC.pc.setLocalDescription(ans);await waitICE();var asdp=JSON.stringify({sdp:{type:WC.pc.localDescription.type,sdp:WC.pc.localDescription.sdp},candidates:iceCands});var cid=cd.id||cd.call_id;await apiCall('/api/calls/'+cid+'/answer','PATCH',{sdp_answer:asdp,status:'accepted'});var se=document.getElementById('call-status');if(se)se.textContent='Connected ✓';stopRingtone();}}catch(err){console.error('[RTC]',err.name,err.message);var msg=err.name==='NotAllowedError'?'Mic/camera permission denied.':err.name==='NotFoundError'?'No microphone found.':'Call error: '+err.message;toast(msg,5000,'err');_cleanupCall();}}
+
+function _pollForAnswer(){if(WC.pollTimer)clearInterval(WC.pollTimer);var attempts=0;WC.pollTimer=setInterval(async function(){attempts++;if(attempts>60){clearInterval(WC.pollTimer);stopRingtone();toast('No answer.',3000,'err');_cleanupCall();return;}try{var res=await apiCall('/api/calls/'+WC.callId,'GET');if(!res.success)return;var call=res.data;if(call.status==='accepted'&&call.sdp_answer){clearInterval(WC.pollTimer);var ad=JSON.parse(call.sdp_answer);await WC.pc.setRemoteDescription(new RTCSessionDescription(ad.sdp));for(var c of(ad.candidates||[])){try{await WC.pc.addIceCandidate(new RTCIceCandidate(c));}catch(e){}}stopRingtone();var se=document.getElementById('call-status');if(se)se.textContent='Connected ✓';toast('Call connected!',2000);}else if(call.status==='declined'||call.status==='missed'){clearInterval(WC.pollTimer);stopRingtone();toast('Call '+call.status+'.',3000,'err');_cleanupCall();}}catch(e){}},1000);}
+
+function answerIncomingCall(callData){var cd=callData||WC._pendingCall;if(!cd){toast('No incoming call.',2000,'err');return;}MC('m-incoming-call');stopRingtone();WC._incomingCallData=cd;WC._pendingCall=cd;WC.type=cd.call_type||'audio';WC.isCaller=false;WC.partnerId=cd.caller_id||cd.from_user_id;WC.callId=cd.id||cd.call_id;_initCallUI(WC.type,'Connecting...');G('s-call');_startWebRTC(WC.type,false);}
+function declineCall(callData){var cd=callData||WC._pendingCall;stopRingtone();if(cd&&(cd.id||cd.call_id))apiCall('/api/calls/'+(cd.id||cd.call_id)+'/answer','PATCH',{status:'declined'}).catch(function(){});MC('m-incoming-call');WC._pendingCall=null;toast('Call declined.',2000);}
+function endCall(){stopRingtone();clearInterval(S.callTimer);if(WC.callId)apiCall('/api/calls/'+WC.callId+'/answer','PATCH',{status:'ended'}).catch(function(){});_cleanupCall();G('s-chat');toast('Call ended.',2000);}
+function _cleanupCall(){stopRingtone();clearInterval(S.callTimer);clearInterval(WC.pollTimer);if(WC.localStream)WC.localStream.getTracks().forEach(function(t){t.stop();});if(WC.pc)WC.pc.close();WC.pc=null;WC.localStream=null;WC.remoteStream=null;WC.callId=null;WC.pollTimer=null;var lv=document.getElementById('call-local-video'),rv=document.getElementById('call-remote-video');if(lv){lv.srcObject=null;lv.style.display='none';}if(rv){rv.srcObject=null;rv.style.display='none';}}
+function toggleMute(){if(!WC.localStream)return;WC.muted=!WC.muted;WC.localStream.getAudioTracks().forEach(function(t){t.enabled=!WC.muted;});var btn=document.getElementById('btn-mute');if(btn){btn.querySelector('span').textContent=WC.muted?'🔇':'🎙️';btn.querySelector('span:last-child').textContent=WC.muted?'Unmute':'Mute';}toast(WC.muted?'Muted':'Unmuted',1200);}
+function toggleVideo(){if(!WC.localStream)return;WC.videoOff=!WC.videoOff;WC.localStream.getVideoTracks().forEach(function(t){t.enabled=!WC.videoOff;});var btn=document.getElementById('btn-vid');if(btn){btn.querySelector('span').textContent=WC.videoOff?'📷':'🎥';btn.querySelector('span:last-child').textContent=WC.videoOff?'Video Off':'Video';}toast(WC.videoOff?'Video off':'Video on',1200);}
+function toggleSpeaker(){toast('Speaker toggled',1200);}
+function rejoinCall(){if(!WC.callId){toast('No active call.',2000,'err');return;}_startWebRTC(WC.type,WC.isCaller);}
+function toggleCB(id,i1,i2,l1,l2){var btn=document.getElementById(id);if(!btn)return;btn.classList.toggle('act');var sp=btn.querySelector('span'),lbl=btn.querySelector('span:last-child');if(btn.classList.contains('act')){if(sp)sp.textContent=i1;if(lbl)lbl.textContent=l1;}else{if(sp)sp.textContent=i2;if(lbl)lbl.textContent=l2;}}
+
+var _sseConn=null;
+function connectSSE(){if(!S.token)return;if(_sseConn){_sseConn.close();_sseConn=null;}_sseConn=new EventSource(API+'/api/events?token='+encodeURIComponent(S.token));_sseConn.addEventListener('incoming_call',function(e){try{var d=JSON.parse(e.data);WC._pendingCall=d;var ne=document.getElementById('ic-caller-name'),te=document.getElementById('ic-call-type'),ie=document.getElementById('ic-type-icon');if(ne)ne.textContent=d.caller_name||'Incoming Call';if(te)te.textContent=d.call_type==='video'?'Video Call':'Audio Call';if(ie)ie.textContent=d.call_type==='video'?'🎥':'📞';var m=document.getElementById('m-incoming-call');if(m)m.classList.add('on');playRingtone('incoming');toast((d.call_type==='video'?'🎥':'📞')+' '+(d.caller_name||'Someone')+' is calling!',10000);setTimeout(function(){var m=document.getElementById('m-incoming-call');if(m&&m.classList.contains('on')){m.classList.remove('on');stopRingtone();if(d.call_id)apiCall('/api/calls/'+d.call_id+'/answer','PATCH',{status:'missed'}).catch(function(){});}},30000);}catch(ex){}});_sseConn.addEventListener('call_answered',function(e){try{var d=JSON.parse(e.data);if(d.status==='accepted'&&d.sdp_answer&&WC.pc){clearInterval(WC.pollTimer);var ad=JSON.parse(d.sdp_answer);WC.pc.setRemoteDescription(new RTCSessionDescription(ad.sdp)).then(function(){(ad.candidates||[]).forEach(function(c){WC.pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});});stopRingtone();var se=document.getElementById('call-status');if(se)se.textContent='Connected ✓';toast('Call connected!',2000);});}}catch(ex){}});_sseConn.addEventListener('call_ended',function(e){try{var d=JSON.parse(e.data);if(d.status==='declined'){stopRingtone();toast('Call declined.',3000,'err');_cleanupCall();}}catch(ex){}});_sseConn.addEventListener('notification',function(e){try{var d=JSON.parse(e.data);if(d.type==='ludo')showLudoInviteNotif(d);else if(d.type==='match')toast('💞 '+(d.title||'New match!'),4000);else if(d.type==='like')toast('💚 '+(d.title||'Someone liked you!'),4000);else toast(d.title||'Notification',4000);updateNotifBadge(1);}catch(ex){}});_sseConn.addEventListener('ping',function(){});_sseConn.onerror=function(){_sseConn.close();_sseConn=null;setTimeout(connectSSE,5000);};_sseConn.onopen=function(){console.log('[SSE] Connected');};} 
+function disconnectSSE(){if(_sseConn){_sseConn.close();_sseConn=null;}}
+function pollPendingCalls(){if(!S.token)return;apiCall('/api/calls/pending','GET').then(function(res){if(!res.success||!res.data||!res.data.length)return;res.data.forEach(function(call){var k='call_'+call.id;if(S._seenNotifs[k])return;S._seenNotifs[k]=true;WC._pendingCall=call;var ne=document.getElementById('ic-caller-name'),te=document.getElementById('ic-call-type'),ie=document.getElementById('ic-type-icon');if(ne)ne.textContent=call.caller_name||'Someone';if(te)te.textContent=call.call_type==='video'?'Video Call':'Audio Call';if(ie)ie.textContent=call.call_type==='video'?'🎥':'📞';var m=document.getElementById('m-incoming-call');if(m)m.classList.add('on');playRingtone('incoming');toast((call.call_type==='video'?'🎥':'📞')+' '+(call.caller_name||'Someone')+' is calling!',10000);setTimeout(function(){var m=document.getElementById('m-incoming-call');if(m&&m.classList.contains('on')){m.classList.remove('on');stopRingtone();apiCall('/api/calls/'+call.id+'/answer','PATCH',{status:'missed'}).catch(function(){});}},30000);});}).catch(function(){});}
 
 </script>
 </body>
