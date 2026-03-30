@@ -1522,6 +1522,7 @@ id="s-myprofile" style="background:var(--cream2);">
 </div>
 
 <script>
+
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -1568,7 +1569,9 @@ function G(id) {
   var t = document.getElementById(id);
   if (t) {
     t.classList.add('on');
-    if (id === 's-matches') renderConvList();
+    if (id === 's-matches')       renderConvList();
+    if (id === 's-discover')       { if (S.user && S.token) fetchDiscoverProfiles(); }
+    if (id === 's-notifications')  loadNotifications();
     if (id === 's-chat')    renderChatByMatch();
     if (id === 's-myprofile') openMyProfile();
     if (id === 's-admin')   initAdmin();
@@ -2165,21 +2168,14 @@ function renderConvList() {
 
 /* ── Discover ─────────────────────────────────────────────── */
 function loadNextDiscoverProfile() {
-  if (!S.user || !S.token) return;
-  apiCall('/api/discover?page=' + (S._discoverPage || 0), 'GET')
-  .then(function(res) {
-    if (!res.success || !res.data.length) { showEmptyDiscover(); return; }
-    var p = res.data[0];
-    S._discoverCandidateId = p.id;
-    S._discoverQueue = res.data;
-    var nameEl = document.getElementById('cName');
-    var subEl  = document.getElementById('cSub');
-    var bioEl  = document.getElementById('cBio');
-    if (nameEl) nameEl.textContent = (p.first_name || '') + ' ' + (p.last_name || '');
-    if (subEl)  subEl.textContent  = (p.age || '?') + ' · ' + (p.city || '') + (p.sect ? ' · ' + p.sect : '');
-    if (bioEl)  bioEl.textContent  = p.bio || 'No bio yet.';
-  })
-  .catch(function() { showEmptyDiscover(); });
+  if (!S.user || !S.token) { showEmptyDiscover(); return; }
+  if (S._discoverQueue && S._discoverQueue.length > 1) {
+    S._discoverQueue.shift();
+    renderDiscoverCard(S._discoverQueue[0]);
+    if (S._discoverQueue.length < 3) fetchDiscoverProfiles();
+    return;
+  }
+  fetchDiscoverProfiles();
 }
 function showEmptyDiscover() {
   var card = document.getElementById('swipeCard');
@@ -2194,24 +2190,104 @@ function showEmptyDiscover() {
 /* ── Profile display ─────────────────────────────────────── */
 function openViewProfile(userId) {
   S._viewingUserId = userId;
+  var loading = document.getElementById('vp-loading');
+  var content = document.getElementById('vp-content');
+  if (loading) loading.style.display = 'flex';
+  if (content) content.style.display = 'none';
+  G('s-viewprofile');
+
   apiCall('/api/users/' + userId, 'GET')
   .then(function(res) {
-    if (!res.success) return;
+    if (loading) loading.style.display = 'none';
+    if (!res.success || !res.data) { toast('Could not load profile.', 2500, 'err'); return; }
     var u = res.data;
+    if (content) { content.style.display = 'flex'; content.style.flexDirection = 'column'; }
+
+    // Photo
+    var vpPhoto = document.getElementById('vp-photo');
+    var vpFallback = document.getElementById('vp-photo-fallback');
+    if (vpPhoto) {
+      if (u.photo_1 && u.photo_1.length > 100) {
+        vpPhoto.style.backgroundImage    = 'url(' + JSON.stringify(u.photo_1) + ')';
+        vpPhoto.style.backgroundSize     = 'cover';
+        vpPhoto.style.backgroundPosition = 'center';
+        if (vpFallback) vpFallback.style.display = 'none';
+      } else {
+        vpPhoto.style.backgroundImage = 'none';
+        if (vpFallback) { vpFallback.style.display = 'flex'; vpFallback.textContent = '👤'; }
+      }
+    }
+
+    // Name, sub, bio
     var nameEl = document.getElementById('vp-name');
     var subEl  = document.getElementById('vp-sub');
     var bioEl  = document.getElementById('vp-bio');
-    if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
-    if (subEl)  subEl.textContent  = (u.age || '?') + ' · ' + (u.city || '') + (u.country ? ', ' + u.country : '');
-    if (bioEl)  bioEl.textContent  = u.bio || '';
-    var btn = document.getElementById('vp-action-btn');
-    if (btn) {
-      var matchId = getMatchId(userId);
-      if (matchId) { btn.textContent = '💬 Message'; btn.style.background = 'var(--teal)'; }
-      else { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
+    if (nameEl) nameEl.textContent = (u.first_name||'') + (u.last_name?' '+u.last_name[0]+'.':'');
+    if (subEl) {
+      var parts = [u.age, u.city, u.country, u.sect].filter(Boolean);
+      subEl.textContent = parts.join(' · ');
     }
-    G('s-viewprofile');
-  });
+    if (bioEl) bioEl.textContent = u.bio || 'No bio provided.';
+
+    // Badges
+    var badgesEl = document.getElementById('vp-badges');
+    if (badgesEl) {
+      badgesEl.innerHTML = '';
+      [u.marital_status, u.education, u.nationality].filter(Boolean).forEach(function(b) {
+        var s = document.createElement('span'); s.className = 'bdg bgo'; s.textContent = b;
+        badgesEl.appendChild(s);
+      });
+    }
+
+    // Verified badge
+    var verBadge = document.getElementById('vp-verified-badge');
+    if (verBadge) verBadge.style.display = u.id_verified ? 'inline-block' : 'none';
+
+    // Online status
+    var onlineDot = document.getElementById('vp-online-dot');
+    var onlineTxt = document.getElementById('vp-online-txt');
+    var onlineBadge = document.getElementById('vp-online-badge');
+    if (onlineBadge) onlineBadge.style.display = 'flex';
+    if (onlineDot) onlineDot.style.background = u.online ? '#2ecc71' : '#95a5a6';
+    if (onlineTxt) onlineTxt.textContent = u.online ? 'Online' : 'Last seen recently';
+
+    // Details grid
+    var detEl = document.getElementById('vp-details');
+    if (detEl) {
+      var details = [
+        {label:'Occupation',value:u.occupation},{label:'Education',value:u.education},
+        {label:'Languages',value:u.languages},{label:'Nationality',value:u.nationality},
+        {label:'Country',value:u.country},{label:'City',value:u.city}
+      ].filter(function(d){return d.value;});
+      detEl.innerHTML = details.map(function(d) {
+        return '<div><p style="font-size:.67rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;">'+d.label+'</p><p style="font-size:.83rem;font-weight:700;">'+d.value+'</p></div>';
+      }).join('');
+      var dc = document.getElementById('vp-details-card');
+      if (dc) dc.style.display = details.length ? 'block' : 'none';
+    }
+
+    // Interests
+    var intEl = document.getElementById('vp-interests');
+    var ic = document.getElementById('vp-interests-card');
+    if (intEl && u.interests) {
+      var tags = u.interests.split(/[,،;]+/).map(function(t){return t.trim();}).filter(Boolean);
+      intEl.innerHTML = tags.map(function(t) {
+        return '<span style="background:var(--cream2);padding:4px 11px;border-radius:50px;font-size:.75rem;font-weight:700;color:var(--txt2);">'+t+'</span>';
+      }).join('');
+      if (ic) ic.style.display = tags.length ? 'block' : 'none';
+    } else if (ic) ic.style.display = 'none';
+
+    // Action button
+    var btn = document.getElementById('vp-action-btn');
+    apiCall('/api/matches', 'GET')
+    .then(function(mRes) {
+      if (!btn) return;
+      var matched = mRes.success && (mRes.data||[]).some(function(m){ return m.partner_id === userId; });
+      if (matched) { btn.textContent='💬 Message'; btn.style.background='var(--teal)'; btn.onclick=function(){openChat(userId);}; }
+      else          { btn.textContent='💚 Like';    btn.style.background='#27ae60';     btn.onclick=function(){vpAction();}; }
+    }).catch(function() { if(btn){btn.textContent='💚 Like';btn.style.background='#27ae60';} });
+  })
+  .catch(function() { if(loading)loading.style.display='none'; toast('Could not load profile.', 2500, 'err'); });
 }
 function vpAction() {
   var userId  = S._viewingUserId;
@@ -2223,7 +2299,6 @@ function vpAction() {
 
 function openMyProfile() {
   if (!S.user) return;
-  // Fetch fresh data from API
   apiCall('/api/users/me', 'GET')
   .then(function(res) {
     var u = res.success ? res.data : S.user;
@@ -2250,6 +2325,16 @@ function openMyProfile() {
     // Premium status
     var subEl = document.getElementById('mp-sub');
     if (subEl) subEl.textContent = u.premium ? 'Premium' : 'Free';
+    // Show profile photo
+    var avatarEl = document.getElementById('mp-avatar');
+    if (avatarEl && u.photo_1 && u.photo_1.length > 100) {
+      avatarEl.innerHTML = '<img src="'+u.photo_1+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
+        + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;font-weight:800;text-align:center;padding:3px 0;">📷 CHANGE</div>';
+    }
+    var matchEl = document.getElementById('mp-match-count');
+    var likeEl  = document.getElementById('mp-like-count');
+    if (matchEl) matchEl.textContent = u.match_count || 0;
+    if (likeEl)  likeEl.textContent  = u.like_count  || 0;
   })
   .catch(function() {
     var u = S.user || {};
@@ -3001,6 +3086,188 @@ async function togglePiP(){var vid=document.getElementById('camVideo');if(!vid||
 function toggleLudoAV(type){if(type==='mic'){LG.micOn=!LG.micOn;var btn=document.getElementById('ludo-mic');if(btn){btn.textContent=LG.micOn?'🎙️':'🔇';btn.classList.toggle('off',!LG.micOn);}toast(LG.micOn?'Mic on':'Mic muted',1200);}else{LG.vidOn=!LG.vidOn;var btn=document.getElementById('ludo-vid');if(btn){btn.textContent=LG.vidOn?'🎥':'📷';btn.classList.toggle('off',!LG.vidOn);}toast(LG.vidOn?'Video on':'Video off',1200);}}
 
 /* ══ INIT ══════════════════════════════════════════════════ */
+
+/* ══ DISCOVER ═══════════════════════════════════════════════════════════ */
+function fetchDiscoverProfiles() {
+  apiCall('/api/discover?page=' + (S._discoverPage || 0) + '&page_size=10', 'GET')
+  .then(function(res) {
+    if (!res.success || !res.data || !res.data.length) { showEmptyDiscover(); return; }
+    S._discoverQueue = res.data;
+    S._discoverPage  = (S._discoverPage || 0) + 1;
+    renderDiscoverCard(res.data[0]);
+  })
+  .catch(function() { showEmptyDiscover(); });
+}
+
+function renderDiscoverCard(p) {
+  if (!p) { showEmptyDiscover(); return; }
+  S._discoverCandidateId = p.id;
+  var photoImg      = document.getElementById('cPhotoImg');
+  var photoFallback = document.getElementById('cPhotoFallback');
+  if (photoImg) {
+    if (p.photo_1 && p.photo_1.length > 100) {
+      photoImg.style.backgroundImage = 'url(' + JSON.stringify(p.photo_1) + ')';
+      photoImg.style.display = 'block';
+      if (photoFallback) photoFallback.style.display = 'none';
+    } else {
+      photoImg.style.backgroundImage = '';
+      photoImg.style.display = 'none';
+      if (photoFallback) photoFallback.style.display = 'block';
+    }
+  }
+  var nameEl = document.getElementById('cName');
+  var subEl  = document.getElementById('cSub');
+  var bioEl  = document.getElementById('cBio');
+  if (nameEl) nameEl.textContent = (p.first_name||'') + (p.last_name?' '+p.last_name[0]+'.':'');
+  if (subEl)  subEl.textContent  = (p.age||'?') + ' · ' + (p.city||p.country||'') + (p.sect?' · '+p.sect:'');
+  if (bioEl)  bioEl.textContent  = p.bio || '';
+  var badge = document.getElementById('cVerBadge');
+  if (badge) badge.style.display = p.id_verified ? 'inline-block' : 'none';
+  var dot = document.getElementById('cOnlineDot');
+  if (dot) dot.style.background = p.online ? '#2ecc71' : '#95a5a6';
+  var card = document.getElementById('swipeCard');
+  if (card) {
+    card.style.transition = 'none';
+    card.style.transform  = '';
+    card.style.opacity    = '1';
+    ['ov-like','ov-nope','ov-super'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.style.opacity = 0;
+    });
+  }
+}
+
+/* ══ NOTIFICATIONS ════════════════════════════════════════════════════════ */
+var _notifPollTimer = null;
+
+function openNotifications() {
+  G('s-notifications');
+  loadNotifications();
+  setTimeout(markAllRead, 2000);
+}
+
+function loadNotifications() {
+  if (!S.token) return;
+  var listEl = document.getElementById('notif-list');
+  if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3);">Loading...</div>';
+  apiCall('/api/notifications', 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var notifs = res.data || [];
+    updateNotifBadge(notifs.filter(function(n){ return !n.is_read; }).length);
+    if (!listEl) return;
+    if (!notifs.length) {
+      listEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--txt3);"><div style="font-size:3rem;margin-bottom:12px;">🔔</div><p style="font-weight:800;font-size:.9rem;margin-bottom:6px;">No notifications yet</p></div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    notifs.forEach(function(n) {
+      var row = document.createElement('div');
+      row.style.cssText = 'background:' + (n.is_read?'var(--white)':'#e8f8f5') + ';border-radius:12px;padding:13px 14px;margin-bottom:8px;cursor:pointer;border-left:3px solid ' + (n.type==='match'?'var(--teal)':n.type==='like'?'var(--green)':'var(--gold)') + ';';
+      var icon = n.type==='match'?'💞':n.type==='like'?'💚':n.type==='call'?'📞':'🔔';
+      var time = n.created_at ? new Date(n.created_at).toLocaleDateString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      row.innerHTML = '<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.4rem;flex-shrink:0;">' + icon + '</span><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:.85rem;margin-bottom:3px;">' + (n.title||'') + '</p><p style="font-size:.78rem;color:var(--txt3);margin-bottom:4px;">' + (n.body||'') + '</p><p style="font-size:.68rem;color:var(--txt3);">' + time + '</p></div>' + (!n.is_read?'<div style="width:8px;height:8px;background:var(--teal);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>':'') + '</div>';
+      (function(notif) {
+        row.onclick = function() {
+          if (notif.type==='match'&&notif.related_match_id) openChatByMatch(notif.related_match_id);
+          else if (notif.type==='like'&&notif.related_user_id) openViewProfile(notif.related_user_id);
+        };
+      })(n);
+      listEl.appendChild(row);
+    });
+  }).catch(function() {});
+}
+
+function updateNotifBadge(count) {
+  var badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  badge.style.display = count > 0 ? 'block' : 'none';
+}
+
+function markAllRead() {
+  if (!S.token) return;
+  apiCall('/api/notifications/read-all', 'PATCH', {})
+  .then(function() { updateNotifBadge(0); }).catch(function(){});
+}
+
+function pollNotifications() {
+  if (!S.token) return;
+  apiCall('/api/notifications', 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var unread = (res.data||[]).filter(function(n){ return !n.is_read; });
+    updateNotifBadge(unread.length);
+    var now = Date.now();
+    unread.forEach(function(n) {
+      var age = now - (n.created_at ? new Date(n.created_at).getTime() : 0);
+      if (age < 300000 && !S._seenNotifs[n.id]) {
+        S._seenNotifs[n.id] = true;
+        if (n.type==='ludo') showLudoInviteNotif(n);
+        else if (n.type==='match') toast('💞 ' + (n.title||'New match!'), 4000);
+        else if (n.type==='like')  toast('💚 ' + (n.title||'Someone liked you!'), 4000);
+        else if (n.type!=='call')  toast(n.title||'New notification', 4000);
+        apiCall('/api/notifications/'+n.id+'/read','PATCH',{}).catch(function(){});
+      }
+    });
+  }).catch(function(){});
+}
+
+function showIncomingCall(notification) {
+  var callId = notification.call_id;
+  if (!callId) { toast(notification.title||'Incoming call!', 6000); return; }
+  apiCall('/api/calls/'+callId, 'GET')
+  .then(function(res) {
+    if (!res.success) return;
+    var callData = res.data;
+    callData.id = callId;
+    WC._pendingCall = callData;
+    var nameEl = document.getElementById('ic-caller-name');
+    var typeEl = document.getElementById('ic-call-type');
+    var iconEl = document.getElementById('ic-type-icon');
+    if (nameEl) nameEl.textContent = callData.caller_name||'Incoming Call';
+    if (typeEl) typeEl.textContent = callData.call_type==='video'?'Video Call':'Audio Call';
+    if (iconEl) iconEl.textContent = callData.call_type==='video'?'🎥':'📞';
+    var modal = document.getElementById('m-incoming-call');
+    if (modal) modal.classList.add('on');
+    playRingtone('incoming');
+    toast((callData.call_type==='video'?'🎥':'📞')+' '+(callData.caller_name||'Someone')+' is calling!', 8000);
+    setTimeout(function() {
+      var m = document.getElementById('m-incoming-call');
+      if (m&&m.classList.contains('on')) {
+        m.classList.remove('on'); stopRingtone();
+        apiCall('/api/calls/'+callId+'/answer','PATCH',{status:'missed'}).catch(function(){});
+      }
+    }, 30000);
+  }).catch(function(){});
+}
+
+/* ══ PROFILE PHOTO ════════════════════════════════════════════════════════ */
+function openProfilePhotoUpload() {
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0;z-index:9999;cursor:pointer;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function() {
+    if (!inp.files||!inp.files[0]) { if(document.body.contains(inp))document.body.removeChild(inp); return; }
+    var file = inp.files[0];
+    if (document.body.contains(inp)) document.body.removeChild(inp);
+    compressPhoto(file, 400, 400, 0.8, function(dataUrl) {
+      var avatarEl = document.getElementById('mp-avatar');
+      if (avatarEl) {
+        avatarEl.innerHTML = '<img src="'+dataUrl+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
+          + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;font-weight:800;text-align:center;padding:3px 0;">📷 CHANGE</div>';
+      }
+      if (S.user) S.user.photo_1 = dataUrl;
+      toast('Uploading photo...', 2000);
+      apiCall('/api/users/me', 'PUT', { photo_1: dataUrl })
+      .then(function(res) {
+        if (res.success) { if(S.user)S.user.photo_1=dataUrl; toast('✅ Profile photo updated!', 2500); }
+        else toast('❌ Upload failed: '+(res.error||'Please try again'), 3000, 'err');
+      }).catch(function() { toast('❌ Connection error.', 2500, 'err'); });
+    });
+  });
+  inp.click();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   initSwipe();
   renderConvList();
