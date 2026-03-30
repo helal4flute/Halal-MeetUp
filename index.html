@@ -1706,6 +1706,7 @@ id="s-myprofile" style="background:var(--cream2);">
 
 
 
+
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -2928,6 +2929,68 @@ function submitReport() {
 }
 
 /* ── Calls ──────────────────────────────────────────────── */
+
+/* ══ RINGTONE (Web Audio API — no files needed) ══════════ */
+var _ringCtx  = null;
+var _ringNode = null;
+var _ringInt  = null;
+
+function playRingtone(type) {
+  stopRingtone();
+  try {
+    _ringCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var freqs  = type === 'outgoing'
+      ? [440, 480]   // standard dial tone
+      : [660, 880];  // incoming ring tone
+
+    function beep(freq, dur, delay) {
+      var osc  = _ringCtx.createOscillator();
+      var gain = _ringCtx.createGain();
+      osc.connect(gain);
+      gain.connect(_ringCtx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      var t = _ringCtx.currentTime + delay;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.3, t + 0.01);
+      gain.gain.setValueAtTime(0.3, t + dur - 0.05);
+      gain.gain.linearRampToValueAtTime(0, t + dur);
+      osc.start(t);
+      osc.stop(t + dur);
+    }
+
+    function ringCycle() {
+      if (type === 'outgoing') {
+        // UK-style: 400ms on, 200ms off, 400ms on, 2s off
+        beep(440, 0.4,  0.0);
+        beep(480, 0.4,  0.0);
+        beep(440, 0.4,  0.6);
+        beep(480, 0.4,  0.6);
+      } else {
+        // Incoming: rising two-tone
+        beep(660, 0.15, 0.0);
+        beep(880, 0.15, 0.2);
+        beep(660, 0.15, 0.4);
+        beep(880, 0.15, 0.6);
+        beep(660, 0.15, 0.8);
+        beep(880, 0.15, 1.0);
+      }
+    }
+
+    ringCycle();
+    _ringInt = setInterval(ringCycle, type === 'outgoing' ? 4000 : 2000);
+  } catch(e) {
+    console.log('Ringtone not available:', e.message);
+  }
+}
+
+function stopRingtone() {
+  if (_ringInt) { clearInterval(_ringInt); _ringInt = null; }
+  if (_ringCtx) {
+    try { _ringCtx.close(); } catch(e) {}
+    _ringCtx = null;
+  }
+}
 /* ══ WebRTC CALL SYSTEM ═══════════════════════════════════ */
 var WC = {
   pc: null,           // RTCPeerConnection
@@ -2961,8 +3024,9 @@ function startCall(type) {
   WC.type      = type;
   WC.isCaller  = true;
   WC.partnerId = S.chatPartnerId;
-  _initCallUI(type, 'Calling...');
+  _initCallUI(type, 'Ringing...');
   G('s-call');
+  playRingtone('outgoing');   // start outgoing ringtone
   _startWebRTC(type, true);
 }
 
@@ -3088,6 +3152,7 @@ function _pollForAnswer() {
     attempts++;
     if (attempts > 60) { // 60s timeout
       clearInterval(WC.pollTimer);
+      stopRingtone();
       toast('No answer. Call ended.', 3000, 'err');
       _cleanupCall();
       return;
@@ -3104,6 +3169,7 @@ function _pollForAnswer() {
           WC.pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
         });
         var statusEl = document.getElementById('call-status');
+        stopRingtone();
         if (statusEl) statusEl.textContent = 'Connected';
         toast('Call connected!', 2000);
       } else if (call.status === 'declined' || call.status === 'missed') {
@@ -3116,26 +3182,35 @@ function _pollForAnswer() {
 }
 
 function answerIncomingCall(callData) {
-  if (!callData) return;
-  WC._incomingCallData = callData;
-  WC.type      = callData.call_type || 'audio';
+  var cd = callData || WC._pendingCall;
+  if (!cd) { toast('No incoming call to answer.', 2000, 'err'); return; }
+  MC('m-incoming-call');
+  stopRingtone();
+  WC._incomingCallData = cd;
+  WC._pendingCall      = cd;
+  WC.type      = cd.call_type || 'audio';
   WC.isCaller  = false;
-  WC.partnerId = callData.from_user_id || callData.caller_id;
-  WC.callId    = callData.id;
+  WC.partnerId = cd.caller_id || cd.from_user_id;
+  WC.callId    = cd.id || cd.call_id;
+  WC.chatPartnerId = WC.partnerId;
   _initCallUI(WC.type, 'Connecting...');
   G('s-call');
   _startWebRTC(WC.type, false);
 }
 
 function declineCall(callData) {
-  if (callData && callData.id) {
-    apiCall('/api/calls/' + callData.id + '/answer', 'PATCH', { status: 'declined' }).catch(function(){});
+  var cd = callData || WC._pendingCall;
+  stopRingtone();
+  if (cd && (cd.id || cd.call_id)) {
+    apiCall('/api/calls/' + (cd.id || cd.call_id) + '/answer', 'PATCH', { status: 'declined' }).catch(function(){});
   }
   MC('m-incoming-call');
+  WC._pendingCall = null;
   toast('Call declined.', 2000);
 }
 
 function endCall() {
+  stopRingtone();
   clearInterval(S.callTimer);
   if (WC.callId) {
     apiCall('/api/calls/' + WC.callId + '/answer', 'PATCH', { status: 'ended' }).catch(function(){});
@@ -3146,6 +3221,7 @@ function endCall() {
 }
 
 function _cleanupCall() {
+  stopRingtone();
   clearInterval(S.callTimer);
   clearInterval(WC.pollTimer);
   if (WC.localStream)  WC.localStream.getTracks().forEach(function(t){t.stop();});
@@ -3186,7 +3262,6 @@ function rejoinCall() {
   if (!WC.callId) { toast('No active call to rejoin.', 2000, 'err'); return; }
   _startWebRTC(WC.type, WC.isCaller);
 }
-function endCall() { clearInterval(S.callTimer); G('s-chat'); toast('Call ended.', 2000); }
 function toggleCB(id, i1, i2, l1, l2) { var btn = document.getElementById(id); if (!btn) return; btn.classList.toggle('act'); var sp = btn.querySelector('span'); var lbl = btn.querySelector('span:last-child'); if (btn.classList.contains('act')) { if (sp) sp.textContent = i1; if (lbl) lbl.textContent = l1; } else { if (sp) sp.textContent = i2; if (lbl) lbl.textContent = l2; } }
 function openCallLogs() {
   var list = document.getElementById('callLogList');
@@ -3574,6 +3649,7 @@ function connectSSE() {
       if (iconEl) iconEl.textContent = data.call_type === 'video' ? '🎥' : '📞';
       var modal = document.getElementById('m-incoming-call');
       if (modal) modal.classList.add('on');
+      playRingtone('incoming');   // ring ring ring!
       toast((data.call_type === 'video' ? '🎥' : '📞') + ' ' + callerDisplay + ' is calling!', 10000);
       // Auto-dismiss after 30s
       setTimeout(function() {
@@ -3602,6 +3678,7 @@ function connectSSE() {
           (answerData.candidates || []).forEach(function(cc) {
             WC.pc.addIceCandidate(new RTCIceCandidate(cc)).catch(function(){});
           });
+          stopRingtone();
           var statusEl = document.getElementById('call-status');
           if (statusEl) statusEl.textContent = 'Connected';
           toast('Call connected! 🎉', 2500);
@@ -3789,6 +3866,7 @@ function showIncomingCall(notification) {
     if (iconEl) iconEl.textContent = callData.call_type === 'video' ? '🎥' : '📞';
     var modal = document.getElementById('m-incoming-call');
     if (modal) modal.classList.add('on');
+    playRingtone('incoming');   // ring!
     // Auto-dismiss after 30s if not answered
     setTimeout(function() {
       var m = document.getElementById('m-incoming-call');
@@ -3807,7 +3885,48 @@ function startNotifPolling() {
   S._seenNotifs = {};
   // Poll immediately then every 3s
   pollNotifications();
-  _notifPollTimer = setInterval(pollNotifications, 3000);
+  pollPendingCalls();  // check for pending calls immediately
+  _notifPollTimer = setInterval(function() {
+    pollNotifications();
+    pollPendingCalls();
+  }, 3000);
+}
+
+function pollPendingCalls() {
+  if (!S.token) return;
+  apiCall('/api/calls/pending', 'GET')
+  .then(function(res) {
+    if (!res.success || !res.data || !res.data.length) return;
+    res.data.forEach(function(call) {
+      var callKey = 'call_' + call.id;
+      if (S._seenNotifs[callKey]) return;  // already handled
+      S._seenNotifs[callKey] = true;
+      console.log('[POLL] Incoming call detected:', call.id, call.call_type);
+      // Show incoming call modal
+      WC._pendingCall = call;
+      var nameEl = document.getElementById('ic-caller-name');
+      var typeEl = document.getElementById('ic-call-type');
+      var iconEl = document.getElementById('ic-type-icon');
+      if (nameEl) nameEl.textContent = call.caller_name || 'Someone';
+      if (typeEl) typeEl.textContent = call.call_type === 'video' ? 'Video Call' : 'Audio Call';
+      if (iconEl) iconEl.textContent = call.call_type === 'video' ? '🎥' : '📞';
+      var modal = document.getElementById('m-incoming-call');
+      if (modal) modal.classList.add('on');
+      playRingtone('incoming');
+      toast((call.call_type === 'video' ? '🎥' : '📞') + ' ' + (call.caller_name || 'Someone') + ' is calling!', 10000);
+      // Auto-dismiss after 30s
+      setTimeout(function() {
+        var m = document.getElementById('m-incoming-call');
+        if (m && m.classList.contains('on')) {
+          m.classList.remove('on');
+          stopRingtone();
+          apiCall('/api/calls/' + call.id + '/answer', 'PATCH', { status: 'missed' }).catch(function(){});
+          toast('Missed call from ' + (call.caller_name || 'Someone'), 3000);
+        }
+      }, 30000);
+    });
+  })
+  .catch(function() {});
 }
 
 function stopNotifPolling() {
