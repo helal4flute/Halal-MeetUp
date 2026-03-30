@@ -1138,8 +1138,8 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 <!-- ══════════════ S19: VIEW PROFILE ══════════════ -->
 <div class="scr" id="s-viewprofile" style="background:var(--cream);">
   <div style="position:relative;">
-    <div style="height:285px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;">
-      <svg width="180" height="122"><use href="#logo"/></svg>
+    <div id="vp-photo" style="height:285px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;overflow:hidden;">
+      <div id="vp-photo-fallback"><svg width="180" height="122"><use href="#logo"/></svg></div>
       <button onclick="G('s-discover')" style="position:absolute;top:52px;left:14px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.7);color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;">&#8592;</button>
       <button id="vp-action-btn" onclick="vpAction()" style="position:absolute;top:52px;right:14px;background:var(--teal);border:none;color:#fff;border-radius:50px;padding:7px 13px;font-size:.79rem;font-weight:800;cursor:pointer;">💚 Like</button>
     </div>
@@ -1692,6 +1692,8 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 <script>
+
+
 
 
 
@@ -2530,14 +2532,40 @@ function openViewProfile(userId) {
     if (nameEl) nameEl.textContent = (u.first_name || '') + ' ' + (u.last_name || '');
     if (subEl)  subEl.textContent  = (u.age || '?') + ' · ' + (u.city || '') + (u.country ? ', ' + u.country : '');
     if (bioEl)  bioEl.textContent  = u.bio || '';
-    var btn = document.getElementById('vp-action-btn');
-    if (btn) {
-      var matchId = getMatchId(userId);
-      if (matchId) { btn.textContent = '💬 Message'; btn.style.background = 'var(--teal)'; }
-      else { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
+
+    // Show profile photo
+    var vpPhoto    = document.getElementById('vp-photo');
+    var vpFallback = document.getElementById('vp-photo-fallback');
+    if (vpPhoto) {
+      if (u.photo_1) {
+        vpPhoto.style.backgroundImage    = 'url(' + JSON.stringify(u.photo_1) + ')';
+        vpPhoto.style.backgroundSize     = 'cover';
+        vpPhoto.style.backgroundPosition = 'center';
+        if (vpFallback) vpFallback.style.display = 'none';
+      } else {
+        vpPhoto.style.backgroundImage = '';
+        if (vpFallback) vpFallback.style.display = 'flex';
+      }
     }
+
+    // Check match status for action button
+    apiCall('/api/matches', 'GET')
+    .then(function(mRes) {
+      var btn = document.getElementById('vp-action-btn');
+      if (!btn) return;
+      var matched = mRes.success && mRes.data.some(function(m) {
+        return m.partner_id === userId;
+      });
+      if (matched) { btn.textContent = '💬 Message'; btn.style.background = 'var(--teal)'; }
+      else { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
+    }).catch(function() {
+      var btn = document.getElementById('vp-action-btn');
+      if (btn) { btn.textContent = '💚 Like'; btn.style.background = '#27ae60'; }
+    });
+
     G('s-viewprofile');
-  });
+  })
+  .catch(function() { toast('Could not load profile.', 2000, 'err'); });
 }
 function vpAction() {
   var userId  = S._viewingUserId;
@@ -2635,19 +2663,44 @@ function saveProfile() {
   apiCall('/api/users/me', 'PUT', updates)
   .then(function(res) {
     if (res.success) {
-      S.user = Object.assign(S.user || {}, updates);
+      // Merge returned user data into session
+      var updatedUser = res.data || updates;
+      S.user = Object.assign(S.user || {}, updatedUser);
       S._editPhotos = {};
       S._editPhotoFiles = {};
       toast('✅ Profile updated!', 2500);
       G('s-myprofile');
     } else {
-      toast('❌ ' + (res.error || 'Update failed.'), 2500, 'err');
+      toast('❌ ' + (res.error || 'Update failed.'), 3000, 'err');
     }
   })
-  .catch(function() { toast('❌ Connection error.', 2500, 'err'); });
+  .catch(function() { toast('❌ Connection error. Please try again.', 2500, 'err'); });
 }
 
 
+
+/* ══ PHOTO COMPRESSION ═══════════════════════════════════ */
+function compressPhoto(file, maxWidth, maxHeight, quality, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var w = img.width, h = img.height;
+      // Scale down
+      if (w > maxWidth)  { h = Math.round(h * maxWidth / w);  w = maxWidth; }
+      if (h > maxHeight) { w = Math.round(w * maxHeight / h); h = maxHeight; }
+      canvas.width  = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/jpeg', quality || 0.75);
+      callback(dataUrl);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 function openProfilePhotoUpload() {
   var inp = document.createElement('input');
   inp.type   = 'file';
@@ -2661,30 +2714,27 @@ function openProfilePhotoUpload() {
     var file = inp.files[0];
     if (document.body.contains(inp)) document.body.removeChild(inp);
     if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e) {
+    // Compress before uploading (keeps DB size manageable)
+    compressPhoto(file, 400, 400, 0.8, function(dataUrl) {
       // Show preview immediately
       var avatarEl = document.getElementById('mp-avatar');
       if (avatarEl) {
-        avatarEl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
+        avatarEl.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
           + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;font-weight:800;text-align:center;padding:3px 0;">📷 CHANGE</div>';
       }
-      S._profilePhoto = file;
-      S._profilePhotoData = e.target.result;
+      S._profilePhotoData = dataUrl;
       toast('Uploading photo...', 2000);
-      // Upload to API as base64
-      apiCall('/api/users/me', 'PUT', { photo_1: e.target.result })
+      apiCall('/api/users/me', 'PUT', { photo_1: dataUrl })
       .then(function(res) {
         if (res.success) {
-          if (S.user) S.user.photo_1 = e.target.result;
+          if (S.user) S.user.photo_1 = dataUrl;
           toast('✅ Profile photo updated!', 2500);
         } else {
-          toast('Photo saved locally. Will sync when online.', 2500);
+          toast('❌ Upload failed: ' + (res.error || 'Please try again'), 3000, 'err');
         }
       })
-      .catch(function() { toast('Photo saved locally.', 2000); });
-    };
-    reader.readAsDataURL(file);
+      .catch(function(e) { toast('❌ Connection error uploading photo.', 2500, 'err'); });
+    });
   });
   inp.click();
 }
@@ -2717,23 +2767,20 @@ function _doEditPhotoOpen(source, targetId) {
       var file = inp.files[0];
       if (document.body.contains(inp)) document.body.removeChild(inp);
       if (file.size > 15 * 1024 * 1024) { toast('Photo too large. Max 15MB.', 3000, 'err'); return; }
-      var reader = new FileReader();
-      reader.onload = function(e) {
+      compressPhoto(file, 600, 800, 0.8, function(dataUrl) {
         var sl = document.getElementById(tId);
         if (sl) {
           sl.innerHTML = ''
-            + '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">'
+            + '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">'
             + '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:.58rem;font-weight:800;text-align:center;padding:4px 0;border-radius:0 0 10px 10px;">TAP TO CHANGE</div>';
           sl.classList.add('filled');
           sl.style.position = 'relative';
           sl.style.overflow = 'hidden';
         }
         S._editPhotos = S._editPhotos || {};
-        S._editPhotos[tId] = e.target.result;
+        S._editPhotos[tId] = dataUrl;
         toast('✅ Photo selected! Tap Save to update your profile.', 2500);
-      };
-      reader.onerror = function() { toast('Could not read photo. Try another.', 2500, 'err'); };
-      reader.readAsDataURL(file);
+      });
     });
     inp.click();
   }, 250);
@@ -2880,6 +2927,15 @@ async function _startWebRTC(type, isCaller) {
         call_type: type,
       }).catch(function(){});
       toast('Calling... waiting for answer', 4000);
+      // Temporarily speed up notification polling on receiver side
+      // The receiver will poll every 1s for the first 30s
+      if (_notifPollTimer) clearInterval(_notifPollTimer);
+      _notifPollTimer = setInterval(pollNotifications, 1000);
+      setTimeout(function() {
+        // Return to normal 3s polling after 30s
+        if (_notifPollTimer) clearInterval(_notifPollTimer);
+        _notifPollTimer = setInterval(pollNotifications, 3000);
+      }, 30000);
       // Poll for answer
       _pollForAnswer();
     } else {
@@ -3517,10 +3573,11 @@ function showIncomingCall(notification) {
 }
 
 function startNotifPolling() {
-  if (_notifPollTimer) return;
+  if (_notifPollTimer) clearInterval(_notifPollTimer);
   S._seenNotifs = {};
-  pollNotifications(); // immediate first check
-  _notifPollTimer = setInterval(pollNotifications, 3000); // every 3s for real-time calls
+  // Poll immediately then every 3s
+  pollNotifications();
+  _notifPollTimer = setInterval(pollNotifications, 3000);
 }
 
 function stopNotifPolling() {
