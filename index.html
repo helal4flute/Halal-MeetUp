@@ -1002,16 +1002,21 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 <!-- ══════════════ S18: CHAT ══════════════ -->
 <div class="scr" id="s-chat" style="background:var(--cream2);">
-  <div style="background:var(--teal);padding:48px 14px 11px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
+  <div class="tbar">
     <button class="ibtn back-ibtn" onclick="G('s-matches')">&#8592;</button>
-    <div onclick="G('s-viewprofile')" style="cursor:pointer;display:flex;align-items:center;gap:9px;flex:1;">
-      <div id="chat-avatar" style="position:relative;width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;overflow:hidden;"><span id="chat-avatar-fb">👤</span><div class="odot" style="position:absolute;bottom:1px;right:1px;"></div></div></div>
-      <div><p style="color:#fff;font-weight:800;font-size:.9rem;" id="chat-name">Member <span id="chat-v" style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span></p><p style="color:rgba(255,255,255,.62);font-size:.69rem;" id="chat-status">Online now</p></div>
+    <div onclick="G('s-viewprofile')" style="cursor:pointer;display:flex;align-items:center;gap:9px;flex:1;min-width:0;overflow:hidden;">
+      <div id="chat-avatar" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden;position:relative;">
+        <span id="chat-avatar-fb">👤</span>
+        <div class="odot"></div>
+      </div>
+      <div style="min-width:0;flex:1;overflow:hidden;">
+        <p id="chat-name" style="color:#fff;font-weight:800;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></p>
+        <p id="chat-status" style="color:rgba(255,255,255,.65);font-size:.68rem;margin:0;"></p>
+      </div>
     </div>
     <button class="ibtn" onclick="startCall('audio')" title="Voice call">📞</button>
     <button class="ibtn" onclick="startCall('video')" title="Video call">🎥</button>
-    <button class="ibtn" onclick="openLudoInvite()" title="Play Ludo 🎲" style="font-size:.85rem;">🎲</button>
-    <button class="ibtn" onclick="M('s-chat','m-block')" title="Block user">🚫</button>
+    <button class="ibtn" onclick="openLudoInvite()" title="Ludo" style="font-size:.82rem;">🎲</button>
     <button class="ibtn" onclick="M('s-chat','m-report')" title="Report">🚩</button>
   </div>
   <div id="blocked-notice" class="blocked-notice" style="display:none;">
@@ -1137,69 +1142,55 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 <!-- ══════════════ S19: VIEW PROFILE ══════════════ -->
 <div class="scr" id="s-viewprofile" style="background:var(--cream);">
-  <!-- Loading state -->
-  <div id="vp-loading" style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;">
-    <div style="width:40px;height:40px;border:3px solid var(--sand);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;"></div>
-    <p style="color:var(--txt3);font-size:.84rem;">Loading profile...</p>
+  <div id="vp-loading" style="display:none;align-items:center;justify-content:center;padding:60px 20px;flex-direction:column;gap:12px;">
+    <div style="width:36px;height:36px;border:3px solid var(--sand);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;"></div>
+    <p style="color:var(--txt3);font-size:.84rem;">Loading...</p>
   </div>
-  <!-- Profile content (hidden until loaded) -->
-  <div id="vp-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
-    <!-- Photo area -->
+  <div id="vp-content" style="display:flex;flex-direction:column;height:100%;">
     <div style="position:relative;flex-shrink:0;">
-      <div id="vp-photo" style="height:285px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;overflow:hidden;position:relative;">
-        <div id="vp-photo-fallback" style="display:flex;align-items:center;justify-content:center;font-size:5rem;color:rgba(255,255,255,.5);">👤</div>
-        <!-- Back button -->
-        <button onclick="history.back()||G('s-discover')" style="position:absolute;top:52px;left:14px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.35);border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
-        <!-- Online badge -->
-        <div id="vp-online-badge" style="display:none;position:absolute;top:56px;right:14px;background:rgba(0,0,0,.4);border-radius:50px;padding:4px 10px;display:flex;align-items:center;gap:5px;">
-          <div id="vp-online-dot" style="width:7px;height:7px;border-radius:50%;background:#95a5a6;"></div>
-          <span id="vp-online-txt" style="font-size:.65rem;color:#fff;font-weight:700;">Offline</span>
+      <div id="vp-photo" style="height:260px;background:linear-gradient(160deg,var(--teal3),var(--gold));display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;overflow:hidden;position:relative;">
+        <div id="vp-photo-fallback" style="font-size:5rem;color:rgba(255,255,255,.4);">👤</div>
+        <button onclick="G('s-discover')" style="position:absolute;top:52px;left:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.35);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+        <div id="vp-online-badge" style="position:absolute;top:56px;right:12px;background:rgba(0,0,0,.4);border-radius:50px;padding:3px 9px;display:flex;align-items:center;gap:5px;">
+          <div id="vp-online-dot" style="width:6px;height:6px;border-radius:50%;background:#95a5a6;"></div>
+          <span id="vp-online-txt" style="font-size:.63rem;color:#fff;font-weight:700;">Offline</span>
         </div>
       </div>
-      <!-- Name card -->
-      <div style="background:#fff;margin:-22px 13px 0;border-radius:14px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,.1);position:relative;z-index:10;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+      <div style="background:#fff;margin:-18px 12px 0;border-radius:14px;padding:13px 15px;box-shadow:0 4px 18px rgba(0,0,0,.1);position:relative;z-index:2;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">
           <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap;">
-              <h2 id="vp-name" style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;margin:0;"></h2>
-              <span id="vp-verified-badge" style="display:none;background:var(--blue);color:#fff;font-size:.58rem;font-weight:800;padding:2px 7px;border-radius:50px;">✓ Verified</span>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <h2 id="vp-name" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;margin:0;"></h2>
+              <span id="vp-verified-badge" style="display:none;background:var(--blue);color:#fff;font-size:.57rem;font-weight:800;padding:2px 6px;border-radius:50px;">✓</span>
             </div>
-            <p id="vp-sub" style="color:var(--txt3);font-size:.8rem;margin:0;"></p>
+            <p id="vp-sub" style="color:var(--txt3);font-size:.78rem;margin:3px 0 0;"></p>
           </div>
         </div>
-        <div id="vp-badges" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <div id="vp-badges" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;"></div>
       </div>
     </div>
-    <!-- Scrollable content -->
-    <div class="scroll" style="padding:11px 13px 26px;">
-      <!-- About -->
-      <div class="card" style="margin-bottom:9px;">
-        <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;">About</p>
-        <p id="vp-bio" style="font-size:.83rem;color:var(--txt2);line-height:1.7;"></p>
+    <div class="scroll" style="flex:1;padding:10px 12px 24px;">
+      <div class="card" style="margin-bottom:8px;">
+        <p style="font-size:.7rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">About</p>
+        <p id="vp-bio" style="font-size:.82rem;color:var(--txt2);line-height:1.7;"></p>
       </div>
-      <!-- Details -->
-      <div class="card" style="margin-bottom:9px;" id="vp-details-card">
-        <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Details</p>
-        <div id="vp-details" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;"></div>
+      <div class="card" id="vp-details-card" style="margin-bottom:8px;">
+        <p style="font-size:.7rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Details</p>
+        <div id="vp-details" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
       </div>
-      <!-- Interests -->
-      <div class="card" style="margin-bottom:11px;" id="vp-interests-card">
-        <p style="font-size:.71rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;">Interests</p>
-        <div id="vp-interests" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      <div class="card" id="vp-interests-card" style="margin-bottom:10px;">
+        <p style="font-size:.7rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Interests</p>
+        <div id="vp-interests" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
       </div>
-      <!-- Action buttons -->
       <div style="display:flex;gap:8px;">
         <button id="vp-action-btn" class="btn bp" style="flex:1;" onclick="vpAction()">💚 Like</button>
         <button class="btn bo" onclick="startCall('audio')">📞</button>
         <button class="btn bo" onclick="startCall('video')">🎥</button>
-        <button class="btn" style="background:#fff;border:1.5px solid var(--sand);color:var(--red2);padding:12px;" onclick="M('s-viewprofile','m-report')">🚩</button>
+        <button class="btn" style="background:#fff;border:1.5px solid var(--sand);color:var(--red2);padding:11px;" onclick="M('s-viewprofile','m-report')">🚩</button>
       </div>
     </div>
   </div>
-</div>
-
-<!-- ══════════════ S20: MY PROFILE ══════════════ -->
-<div class="scr" id="s-myprofile" style="background:var(--cream2);">
+id="s-myprofile" style="background:var(--cream2);">
   <div style="background:var(--teal);padding:50px 16px 13px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
     <button class="ibtn back-ibtn" onclick="G('s-discover')" title="Back">&#8592;</button>
     <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:#fff;flex:1;">My Profile</h2>
@@ -1696,6 +1687,8 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 <script>
+
+
 
 
 
@@ -2568,6 +2561,9 @@ function openViewProfile(userId) {
   if (loading) loading.style.display = 'flex';
   if (content) content.style.display = 'none';
   G('s-viewprofile');
+  // Ensure view profile doesn't overfill
+  var vpEl = document.getElementById('s-viewprofile');
+  if (vpEl) vpEl.style.overflowY = 'hidden';
 
   apiCall('/api/users/' + userId, 'GET')
   .then(function(res) {
@@ -2577,7 +2573,7 @@ function openViewProfile(userId) {
       return;
     }
     var u = res.data;
-    if (content) content.style.display = 'flex';
+    if (content) { content.style.display = 'flex'; content.style.flexDirection = 'column'; content.style.height = '100%'; }
 
     // ── Photo ──────────────────────────────────────
     var vpPhoto    = document.getElementById('vp-photo');
