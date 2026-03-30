@@ -1710,6 +1710,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 
+
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -1849,7 +1850,8 @@ function loadUserSession() {
   S.unread = {};
   S._seenNotifs = {};
   loadNextDiscoverProfile();
-  startNotifPolling(); // start checking for new notifications
+  connectSSE();           // real-time events via SSE
+  startNotifPolling();    // fallback polling for notifications
 }
 
 /* ── Registration ───────────────────────────────────────── */
@@ -3020,15 +3022,7 @@ async function _startWebRTC(type, isCaller) {
         call_type: type,
       }).catch(function(){});
       toast('Calling... waiting for answer', 4000);
-      // Temporarily speed up notification polling on receiver side
-      // The receiver will poll every 1s for the first 30s
-      if (_notifPollTimer) clearInterval(_notifPollTimer);
-      _notifPollTimer = setInterval(pollNotifications, 1000);
-      setTimeout(function() {
-        // Return to normal 3s polling after 30s
-        if (_notifPollTimer) clearInterval(_notifPollTimer);
-        _notifPollTimer = setInterval(pollNotifications, 3000);
-      }, 30000);
+      // SSE handles real-time delivery — polling is fallback only
       // Poll for answer
       _pollForAnswer();
     } else {
@@ -3063,7 +3057,7 @@ function _pollForAnswer() {
   var attempts = 0;
   WC.pollTimer = setInterval(async function() {
     attempts++;
-    if (attempts > 30) { // 30s timeout
+    if (attempts > 60) { // 60s timeout
       clearInterval(WC.pollTimer);
       toast('No answer. Call ended.', 3000, 'err');
       _cleanupCall();
@@ -3525,6 +3519,120 @@ document.addEventListener('keydown', function(e) {
 });
 
 
+
+/* ══ SSE: Real-time event stream ══════════════════════════ */
+var _sseConn = null;
+
+function connectSSE() {
+  if (!S.token) return;
+  if (_sseConn) { _sseConn.close(); _sseConn = null; }
+
+  var url = API + '/api/events';
+  _sseConn = new EventSource(url + '?token=' + encodeURIComponent(S.token));
+
+  _sseConn.addEventListener('incoming_call', function(e) {
+    try {
+      var data = JSON.parse(e.data);
+      console.log('[SSE] Incoming call:', data);
+      // Show incoming call UI immediately — no polling delay
+      WC._pendingCall = data;
+      var nameEl = document.getElementById('ic-caller-name');
+      var typeEl = document.getElementById('ic-call-type');
+      var iconEl = document.getElementById('ic-type-icon');
+      var callerDisplay = data.caller_name || 'Incoming Call';
+      if (nameEl) nameEl.textContent = callerDisplay;
+      if (typeEl) typeEl.textContent = data.call_type === 'video' ? 'Video Call' : 'Audio Call';
+      if (iconEl) iconEl.textContent = data.call_type === 'video' ? '🎥' : '📞';
+      var modal = document.getElementById('m-incoming-call');
+      if (modal) modal.classList.add('on');
+      toast((data.call_type === 'video' ? '🎥' : '📞') + ' ' + callerDisplay + ' is calling!', 10000);
+      // Auto-dismiss after 30s
+      setTimeout(function() {
+        var m = document.getElementById('m-incoming-call');
+        if (m && m.classList.contains('on')) {
+          m.classList.remove('on');
+          // Mark as missed
+          if (data.call_id) {
+            apiCall('/api/calls/' + data.call_id + '/answer', 'PATCH', { status: 'missed' }).catch(function(){});
+          }
+          toast('Missed call from ' + callerDisplay, 3000);
+        }
+      }, 30000);
+    } catch(ex) { console.error('[SSE] incoming_call error:', ex); }
+  });
+
+  _sseConn.addEventListener('call_answered', function(e) {
+    try {
+      var data = JSON.parse(e.data);
+      console.log('[SSE] Call answered:', data);
+      if (data.status === 'accepted' && data.sdp_answer && WC.pc) {
+        clearInterval(WC.pollTimer);
+        var answerData = JSON.parse(data.sdp_answer);
+        WC.pc.setRemoteDescription(new RTCSessionDescription(answerData.sdp))
+        .then(function() {
+          (answerData.candidates || []).forEach(function(cc) {
+            WC.pc.addIceCandidate(new RTCIceCandidate(cc)).catch(function(){});
+          });
+          var statusEl = document.getElementById('call-status');
+          if (statusEl) statusEl.textContent = 'Connected';
+          toast('Call connected! 🎉', 2500);
+        }).catch(function(ex) { console.error('setRemoteDescription:', ex); });
+      }
+    } catch(ex) { console.error('[SSE] call_answered error:', ex); }
+  });
+
+  _sseConn.addEventListener('call_ended', function(e) {
+    try {
+      var data = JSON.parse(e.data);
+      console.log('[SSE] Call ended:', data.status);
+      if (data.status === 'declined') {
+        toast('Call declined.', 3000, 'err');
+        _cleanupCall();
+        if (document.getElementById('s-call') && document.getElementById('s-call').classList.contains('on')) {
+          G('s-chat');
+        }
+      }
+    } catch(ex) {}
+  });
+
+  _sseConn.addEventListener('notification', function(e) {
+    try {
+      var data = JSON.parse(e.data);
+      console.log('[SSE] Notification:', data.type, data.title);
+      if (!S._seenNotifs) S._seenNotifs = {};
+      var notifId = data.type + '_' + Date.now();
+      if (data.type === 'ludo') {
+        showLudoInviteNotif(data);
+      } else if (data.type === 'match') {
+        toast('💞 ' + (data.title || 'New match!'), 4000);
+      } else if (data.type === 'like') {
+        toast('💚 ' + (data.title || 'Someone liked you!'), 4000);
+      } else {
+        toast(data.title || 'New notification', 4000);
+      }
+      updateNotifBadge(1); // show badge
+    } catch(ex) { console.error('[SSE] notification error:', ex); }
+  });
+
+  _sseConn.addEventListener('ping', function() {
+    // Heartbeat — connection is alive
+  });
+
+  _sseConn.onerror = function(e) {
+    console.log('[SSE] Connection error — will retry in 5s');
+    _sseConn.close();
+    _sseConn = null;
+    setTimeout(connectSSE, 5000); // reconnect
+  };
+
+  _sseConn.onopen = function() {
+    console.log('[SSE] Connected — real-time events active');
+  };
+}
+
+function disconnectSSE() {
+  if (_sseConn) { _sseConn.close(); _sseConn = null; }
+}
 /* ══ NOTIFICATIONS ═════════════════════════════════════════ */
 var _notifPollTimer = null;
 
