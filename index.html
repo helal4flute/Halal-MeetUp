@@ -1005,7 +1005,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div style="background:var(--teal);padding:48px 14px 11px;display:flex;align-items:center;gap:9px;flex-shrink:0;">
     <button class="ibtn back-ibtn" onclick="G('s-matches')">&#8592;</button>
     <div onclick="G('s-viewprofile')" style="cursor:pointer;display:flex;align-items:center;gap:9px;flex:1;">
-      <div style="position:relative;width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;">👤<div class="odot"></div></div>
+      <div id="chat-avatar" style="position:relative;width:39px;height:39px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8a070);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;overflow:hidden;"><span id="chat-avatar-fb">👤</span><div class="odot" style="position:absolute;bottom:1px;right:1px;"></div></div></div>
       <div><p style="color:#fff;font-weight:800;font-size:.9rem;" id="chat-name">Member <span id="chat-v" style="font-size:.58rem;background:var(--blue);padding:1px 5px;border-radius:50px;">✓</span></p><p style="color:rgba(255,255,255,.62);font-size:.69rem;" id="chat-status">Online now</p></div>
     </div>
     <button class="ibtn" onclick="startCall('audio')" title="Voice call">📞</button>
@@ -1711,6 +1711,8 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 
 
+
+
 /* ═══════════════════════════════════════════════════════════
    HALAL-MEETUP  |  Production JS  v2.0
    Admin : mdhelal.ahamed@gmail.com
@@ -2307,8 +2309,22 @@ function openChatByMatch(matchId) {
     var statusEl = document.getElementById('chat-status');
     var fullName = (match.first_name || '') + ' ' + (match.last_name || '');
     if (nameEl) nameEl.textContent = fullName;
-    S.chatPartnerName = fullName; // Store for call UI
+    S.chatPartnerName = fullName;
     if (statusEl) statusEl.textContent = match.online ? 'Online now' : 'Last seen recently';
+    // Set partner photo in chat header
+    var avatarEl = document.getElementById('chat-avatar');
+    var avatarFb = document.getElementById('chat-avatar-fb');
+    if (avatarEl) {
+      if (match.avatar && match.avatar.length > 100) {
+        avatarEl.style.backgroundImage    = 'url(' + JSON.stringify(match.avatar) + ')';
+        avatarEl.style.backgroundSize     = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+        if (avatarFb) avatarFb.style.display = 'none';
+      } else {
+        avatarEl.style.backgroundImage = 'none';
+        if (avatarFb) avatarFb.style.display = '';
+      }
+    }
     var notice = document.getElementById('blocked-notice');
     var cbar   = document.querySelector('.cbar');
     if (S.blocked.includes(match.partner_id)) { if (notice) notice.style.display = 'block'; if (cbar) cbar.style.display = 'none'; }
@@ -2387,7 +2403,15 @@ function sendMsg() {
 function mkBubble(m) {
   var wrap = document.createElement('div');
   wrap.className = 'bwrap' + (m.f === 'me' ? ' sent' : '');
-  if (m.f !== 'me') { var av = document.createElement('div'); av.className = 'avsm'; av.style.background = 'linear-gradient(135deg,var(--teal),var(--gold))'; av.textContent = '👤'; wrap.appendChild(av); }
+  if (m.f !== 'me') { var av = document.createElement('div'); av.className = 'avsm'; av.style.cssText = 'width:44px;height:44px;border-radius:50%;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,var(--teal),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.3rem;';
+      if (match.avatar && match.avatar.length > 100) {
+        var img = document.createElement('img');
+        img.src = match.avatar;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        img.onerror = function(){ av.textContent = '👤'; };
+        av.appendChild(img);
+      } else { av.textContent = '👤'; }
+      wrap.appendChild(av); }
   var col  = document.createElement('div'); col.style.flex = '1'; col.style.minWidth = '0';
   var bub  = document.createElement('div');
   if (m.blocked === 'phone') { bub.className = 'bub bblocked'; bub.innerHTML = '<strong style="color:var(--gold3);font-size:.74rem;">🚫 Phone numbers blocked</strong>'; }
@@ -2429,7 +2453,16 @@ function renderConvList() {
       row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:12px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.05);';
       var av = document.createElement('div');
       av.style.cssText = 'width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,' + colours[i % colours.length] + ');display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;';
-      av.textContent = '👤';
+      av.textContent = '';
+      if (match.avatar && match.avatar.length > 100) {
+        var img = document.createElement('img');
+        img.src = match.avatar;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+        img.onerror = function() { av.textContent = '👤'; };
+        av.appendChild(img);
+      } else {
+        av.textContent = '👤';
+      }
       var info = document.createElement('div'); info.style.flex = '1'; info.style.minWidth = '0';
       var nameEl = document.createElement('p'); nameEl.style.cssText = 'font-weight:800;font-size:.87rem;margin-bottom:2px;'; nameEl.textContent = (match.first_name || '') + ' ' + (match.last_name || '');
       var previewEl = document.createElement('p'); previewEl.style.cssText = 'font-size:.77rem;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; previewEl.textContent = match.last_message || '💞 You matched! Say Assalamu Alaikum';
